@@ -19,7 +19,6 @@ public interface TriplesMap
 	LogicalTable getLogicalTable();
 	TriplesMap setLogicalTable(LogicalTable logicalTable);
 	
-	
 	/** Get an existing subject map or allocate a new blank node for it */
 	default SubjectMap getOrSetSubjectMap() {
 		SubjectMap result = getSubjectMap();
@@ -32,14 +31,19 @@ public interface TriplesMap
 		return result;
 	}
 	
-	/** Allocate and add a fresh predicate object map */
+	/**
+	 * Allocate a fresh predicate object map and add it to this triples map.
+	 * 
+	 */
 	default PredicateObjectMap addNewPredicateObjectMap() {
 		PredicateObjectMap result = getModel().createResource().as(PredicateObjectMap.class);
 		getPredicateObjectMaps().add(result);
 		return result;
 	}
 
-	/** Get an existing subject map or allocate a new blank node for it */
+	/**
+	 * Get an existing subject map or allocate a new blank node for it
+	 */
 	default LogicalTable getOrSetLogicalTable() {
 		LogicalTable result = getLogicalTable();
 		

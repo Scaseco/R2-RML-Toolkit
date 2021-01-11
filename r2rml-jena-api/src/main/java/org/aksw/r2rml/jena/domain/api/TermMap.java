@@ -6,6 +6,12 @@ import org.aksw.r2rml.common.vocab.R2RMLStrings;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
+/**
+ * A TermMap with all attributes according to the R2RML specification.
+ * 
+ * @author Claus Stadler
+ *
+ */
 @ResourceView
 public interface TermMap
 	extends MappingComponent
