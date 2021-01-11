@@ -6,6 +6,8 @@ An extensible API based on Jena's native polymorphism system.
 
 
 ### Modules
+* r2rml-resource-w3c-testsuite: The W3C R2RML test suite resources (no code)
+* r2rml-reousrce-shacl: Shacl file for R2RML (no code) - work in progress
 * r2rml-common-vocab: String-based R2RML vocabulary
 * r2rml-jena-vocab: Jena-based R2RML vocabulary
 * r2rml-jena-domain: Jena-based R2RML domain interfaces with RDF annotations

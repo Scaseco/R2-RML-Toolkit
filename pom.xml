@@ -15,6 +15,8 @@
 	<url>https://github.com/SmartDataAnalytics/r2rml-jena</url>
 
 	<modules>
+		<module>r2rml-resource-w3c-testsuite</module>
+		<module>r2rml-resource-shacl</module>
 		<module>r2rml-common-vocab</module>
 		<module>r2rml-jena-vocab</module>
 		<module>r2rml-jena-api</module>
@@ -82,6 +84,12 @@
 
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-vocab</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>r2rml-jena-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -105,6 +113,12 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-shacl</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-mapper-proxy</artifactId>
 				<version>${jena-sparql-api.version}</version>
@@ -113,6 +127,12 @@
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-mapper-annotations</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-algebra</artifactId>
 				<version>${jena-sparql-api.version}</version>
 			</dependency>
 

@@ -2,13 +2,14 @@ package org.aksw.r2rml.jena.domain.api;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
+import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
 import org.aksw.r2rml.common.vocab.R2RMLStrings;
 
 /**
  * Interface for RDF-based logical tables.
  * 
  * As this denotes the same information as in the more basic
- * {@link org.aksw.obda.domain.api.LogicalTable}, deriving from it should be
+ * {@link org.aksw.PlainLogicalTable.domain.api.LogicalTable}, deriving from it should be
  * safe.
  * 
  *  
@@ -18,7 +19,7 @@ import org.aksw.r2rml.common.vocab.R2RMLStrings;
  */
 @ResourceView
 public interface LogicalTable
-	extends MappingComponent
+	extends MappingComponent, PlainLogicalTable
 {
 	@Iri(R2RMLStrings.tableName)
 	String getTableName();
@@ -26,13 +27,5 @@ public interface LogicalTable
 	
 	@Iri(R2RMLStrings.sqlQuery)
 	String getSqlQuery();
-	LogicalTable setSqlQuery(String queryString);
-	
-	default boolean hasTableName() {
-		return getTableName() != null;
-	}
-
-	default boolean hasSqlQuery() {
-		return getSqlQuery() != null;
-	}
+	LogicalTable setSqlQuery(String queryString);	
 }
