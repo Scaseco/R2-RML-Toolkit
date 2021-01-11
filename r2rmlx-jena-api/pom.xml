@@ -10,20 +10,16 @@
 		<version>3.17.0-1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>r2rml-jena-vocab</artifactId>
+	<artifactId>r2rmlx-jena-api</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
-			<artifactId>r2rml-common-vocab</artifactId>
-		</dependency>	
-	
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
+			<artifactId>r2rml-jena-api</artifactId>
 		</dependency>
-	</dependencies>
 
+	</dependencies>
 </project>
 

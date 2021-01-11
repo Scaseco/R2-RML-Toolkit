@@ -23,6 +23,13 @@ public interface PredicateObjectMap
 	@Iri(R2RMLStrings.objectMap)
 	Set<ObjectMap> getObjectMaps();
 
+	/** Allocate and add a fresh object map */
+	default ObjectMap addNewObjectMap() {
+		ObjectMap result = getModel().createResource().as(ObjectMap.class);
+		getObjectMaps().add(result);
+		return result;
+	}
+
 	
 //	Resource getPredicate();
 //	PredicateObjectMap setPredicate(Resource predicate);

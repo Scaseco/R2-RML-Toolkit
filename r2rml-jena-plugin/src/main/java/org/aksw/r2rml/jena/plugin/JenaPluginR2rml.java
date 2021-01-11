@@ -9,6 +9,7 @@ import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
 import org.aksw.r2rml.jena.domain.api.SubjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.r2rmlx.domain.api.TermMapX;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
 public class JenaPluginR2rml implements JenaSubsystemLifecycle {
@@ -36,6 +37,10 @@ public class JenaPluginR2rml implements JenaSubsystemLifecycle {
 			PredicateMap.class,
 			ObjectMap.class,
 			TermMap.class
+		);
+		
+		JenaPluginUtils.registerResourceClasses(
+			TermMapX.class
 		);
 	}	
 }

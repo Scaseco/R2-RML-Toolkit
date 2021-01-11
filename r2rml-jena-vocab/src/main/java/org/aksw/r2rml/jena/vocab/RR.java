@@ -16,19 +16,12 @@ import org.apache.jena.rdf.model.ResourceFactory;
  *
  */
 public class RR {
-	public static final String rr = R2RMLStrings.uri;
+	public static final String uri = R2RMLStrings.uri;
 
-	public static Resource resource(String name) {
-		Resource result = ResourceFactory.createResource(rr + name);
-		return result;
-	}
-
-	public static Property property(String name) {
-		Property result = ResourceFactory.createProperty(rr + name);
-		return result;
-	}
+	public static String getURI() { return uri; }
+	public static Resource resource(String name) { return ResourceFactory.createResource(name); }
+	public static Property property(String name) { return ResourceFactory.createProperty(name); }
 	
-	public static String getURI() { return rr; }
 	
 	// Classes based on https://www.w3.org/TR/r2rml/#vocabulary
 	
@@ -76,12 +69,12 @@ public class RR {
 	public static final Property tableName			= property(R2RMLStrings.tableName);
 	public static final Property template 			= property(R2RMLStrings.template);
 	public static final Property termType 			= property(R2RMLStrings.termType);
-	public static final Property BlankNode			= property(R2RMLStrings.BlankNode);	
+	public static final Resource BlankNode			= resource(R2RMLStrings.BlankNode);	
 	
 	// Other Terms
-	public static final Property defaultGraph 		= property(R2RMLStrings.defaultGraph);
-	public static final Property SQL2008 			= property(R2RMLStrings.SQL2008);
-	public static final Property IRI 				= property(R2RMLStrings.IRI);
+	public static final Resource defaultGraph 		= resource(R2RMLStrings.defaultGraph);
+	public static final Resource SQL2008 			= resource(R2RMLStrings.SQL2008);
+	public static final Resource IRI 				= resource(R2RMLStrings.IRI);
 
-	public static final Property Literal 			= property(R2RMLStrings.Literal);
+	public static final Resource Literal 			= resource(R2RMLStrings.Literal);
 }
