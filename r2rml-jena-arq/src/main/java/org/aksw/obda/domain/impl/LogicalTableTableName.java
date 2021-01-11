@@ -1,11 +1,9 @@
 package org.aksw.obda.domain.impl;
 
-import java.util.Optional;
-
-import org.aksw.obda.domain.api.LogicalTable;
+import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
 
 public class LogicalTableTableName
-	implements LogicalTable
+	implements PlainLogicalTable
 {
 	protected String tableName;
 	
@@ -13,12 +11,17 @@ public class LogicalTableTableName
 		super();
 		this.tableName = tableName;
 	}
+	
+	@Override
+	public String getTableName() {
+		return tableName;
+	}
 
 	@Override
-	public Optional<String> tryGetTableName() {
-		return Optional.of(tableName);
+	public String getSqlQuery() {
+		return null;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "LogicalTableTableName [tableName=" + tableName + "]";
@@ -48,5 +51,4 @@ public class LogicalTableTableName
 			return false;
 		return true;
 	}
-	
 }

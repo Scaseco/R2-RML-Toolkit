@@ -8,9 +8,6 @@ package org.aksw.r2rml.common.domain.api;
  *
  */
 public interface PlainLogicalTable {
-	String getTableName();
-	PlainLogicalTable setTableName(String tableName);
-	
+	String getTableName();	
 	String getSqlQuery();
-	PlainLogicalTable setSqlQuery(String queryString);
 }

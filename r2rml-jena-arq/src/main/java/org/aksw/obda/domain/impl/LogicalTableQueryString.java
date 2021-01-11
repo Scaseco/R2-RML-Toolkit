@@ -1,11 +1,9 @@
 package org.aksw.obda.domain.impl;
 
-import java.util.Optional;
-
-import org.aksw.obda.domain.api.LogicalTable;
+import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
 
 public class LogicalTableQueryString
-	implements LogicalTable
+	implements PlainLogicalTable
 {
 	protected String queryString;
 	
@@ -15,8 +13,13 @@ public class LogicalTableQueryString
 	}
 
 	@Override
-	public Optional<String> tryGetQueryString() {
-		return Optional.of(queryString);
+	public String getTableName() {
+		return null;
+	}
+
+	@Override
+	public String getSqlQuery() {
+		return queryString;
 	}
 
 	@Override
