@@ -13,5 +13,5 @@ public class RRX {
 	public static Property property(String name) { return ResourceFactory.createProperty(name); }
 
 
-	public static final Property langColumn = property(R2RMLXStrings.langColumn);
+	public static final Property languageColumn = property(R2RMLXStrings.languageColumn);
 }

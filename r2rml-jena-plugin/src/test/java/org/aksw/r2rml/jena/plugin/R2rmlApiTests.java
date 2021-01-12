@@ -21,6 +21,8 @@ public class R2rmlApiTests {
 	@Test
 	public void testR2rmlApi() {
 		Model model = ModelFactory.createDefaultModel();
+		model.setNsPrefix("rdfs", RDFS.uri);
+		model.setNsPrefix("rr", RR.uri);
 		
 		TriplesMap triplesMap = model.createResource().as(TriplesMap.class); 
 		

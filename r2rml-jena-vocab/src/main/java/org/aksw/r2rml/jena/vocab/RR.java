@@ -12,7 +12,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 /**
  * The R2RML vocabulary
  * 
- * @author sherif
+ * @author Claus Stadler
  *
  */
 public class RR {

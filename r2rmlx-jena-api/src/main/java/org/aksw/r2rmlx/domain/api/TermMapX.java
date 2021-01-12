@@ -7,7 +7,7 @@ import org.aksw.r2rmlx.common.vocab.R2RMLXStrings;
 public interface TermMapX
 	extends TermMap
 {
-	@Iri(R2RMLXStrings.langColumn)
+	@Iri(R2RMLXStrings.languageColumn)
 	String getLangColumn();
 	TermMapX setLangColumn(String langColumn);
 }
