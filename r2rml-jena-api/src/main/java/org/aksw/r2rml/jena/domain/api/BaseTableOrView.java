@@ -8,5 +8,5 @@ public interface BaseTableOrView
 {
 	@Iri(R2RMLStrings.tableName)
 	String getTableName();
-	LogicalTable setTableName(String tableName);
+	BaseTableOrView setTableName(String tableName);
 }

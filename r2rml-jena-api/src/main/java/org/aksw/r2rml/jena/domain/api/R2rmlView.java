@@ -14,7 +14,7 @@ public interface R2rmlView
 {
 	@Iri(R2RMLStrings.sqlQuery)
 	String getSqlQuery();
-	LogicalTable setSqlQuery(String queryString);	
+	R2rmlView setSqlQuery(String queryString);	
 
 	@Iri(R2RMLStrings.sqlVersion)
 	Set<Resource> getSqlVersions();
