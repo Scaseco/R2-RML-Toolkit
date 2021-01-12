@@ -1,4 +1,4 @@
-package org.aksw.obda.jena.r2rml.impl;
+package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
@@ -11,11 +11,8 @@ import java.util.function.Predicate;
 import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformConcatMergeConstants;
 import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformFlattenFunction;
 import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformSubstituteWithArgument;
-//import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformConcatMergeConstants;
-//import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformFlattenFunction;
-//import org.aksw.jena_sparql_api.algebra.expr.transform.ExprTransformSubstituteWithArgument;
-import org.aksw.obda.jena.domain.impl.ViewDefinition;
 import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
+import org.aksw.r2rml.jena.arq.domain.impl.ViewDefinition;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;

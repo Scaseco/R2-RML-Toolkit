@@ -1,9 +1,9 @@
-package org.aksw.obda.jena.domain.impl;
+package org.aksw.r2rml.jena.arq.domain.impl;
 
 import java.util.List;
 import java.util.Map;
 
-import org.aksw.obda.domain.api.Constraint;
+import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;

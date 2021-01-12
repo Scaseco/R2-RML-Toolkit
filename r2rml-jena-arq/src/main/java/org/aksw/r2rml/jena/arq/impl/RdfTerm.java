@@ -1,4 +1,4 @@
-package org.aksw.obda.jena.r2rml.impl;
+package org.aksw.r2rml.jena.arq.impl;
 
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.expr.NodeValue;

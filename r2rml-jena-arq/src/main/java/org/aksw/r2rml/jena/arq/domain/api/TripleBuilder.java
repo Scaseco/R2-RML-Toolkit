@@ -1,4 +1,4 @@
-package org.aksw.r2rml.jena.arq.api.impl;
+package org.aksw.r2rml.jena.arq.domain.api;
 
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 

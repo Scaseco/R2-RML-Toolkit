@@ -1,4 +1,4 @@
-package org.aksw.obda.jena.r2rml.impl;
+package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.aksw.obda.domain.api.Constraint;
-import org.aksw.obda.jena.domain.impl.ViewDefinition;
+import org.aksw.r2rml.jena.arq.domain.impl.ViewDefinition;
+import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;

@@ -1,37 +1,37 @@
-package org.aksw.obda.domain.impl;
+package org.aksw.r2rml.jena.arq.domain.impl;
 
 import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
 
-public class LogicalTableQueryString
+public class LogicalTableTableName
 	implements PlainLogicalTable
 {
-	protected String queryString;
+	protected String tableName;
 	
-	public LogicalTableQueryString(String queryString) {
+	public LogicalTableTableName(String tableName) {
 		super();
-		this.queryString = queryString;
+		this.tableName = tableName;
 	}
-
+	
 	@Override
 	public String getTableName() {
-		return null;
+		return tableName;
 	}
 
 	@Override
 	public String getSqlQuery() {
-		return queryString;
+		return null;
 	}
 
 	@Override
 	public String toString() {
-		return "LogicalTableQueryString [queryString=" + queryString + "]";
+		return "LogicalTableTableName [tableName=" + tableName + "]";
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((queryString == null) ? 0 : queryString.hashCode());
+		result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
 		return result;
 	}
 
@@ -43,11 +43,11 @@ public class LogicalTableQueryString
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		LogicalTableQueryString other = (LogicalTableQueryString) obj;
-		if (queryString == null) {
-			if (other.queryString != null)
+		LogicalTableTableName other = (LogicalTableTableName) obj;
+		if (tableName == null) {
+			if (other.tableName != null)
 				return false;
-		} else if (!queryString.equals(other.queryString))
+		} else if (!tableName.equals(other.tableName))
 			return false;
 		return true;
 	}
