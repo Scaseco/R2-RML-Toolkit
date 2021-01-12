@@ -47,7 +47,8 @@ Note, that any of the many serialization formats supported by Jena could be used
                            rr:predicate  <urn:p>
                          ] ;
   rr:subject             <urn:s>
-] .```
+] .
+```
 
 ## Usage with Maven
 
