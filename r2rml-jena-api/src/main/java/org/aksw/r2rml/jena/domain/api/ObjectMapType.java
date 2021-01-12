@@ -36,7 +36,7 @@ public interface ObjectMapType
 	}
 
 	/**
-	 * R2RML specifies that the condition for an entity to qualify as an "object map" is
+	 * R2RML specifies that the condition for an entity to qualify as a "term map" is
 	 * "Having exactly one of rr:constant, rr:column, rr:template"
 	 * 
 	 * @return
