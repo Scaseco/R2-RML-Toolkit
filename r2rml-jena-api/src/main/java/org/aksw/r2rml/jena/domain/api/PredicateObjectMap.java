@@ -5,6 +5,8 @@ import java.util.Set;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
@@ -30,7 +32,20 @@ public interface PredicateObjectMap
 		return result;
 	}
 
-	
+
+	default PredicateObjectMap addPredicate(String uri) {
+		return addPredicate(NodeFactory.createURI(uri));
+	}
+
+	default PredicateObjectMap addPredicate(Node node) {
+		return addPredicate(getModel().wrapAsResource(node));
+	}
+
+	default PredicateObjectMap addPredicate(Resource resource) {
+		getPredicates().add(resource);
+		return this;
+	}
+
 //	Resource getPredicate();
 //	PredicateObjectMap setPredicate(Resource predicate);
 //
