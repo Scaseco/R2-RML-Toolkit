@@ -3,8 +3,8 @@
 An **complete**, **beautiful** and **extensible** R2RML API based on Jena's native polymorphism system.
 
 ```java
-	@Test
-	public void testR2rmlApi() {
+public class R2rmlApiExample {
+	public static void main(String[] args) {
 		Model model = ModelFactory.createDefaultModel();
 		
 		TriplesMap triplesMap = model.createResource().as(TriplesMap.class); 
@@ -25,6 +25,7 @@ An **complete**, **beautiful** and **extensible** R2RML API based on Jena's nati
 		
 		RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
 	}
+}
 ```
 
 ```turtle
