@@ -57,7 +57,7 @@ Just include
 <dependency>
   <groupId>org.aksw.r2rml</groupId>
   <artifactId>r2rml-jena-plugin</artifactId>
-  <version><!- Check the link below --></version>
+  <version><!-- Check the link below --></version>
 </dependency>
 ```
 
