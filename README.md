@@ -1,8 +1,64 @@
 ## A Jena-based R2RML API
 
-An extensible API based on Jena's native polymorphism system.
+An **complete**, **beautiful** and **extensible** R2RML API based on Jena's native polymorphism system.
 
-`ModelFactory.crateResource().as(TriplesMap.class)`
+```java
+	@Test
+	public void testR2rmlApi() {
+		Model model = ModelFactory.createDefaultModel();
+		
+		TriplesMap triplesMap = model.createResource().as(TriplesMap.class); 
+		
+		triplesMap
+			.setSubjectIri("urn:s")
+			.addNewPredicateObjectMap()
+				.addPredicate("urn:p")
+				.addNewObjectMap()
+					.setColumn("labels")
+					.setLanguage("en");
+		
+		// All domain classes of the R2RML API *ARE* Jena Resources.
+		// Hence, any information - such as types or custom attributes - can be freely attached:
+		triplesMap
+			.addProperty(RDF.type, RR.TriplesMap)
+			.addProperty(RDFS.label, "My R2RML Mapping");
+		
+		RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+	}
+```
+
+```turtle
+[ a       <http://www.w3.org/ns/r2rml#TriplesMap> ;
+  <http://www.w3.org/2000/01/rdf-schema#label>
+          "My R2RML Mapping" ;
+  <http://www.w3.org/ns/r2rml#predicateObjectMap>
+          [ <http://www.w3.org/ns/r2rml#objectMap>
+                    [ <http://www.w3.org/ns/r2rml#column>
+                              "labels" ;
+                      <http://www.w3.org/ns/r2rml#language>
+                              "en"
+                    ] ;
+            <http://www.w3.org/ns/r2rml#predicate>
+                    <urn:p>
+          ] ;
+  <http://www.w3.org/ns/r2rml#subject>
+          <urn:s>
+] .
+
+```
+
+## Usage with Maven
+
+Just include
+```xml
+<dependency>
+  <groupId>org.aksw.r2rml</groupId>
+  <artifactId>r2rml-jena-plugin</artifactId>
+  <version><!- Check the link below --></version>
+</dependency>
+```
+
+[List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
 
 ### Modules
