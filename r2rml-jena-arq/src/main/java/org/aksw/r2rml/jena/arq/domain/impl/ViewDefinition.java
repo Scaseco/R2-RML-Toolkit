@@ -3,8 +3,8 @@ package org.aksw.r2rml.jena.arq.domain.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
 import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -18,14 +18,14 @@ public class ViewDefinition {
 
 	//protected ExprList filters = new ExprList();
 	
-	protected LogicalTable logicalTable;
+	protected PlainLogicalTable logicalTable;
 	
 	public ViewDefinition(
 			String name,
 			List<Quad> constructTemplate,
 			Map<Var, Expr> varDefinition,
 			Map<Var, Constraint> constraints,
-			LogicalTable logicalTable) {
+			PlainLogicalTable logicalTable) {
 		super();
 		this.name = name;
 		this.constructTemplate = constructTemplate;
@@ -50,7 +50,7 @@ public class ViewDefinition {
 		return constraints;
 	}
 
-	public LogicalTable getLogicalTable() {
+	public PlainLogicalTable getLogicalTable() {
 		return logicalTable;
 	}
 	

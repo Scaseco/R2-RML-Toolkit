@@ -11,11 +11,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
+import org.aksw.r2rml.jena.arq.domain.impl.LogicalTableTableName;
 import org.aksw.r2rml.jena.arq.domain.impl.ViewDefinition;
 import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.ObjectMap;
+import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateMap;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
 import org.aksw.r2rml.jena.domain.api.SubjectMap;
@@ -162,15 +164,15 @@ public class R2rmlImporter {
 			}
 
 			Set<PredicateMap> pms = pom.getPredicateMaps();
-			Set<ObjectMap> oms = pom.getObjectMaps();
+			Set<ObjectMapType> oms = pom.getObjectMaps();
 
 			for(GraphMap gm : egms) {			
 				for(PredicateMap pm : pms) {
-					for(ObjectMap om : oms) {
+					for(ObjectMapType om : oms) {
 						Node g = gm == null ? Quad.defaultGraphNodeGenerated : allocateVar(gm, nodeToExpr, varGen);
 						Node s = allocateVar(sm, nodeToExpr, varGen);
 						Node p = allocateVar(pm, nodeToExpr, varGen);
-						Node o = allocateVar(om, nodeToExpr, varGen);
+						Node o = allocateVar(om.asTermMap(), nodeToExpr, varGen);
 						
 						Quad quad = new Quad(g, s, p, o);
 						template.add(quad);
@@ -215,7 +217,17 @@ public class R2rmlImporter {
 				.map(Statement::getString)
 				.orElseGet(() -> tm.isURIResource() ? tm.getURI() : "" + tm);
 
-		ViewDefinition result = new ViewDefinition(name, template, varDefs, varConstraints, logicalTable);
+		PlainLogicalTable lt;
+		
+		if (logicalTable.qualifiesAsBaseTableOrView()) {
+			lt = new LogicalTableTableName(logicalTable.asBaseTableOrView().getTableName());
+		} else if (logicalTable.qualifiesAsR2rmlView()) {
+			lt = new LogicalTableTableName(logicalTable.asBaseTableOrView().getTableName());
+		} else {
+			throw new RuntimeException("Unknown logical table type: " + logicalTable);
+		}
+
+		ViewDefinition result = new ViewDefinition(name, template, varDefs, varConstraints, lt);
 		
 		return result;
 	}

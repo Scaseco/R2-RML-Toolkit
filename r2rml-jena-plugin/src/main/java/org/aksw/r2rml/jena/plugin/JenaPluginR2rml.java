@@ -1,11 +1,15 @@
 package org.aksw.r2rml.jena.plugin;
 
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.r2rml.jena.domain.api.BaseTableOrView;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
+import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateMap;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
+import org.aksw.r2rml.jena.domain.api.R2rmlView;
+import org.aksw.r2rml.jena.domain.api.RefObjectMap;
 import org.aksw.r2rml.jena.domain.api.SubjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
@@ -31,11 +35,15 @@ public class JenaPluginR2rml implements JenaSubsystemLifecycle {
 		JenaPluginUtils.registerResourceClasses(
 			TriplesMap.class,
 			LogicalTable.class,
+			BaseTableOrView.class,
+			R2rmlView.class,
 			PredicateObjectMap.class,
 			GraphMap.class,
 			SubjectMap.class,
 			PredicateMap.class,
+			ObjectMapType.class,
 			ObjectMap.class,
+			RefObjectMap.class,
 			TermMap.class
 		);
 		

@@ -1,9 +1,7 @@
 package org.aksw.r2rml.jena.domain.api;
 
-import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.jena.vocab.RR;
 
 /**
  * Interface for RDF-based logical tables.
@@ -19,13 +17,45 @@ import org.aksw.r2rml.common.vocab.R2RMLStrings;
  */
 @ResourceView
 public interface LogicalTable
-	extends MappingComponent, PlainLogicalTable
+	extends MappingComponent
 {
-	@Iri(R2RMLStrings.tableName)
-	String getTableName();
-	LogicalTable setTableName(String tableName);
+	/**
+	 * R2RML specifies that the minimum condition for an entity to qualify as an "base table or view" is
+	 * "Having an rr:tableName property"
+	 * 
+	 * @return
+	 */
+	default boolean qualifiesAsBaseTableOrView() {
+		return hasProperty(RR.tableName);
+	}
 	
-	@Iri(R2RMLStrings.sqlQuery)
-	String getSqlQuery();
-	LogicalTable setSqlQuery(String queryString);	
+	/**
+	 * Obtain a RefObjectMap view of this resource.
+	 * Calling this method does NOT require {@link #qualifiesAsRefObjectMap()} to yield true.
+	 * 
+	 * @return
+	 */
+	default BaseTableOrView asBaseTableOrView() {
+		return as(BaseTableOrView.class);
+	}
+
+	/**
+	 * R2RML specifies that the minimum condition for an entity to qualify as an "R2RML view" is
+	 * "Having an rr:sqlQuery property"
+	 * 
+	 * @return
+	 */
+	default boolean qualifiesAsR2rmlView() {
+		return hasProperty(RR.sqlQuery);
+	}
+
+	/**
+	 * Obtain an ObjectMap view of this resource.
+	 * Calling this method does NOT require {@link #qualifiesAsObjectMap()} to yield true.
+	 * 
+	 * @return
+	 */
+	default R2rmlView asR2rmlView() {
+		return as(R2rmlView.class);
+	}
 }

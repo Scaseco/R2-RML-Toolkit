@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.domain.api;
 import java.util.Set;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
+import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.aksw.r2rml.common.vocab.R2RMLStrings;
 import org.apache.jena.graph.Node;
@@ -13,28 +14,78 @@ import org.apache.jena.rdf.model.Resource;
 public interface PredicateObjectMap
 	extends MappingComponent
 {
-	@Iri(R2RMLStrings.graphMap)
-	Set<GraphMap> getGraphMaps();
-
-	@Iri(R2RMLStrings.predicate)
-	Set<Resource> getPredicates();
-
 	@Iri(R2RMLStrings.predicateMap)
 	Set<PredicateMap> getPredicateMaps();
 
 	@Iri(R2RMLStrings.objectMap)
-	Set<ObjectMap> getObjectMaps();
+	Set<ObjectMapType> getObjectMaps();
 
-	/** Allocate and add a fresh object map */
+	@Iri(R2RMLStrings.graphMap)
+	Set<GraphMap> getGraphMaps();
+
+	/** Shorthands for constant objects */
+	@Iri(R2RMLStrings.object)
+	Set<Resource> getObjects();
+
+	/** Shorthands for constant predicates */
+	@Iri(R2RMLStrings.predicate)
+	Set<Resource> getPredicates();
+
+	/** Shorthands for constant graphs */
+	@Iri(R2RMLStrings.graph)
+	Set<Resource> getGraphs();
+
+	/** Shorthands for constant objects as strings*/
+	@Iri(R2RMLStrings.object)
+	@IriType
+	Set<String> getObjectIris();
+
+	/** Shorthands for constant predicates as strings */
+	@Iri(R2RMLStrings.predicate)
+	@IriType
+	Set<String> getPredicateIris();
+
+	/** Shorthands for constant graphs as strings */
+	@Iri(R2RMLStrings.graph)
+	@IriType
+	Set<Resource> getGraphIris();
+
+	
+	/**
+	 * Allocate a fresh blank node, add it to the set of object maps and return a view of it as a ObjectMap.
+	 * 
+	 * @return
+	 */
 	default ObjectMap addNewObjectMap() {
 		ObjectMap result = getModel().createResource().as(ObjectMap.class);
 		getObjectMaps().add(result);
 		return result;
 	}
 
+	/**
+	 * Allocate a fresh blank node, add it to the set of object maps and return a view of it as a RefObjectMap.
+	 * 
+	 * @return
+	 */
+	default RefObjectMap addNewRefObjectMap() {
+		RefObjectMap result = getModel().createResource().as(RefObjectMap.class);
+		getObjectMaps().add(result);
+		return result;
+	}
+	
+	// Live filtered collection views would be easily possible if we added a dependency on jena-sparql-api-collections
 
-	default PredicateObjectMap addPredicate(String uri) {
-		return addPredicate(NodeFactory.createURI(uri));
+//	default Set<ObjectMap> getTermObjectMaps() {
+//		return Sets.filter(viewSetAs(getObjectMaps(), ObjectMap.class), ObjectMapType::qualifiesAsTermMap);
+//	}
+//
+//	default Set<RefObjectMap> getRefObjectMaps() {
+//		return Sets.filter(viewSetAs(getObjectMaps(), RefObjectMap.class), ObjectMapType::qualifiesAsTermMap);
+//	}
+
+
+	default PredicateObjectMap addPredicate(String iri) {
+		return addPredicate(NodeFactory.createURI(iri));
 	}
 
 	default PredicateObjectMap addPredicate(Node node) {
@@ -46,6 +97,35 @@ public interface PredicateObjectMap
 		return this;
 	}
 
+	
+	default PredicateObjectMap addObject(String iri) {
+		return addObject(NodeFactory.createURI(iri));
+	}
+
+	default PredicateObjectMap addObject(Node node) {
+		return addObject(getModel().wrapAsResource(node));
+	}
+
+	default PredicateObjectMap addObject(Resource resource) {
+		getObjects().add(resource);
+		return this;
+	}
+
+	
+	default PredicateObjectMap addGraph(String iri) {
+		return addGraph(NodeFactory.createURI(iri));
+	}
+
+	default PredicateObjectMap addGraph(Node node) {
+		return addGraph(getModel().wrapAsResource(node));
+	}
+
+	default PredicateObjectMap addGraph(Resource resource) {
+		getGraphs().add(resource);
+		return this;
+	}
+
+	
 //	Resource getPredicate();
 //	PredicateObjectMap setPredicate(Resource predicate);
 //

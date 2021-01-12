@@ -3,11 +3,22 @@ package org.aksw.r2rml.jena.domain.api;
 import java.util.Set;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
+import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.apache.jena.rdf.model.Resource;
 
 public interface TriplesMap
 	extends MappingComponent
 {
+	@Iri(R2RMLStrings.subject)
+	Resource getSubject();
+	TriplesMap setSubject(Resource subject);
+
+	@Iri(R2RMLStrings.subject)
+	@IriType
+	String getSubjectIri();
+	TriplesMap setSubjectIri(String subjectIri);
+
 	@Iri(R2RMLStrings.subjectMap)
 	SubjectMap getSubjectMap();
 	TriplesMap setSubjectMap(SubjectMap subjectMap);

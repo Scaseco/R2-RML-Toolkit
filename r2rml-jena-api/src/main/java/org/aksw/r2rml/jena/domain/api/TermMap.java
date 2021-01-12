@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.domain.api;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
@@ -39,4 +40,31 @@ public interface TermMap
 	@Iri(R2RMLStrings.template)
 	String getTemplate();
 	TermMap setTemplate(String template);
+
+	@Iri(R2RMLStrings.inverseExpression)
+	String getInverseExpression();
+	TermMap setInverseExpression(String inverseExpression);
+
+	
+	/**
+	 * 
+	 * https://www.w3.org/TR/r2rml/#dfn-column-valued-term-map
+	 * 
+	 */
+	default boolean isColumnValued() {
+		return hasProperty(RR.column);
+	}
+	
+	
+	/**
+	 * Predicate to test whether this term map qualifies according to
+	 * 
+	 * https://www.w3.org/TR/r2rml/#dfn-template-valued-term-map
+	 * 
+	 * @return
+	 */
+	default boolean isTemplateValued() {
+		return hasProperty(RR.template);
+	}
+
 }

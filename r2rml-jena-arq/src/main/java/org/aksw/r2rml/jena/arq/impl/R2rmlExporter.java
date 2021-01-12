@@ -269,13 +269,13 @@ public class R2rmlExporter {
 
 		PlainLogicalTable srcLt = viewDef.getLogicalTable();
 		
-		if(srcLt.getTableName() == null && srcLt.getSqlQuery() == null) {
+		if (srcLt.getTableName() != null) {
+			lt.asBaseTableOrView().setTableName(srcLt.getTableName());
+		} else if (srcLt.getSqlQuery() != null) {
+			lt.asR2rmlView().setSqlQuery(srcLt.getSqlQuery());
+		} else {
 			throw new RuntimeException("Unknown logical table: " + srcLt);
 		}
-
-		lt.setTableName(srcLt.getTableName());
-		lt.setSqlQuery(srcLt.getSqlQuery());
-				
 		
 		return result;
 	}
