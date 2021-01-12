@@ -9,6 +9,7 @@ The following Java snippet demonstrates usage of the API:
 public class R2rmlApiExample {
 	public static void main(String[] args) {
 		Model model = ModelFactory.createDefaultModel();
+		model.setNsPrefix("rr", RR.uri);
 		
 		TriplesMap triplesMap = model.createResource().as(TriplesMap.class); 
 		
@@ -35,23 +36,18 @@ The output in turtle syntax is shown below.
 Note, that any of the many serialization formats supported by Jena could be used instead.
 
 ```turtle
-[ a       <http://www.w3.org/ns/r2rml#TriplesMap> ;
+@prefix rr:    <http://www.w3.org/ns/r2rml#> .
+
+[ a                      rr:TriplesMap ;
   <http://www.w3.org/2000/01/rdf-schema#label>
           "My R2RML Mapping" ;
-  <http://www.w3.org/ns/r2rml#predicateObjectMap>
-          [ <http://www.w3.org/ns/r2rml#objectMap>
-                    [ <http://www.w3.org/ns/r2rml#column>
-                              "labels" ;
-                      <http://www.w3.org/ns/r2rml#language>
-                              "en"
-                    ] ;
-            <http://www.w3.org/ns/r2rml#predicate>
-                    <urn:p>
-          ] ;
-  <http://www.w3.org/ns/r2rml#subject>
-          <urn:s>
+  rr:predicateObjectMap  [ rr:objectMap  [ rr:column    "labels" ;
+                                           rr:language  "en"
+                                         ] ;
+                           rr:predicate  <urn:p>
+                         ] ;
+  rr:subject             <urn:s>
 ] .
-
 ```
 
 ## Usage with Maven
