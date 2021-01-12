@@ -1,7 +1,10 @@
 ## A Jena-based R2RML API
 
-An **complete**, **beautiful** and **extensible** R2RML API based on Jena's native polymorphism system.
+An **complete**, **beautiful** and **extensible** R2RML API based on [Apache Jena](https://jena.apache.org/)'s native polymorphism system.
 
+### Example
+
+The following Java snippet demonstrates usage of the API:
 ```java
 public class R2rmlApiExample {
 	public static void main(String[] args) {
@@ -27,6 +30,9 @@ public class R2rmlApiExample {
 	}
 }
 ```
+
+The output in turtle syntax is shown below.
+Note, that any of the many serialization formats supported by Jena could be used instead.
 
 ```turtle
 [ a       <http://www.w3.org/ns/r2rml#TriplesMap> ;
