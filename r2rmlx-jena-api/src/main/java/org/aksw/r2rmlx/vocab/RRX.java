@@ -14,4 +14,12 @@ public class RRX {
 
 
 	public static final Property languageColumn = property(R2RMLXStrings.languageColumn);
+	
+	public static final Property constraint = property(R2RMLXStrings.constraint);
+	public static final Property prefix = property(R2RMLXStrings.prefix);
+	public static final Property min = property(R2RMLXStrings.min);
+	public static final Property max = property(R2RMLXStrings.max);
+
+	public static final Property isMinInclusive = property(R2RMLXStrings.minInclusive);
+	public static final Property isMaxInclusive = property(R2RMLXStrings.maxInclusive);
 }

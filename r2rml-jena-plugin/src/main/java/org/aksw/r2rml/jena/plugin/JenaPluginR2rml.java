@@ -13,6 +13,9 @@ import org.aksw.r2rml.jena.domain.api.RefObjectMap;
 import org.aksw.r2rml.jena.domain.api.SubjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.r2rmlx.domain.api.Constraint;
+import org.aksw.r2rmlx.domain.api.PrefixConstraint;
+import org.aksw.r2rmlx.domain.api.RangeConstraint;
 import org.aksw.r2rmlx.domain.api.TermMapX;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
@@ -48,7 +51,10 @@ public class JenaPluginR2rml implements JenaSubsystemLifecycle {
 		);
 		
 		JenaPluginUtils.registerResourceClasses(
-			TermMapX.class
+			TermMapX.class,
+			Constraint.class,
+			PrefixConstraint.class,
+			RangeConstraint.class
 		);
 	}	
 }

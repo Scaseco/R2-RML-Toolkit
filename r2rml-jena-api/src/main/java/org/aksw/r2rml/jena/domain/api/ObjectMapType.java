@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.domain.api;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.aksw.r2rml.jena.vocab.RR;
 
+
 /**
  * Common base class for {@link ObjectMap} and {@link RefObjectMap}.
  * R2RML implicitly specifies the range of rr:objectMap to be the union of
