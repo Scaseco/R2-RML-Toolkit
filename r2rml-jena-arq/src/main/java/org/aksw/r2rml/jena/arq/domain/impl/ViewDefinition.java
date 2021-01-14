@@ -3,29 +3,33 @@ package org.aksw.r2rml.jena.arq.domain.impl;
 import java.util.List;
 import java.util.Map;
 
-import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
-import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
+import org.aksw.r2rml.jena.domain.api.LogicalTable;
+import org.apache.jena.shacl.parser.Constraint;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 
+import com.google.common.collect.Multimap;
+
+// FIXME This class should not exist in this form in r2rml-jena-arq; However:
+// Refactoring this class to static util methods for
+// extracting the construct template and the var-definitions would be adequate
 public class ViewDefinition {
 
 	protected String name;
 	protected List<Quad> constructTemplate;	
 	protected Map<Var, Expr> varDefinition;
-	protected Map<Var, Constraint> constraints;
+	protected Multimap<Var, Constraint> constraints;
 
-	//protected ExprList filters = new ExprList();
 	
-	protected PlainLogicalTable logicalTable;
+	protected LogicalTable logicalTable;
 	
 	public ViewDefinition(
 			String name,
 			List<Quad> constructTemplate,
 			Map<Var, Expr> varDefinition,
-			Map<Var, Constraint> constraints,
-			PlainLogicalTable logicalTable) {
+			Multimap<Var, Constraint> constraints,
+			LogicalTable logicalTable) {
 		super();
 		this.name = name;
 		this.constructTemplate = constructTemplate;
@@ -46,11 +50,11 @@ public class ViewDefinition {
 		return varDefinition;
 	}
 
-	public Map<Var, Constraint> getConstraints() {
+	public Multimap<Var, Constraint> getConstraints() {
 		return constraints;
 	}
 
-	public PlainLogicalTable getLogicalTable() {
+	public LogicalTable getLogicalTable() {
 		return logicalTable;
 	}
 	

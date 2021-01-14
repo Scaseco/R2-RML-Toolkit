@@ -11,10 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.aksw.r2rml.common.domain.api.PlainLogicalTable;
-import org.aksw.r2rml.jena.arq.domain.impl.LogicalTableTableName;
 import org.aksw.r2rml.jena.arq.domain.impl.ViewDefinition;
-import org.aksw.r2rml.jena.arq.domainx.api.Constraint;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -37,6 +34,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
 import org.apache.jena.shacl.lib.ShLib;
+import org.apache.jena.shacl.parser.Constraint;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
@@ -50,6 +48,9 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 public class R2rmlImporter {
 //	public static SqlOp logicalTableToSqlOp(LogicalTable logicalTable) {
@@ -210,24 +211,15 @@ public class R2rmlImporter {
 //		
 //		vtd.setVarBindings(varBindings);
 		
-		Map<Var, Constraint> varConstraints = new LinkedHashMap<>();
+		// FIXME Process constraints on the term maps
+		Multimap<Var, Constraint> varConstraints = HashMultimap.create();
 		
 		// Derive a name for the view
 		String name = Optional.ofNullable(tm.getProperty(RDFS.label))
 				.map(Statement::getString)
 				.orElseGet(() -> tm.isURIResource() ? tm.getURI() : "" + tm);
 
-		PlainLogicalTable lt;
-		
-		if (logicalTable.qualifiesAsBaseTableOrView()) {
-			lt = new LogicalTableTableName(logicalTable.asBaseTableOrView().getTableName());
-		} else if (logicalTable.qualifiesAsR2rmlView()) {
-			lt = new LogicalTableTableName(logicalTable.asBaseTableOrView().getTableName());
-		} else {
-			throw new RuntimeException("Unknown logical table type: " + logicalTable);
-		}
-
-		ViewDefinition result = new ViewDefinition(name, template, varDefs, varConstraints, lt);
+		ViewDefinition result = new ViewDefinition(name, template, varDefs, varConstraints, logicalTable);
 		
 		return result;
 	}
