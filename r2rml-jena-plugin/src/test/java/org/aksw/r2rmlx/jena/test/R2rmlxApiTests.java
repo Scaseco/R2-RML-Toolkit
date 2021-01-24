@@ -25,11 +25,12 @@ public class R2rmlxApiTests {
 		triplesMap
 			.setSubjectIri("urn:s")
 			.addNewPredicateObjectMap()
-				.addPredicate("urn:p")
+				.addPredicate(RDFS.label)
 				.addNewObjectMap()
 					.setColumn("iri")
 					.setDatatype(RR.IRI)
 					.as(TermMapX.class)
+					.setLangColumn("langs")
 					.addNewConstraint()
 						.asPrefixConstraint()
 						.addPrefixes(RDFS.getURI(), FOAF.NS);

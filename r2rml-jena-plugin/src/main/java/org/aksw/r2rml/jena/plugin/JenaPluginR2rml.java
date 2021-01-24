@@ -19,8 +19,9 @@ import org.aksw.r2rmlx.domain.api.RangeConstraint;
 import org.aksw.r2rmlx.domain.api.TermMapX;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
-public class JenaPluginR2rml implements JenaSubsystemLifecycle {
-	//private static final Logger logger = LoggerFactory.getLogger(InitJenaPluginR2rml.class);
+public class JenaPluginR2rml
+	implements JenaSubsystemLifecycle
+{
 	
 	public void start() {
 		init();
@@ -33,8 +34,6 @@ public class JenaPluginR2rml implements JenaSubsystemLifecycle {
 
 	public static void init() {
 	    
-//			JenaPluginR2rml.init(BuiltinPersonalities.model);		
-
 		JenaPluginUtils.registerResourceClasses(
 			TriplesMap.class,
 			LogicalTable.class,

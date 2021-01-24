@@ -17,4 +17,5 @@ public class R2rmlLib {
 		ExtendedIterator<Resource> it = model.listResourcesWithProperty(RR.logicalTable);
 		return Streams.stream(it).map(r -> r.as(TriplesMap.class)).onClose(it::close);
 	}
+	
 }

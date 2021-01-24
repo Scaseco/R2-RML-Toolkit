@@ -1,19 +1,17 @@
 package org.aksw.r2rml.jena.arq.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.aksw.r2rml.jena.arq.domain.impl.ViewDefinition;
+import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateMap;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
@@ -28,45 +26,26 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
 import org.apache.jena.shacl.lib.ShLib;
-import org.apache.jena.shacl.parser.Constraint;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
-import org.apache.jena.sparql.expr.E_StrConcat;
+import org.apache.jena.sparql.expr.E_IsBlank;
 import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.E_URI;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.sparql.modify.request.QuadAcc;
+import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.vocabulary.XSD;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
 public class R2rmlImporter {
-//	public static SqlOp logicalTableToSqlOp(LogicalTable logicalTable) {
-//		SqlOp result;
-//
-//		String str;
-//		if((str = logicalTable.getTableName()) != null) {
-//			result = new SqlOpTable(new SchemaImpl(), str);
-//		} else if((str = logicalTable.getQueryString()) != null) {
-//			result = new SqlOpQuery(new SchemaImpl(), str);
-//		} else {
-//			throw new RuntimeException("Unsupported logical table type: " + logicalTable);
-//		}
-//		
-//		return result;
-//	}
 
 	public static void validateR2rml(Model dataModel) {
 		Model shaclModel = RDFDataMgr.loadModel("r2rml.core.shacl.ttl");
@@ -96,14 +75,14 @@ public class R2rmlImporter {
 		validateR2rml(dataModel);
 	}
 
-	public Collection<ViewDefinition> read(Model model) {
+	public Collection<TriplesMapToSparqlMapping> read(Model model) {
 		List<TriplesMap> triplesMaps = model.listSubjectsWithProperty(RR.logicalTable).mapWith(r -> r.as(TriplesMap.class)).toList();
 
 //		for(TriplesMap tm : triplesMaps) {
 			// TODO Integrate validation with shacl, as this gives us free reports of violations
 //		}
 		
-		List<ViewDefinition> result = triplesMaps.stream()
+		List<TriplesMapToSparqlMapping> result = triplesMaps.stream()
 				.map(tm -> read(tm))
 				.collect(Collectors.toList());
 	
@@ -111,10 +90,19 @@ public class R2rmlImporter {
 	}
 	
 
-	public Node allocateVar(TermMap tm, BiMap<Node, Expr> nodeToExpr, VarAlloc varGen) {
+	/**
+	 * Allocates a variable for a given term map and maps it to the term map's corresponding
+	 * SPARQL expression.
+	 * If a variable maps to a constant expression then no entry is made to nodeToExpr.
+	 * 
+	 * @param tm
+	 * @param nodeToExpr
+	 * @param varGen
+	 * @return
+	 */
+	public Node allocateVar(TermMap tm, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
 		Node result;
-		//VarGeneratorBlacklist.
-		BiMap<Expr, Node> exprToNode = nodeToExpr.inverse();
+		BiMap<Expr, Var> exprToNode = nodeToExpr.inverse();
 		
 		Expr expr = termMapToExpr(tm);
 		result = exprToNode.get(expr);
@@ -125,33 +113,38 @@ public class R2rmlImporter {
 				result = expr.getConstant().asNode();
 			} else {				
 				// Allocate a new variable
-				result = varGen.allocVar();
-				nodeToExpr.put(result, expr);
+				Var v = varGen.allocVar();
+				nodeToExpr.put(v, expr);
+				result = v;
 			}
 		}
 		
 		return result;
 	}
-	
-	// https://www.w3.org/TR/r2rml/#generated-triples
-	// Note on graphs: the spec states: "If sgm and pogm are empty: rr:defaultGraph; otherwise: union of subject_graphs and predicate-object_graphs"
-	public ViewDefinition read(TriplesMap tm) {
-		// Construct triples by creating the cartesian product between g, s, p, and o term maps
-		
-		LogicalTable logicalTable = tm.getLogicalTable();
-//		System.out.println("Processing " + tm.getURI());
-//		System.out.println("  with table " + logicalTable);
-				
+
+	/**
+	 * Construct triples by creating the cartesian product between g, s, p, and o term maps
+	 *
+	 * https://www.w3.org/TR/r2rml/#generated-triples
+	 * 
+	 * Note on graphs: the spec states: "If sgm and pogm are empty: rr:defaultGraph; otherwise:
+	 * union of subject_graphs and predicate-object_graphs"
+	 * 
+	 * @param tm
+	 * @return
+	 */
+	public TriplesMapToSparqlMapping read(TriplesMap tm) {
 		SubjectMap sm = tm.getSubjectMap();
 		Set<GraphMap> sgms = sm.getGraphMaps();
 		
 		// Mapping of expressions to allocated variables
-		BiMap<Node, Expr> nodeToExpr = HashBiMap.create();
-		
-		//ViewDefinition result = new ViewDefinition(name, template, viewReferences, mapping, source)
-		List<Quad> template = new ArrayList<>();
+		BiMap<Var, Expr> nodeToExpr = HashBiMap.create();
+		Map<TermMap, Var> termMapToVar = new HashMap<>();
 
-		// Generator<Var> varGen = new VarGeneratorImpl2("v", 1);
+		// Accumulator for generated quads
+		QuadAcc quadAcc = new QuadAcc();
+
+		// TODO Allow customization of variable allocation
 		VarAlloc varGen = new VarAlloc("v");
 
 		for(PredicateObjectMap pom : tm.getPredicateObjectMaps()) {
@@ -175,139 +168,37 @@ public class R2rmlImporter {
 						Node p = allocateVar(pm, nodeToExpr, varGen);
 						Node o = allocateVar(om.asTermMap(), nodeToExpr, varGen);
 						
+						// TODO Add var to term-map mapping
+						
 						Quad quad = new Quad(g, s, p, o);
-						template.add(quad);
+						quadAcc.addQuad(quad);
 					}
 				}
 			}
 		}
 		
-		//ViewDefinition x;
-		//x.getVarDefinition().
-		//VarDefinition vd = new VarDefinition();
 		Map<Var, Expr> varDefs = new LinkedHashMap<>();
 		
-		// Add the var definitions
-		for(Entry<Node, Expr> entry : nodeToExpr.entrySet()) {
-			Node n = entry.getKey();
-			
-			if(n.isVariable()) {
-				Var v = (Var)n;
-				Expr e = entry.getValue();
-
-				varDefs.put(v, e);
-			}			
-		}
-
-		
-//		List<Expr> varBindings = varDefs.entrySet().stream()
-//				.map(e -> new E_Equals(new ExprVar(e.getKey()), e.getValue()))
-//				.collect(Collectors.toList());
-
-		//SqlOp relation = logicalTableToSqlOp(tm.getLogicalTable());
-		
-//		ViewTemplateDefinition vtd = new ViewTemplateDefinition();
-//		vtd.setConstructTemplate(template);
-//		
-//		vtd.setVarBindings(varBindings);
-		
-		// FIXME Process constraints on the term maps
-		Multimap<Var, Constraint> varConstraints = HashMultimap.create();
-		
-		// Derive a name for the view
-		String name = Optional.ofNullable(tm.getProperty(RDFS.label))
-				.map(Statement::getString)
-				.orElseGet(() -> tm.isURIResource() ? tm.getURI() : "" + tm);
-
-		ViewDefinition result = new ViewDefinition(name, template, varDefs, varConstraints, logicalTable);
+		Template template = new Template(quadAcc);
+		TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
+			tm, template, termMapToVar, varDefs);
 		
 		return result;
 	}
-	
-	
-	public static Expr parseTemplate(String str) {
-		List<Expr> exprs = parseTemplateCore(str);
-		
-		Expr result = exprs.size() == 1
-				? exprs.get(0)
-				: new E_StrConcat(new ExprList(exprs))
-				;
 
-		return result;
-	}
-	
-	public static List<Expr> parseTemplateCore(String str) {
-		List<Expr> result = new ArrayList<>();
-
-		char cs[] = str.toCharArray();
-
-		boolean isInVarName = false;
-		boolean escaped = false;
-		
-		int i = 0;
-
-		StringBuilder builder = new StringBuilder();
-		
-		boolean repeat = true;
-		while(repeat) {
-			char c = i < cs.length ? cs[i++] : (char)-1;
-			if(escaped) {
-				builder.append(c);
-				escaped = false;
-			} else {
-	
-				switch(c) {
-				case '\\':
-					escaped = true;
-					continue;
-				case '{':
-					if(isInVarName) {
-						throw new RuntimeException("Unescaped '{' in var name not allowed");
-					} else {
-						result.add(NodeValue.makeString(builder.toString()));
-						builder  = new StringBuilder();
-						isInVarName = true;
-					}
-					break;
-	
-				case '}':
-					if(isInVarName) {
-						String varName = builder.toString();
-						result.add(new ExprVar(varName));
-						builder  = new StringBuilder();
-						isInVarName = false;
-					} else {
-						throw new RuntimeException("Unescaped '}' not allowed");
-					}
-					break;
-	
-				case (char)-1:
-					if(isInVarName) {
-						throw new RuntimeException("End of string reached, but '}' missing");
-					} else {
-						if(builder.length() > 0) {
-							result.add(NodeValue.makeString(builder.toString()));
-						}
-					}
-					repeat = false;
-					break;
-				
-				default:
-					builder.append(c);
-				}
-			}
-		}
-		
-		return result;
-	}
-	
+	/**
+	 * Convert a term map to a corresponing SPARQL expression
+	 * 
+	 * @param tm
+	 * @return
+	 */
 	public static Expr termMapToExpr(TermMap tm) {
 		Expr result;
 		
 		String template;
 		RDFNode constant;
 		if((template = tm.getTemplate()) != null) {
-			Expr arg = parseTemplate(template);
+			Expr arg = R2rmlTemplateParser.parseTemplate(template);
 			
 			// TODO Support rr:termType rr:BlankNode
 			result = new E_URI(arg);
@@ -321,7 +212,18 @@ public class R2rmlImporter {
 				ExprVar column = new ExprVar(colName);
 				Resource dtype = tm.getDatatype();
 				if(dtype != null || XSD.xstring.equals(dtype)) {
-					result = new E_StrDatatype(column, NodeValue.makeNode(dtype.asNode()));
+					Node dn = dtype.asNode();
+					if (!dn.isURI()) {
+						throw new RuntimeException("Datatype " + dtype + " is not an IRI");
+					}
+					String du = dn.getURI();
+					
+					result = du.equals(NodeUtils.R2RML_IRI)
+								? new E_URI(column)
+								: du.equals(NodeUtils.R2RML_BlankNode)
+									? new E_IsBlank(column)
+									: new E_StrDatatype(column, NodeValue.makeNode(dn));
+
 				} else {
 					String language = Optional.ofNullable(tm.getLanguage()).orElse("");
 					result = new E_StrLang(column, NodeValue.makeString(language));
@@ -329,8 +231,15 @@ public class R2rmlImporter {
 			} else {
 				throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
 			}
+
 		}
 		
 		return result;
 	}
+	
+// TODO Add util function to derive a name for the TriplesMapToSparqlMapping?
+//	String name = Optional.ofNullable(tm.getProperty(RDFS.label))
+//			.map(Statement::getString)
+//			.orElseGet(() -> tm.isURIResource() ? tm.getURI() : "" + tm);
+
 }
