@@ -1,24 +1,40 @@
-package org.aksw.r2rml.jena.testsuite.processor.h2;
+package org.aksw.r2rml.jena.jdbc.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
+import org.aksw.r2rml.jena.jdbc.api.RowToNode;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-public class NodeMapperViaTypeManager
-	implements NodeMapper {
+/**
+ * Generic mapper that retrieves each column's value as a
+ * {@link Object} and then request an appropriate {@link RDFDatatype}
+ * from Jena's {@link TypeMapper}.
+ * 
+ * The advantage of this approach is the robustness and independence of
+ * SQL type information.
+ * 
+ * The disadvantage is the performance impact by going through the type
+ *  mapper on every invocation of map.
+ * 
+ * 
+ * @author Claus Stadler
+ *
+ */
+public class RowToNodeViaTypeManager
+	implements RowToNode {
 
 	protected TypeMapper typeMapper;
 	
-	public NodeMapperViaTypeManager() {
+	public RowToNodeViaTypeManager() {
 		this(TypeMapper.getInstance());
 	}
 	
-	public NodeMapperViaTypeManager(TypeMapper typeMapper) {
+	public RowToNodeViaTypeManager(TypeMapper typeMapper) {
 		super();
 		this.typeMapper = typeMapper;
 	}

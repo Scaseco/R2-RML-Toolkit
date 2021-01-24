@@ -1,20 +1,15 @@
 package org.aksw.r2rml.jena.testsuite.processor.h2;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,11 +20,13 @@ import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.r2rml.jena.jdbc.api.RowToBinding;
+import org.aksw.r2rml.jena.jdbc.impl.RowToNodeViaTypeManager;
+import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
-import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -38,11 +35,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.expr.ExprVars;
-import org.apache.jena.util.ResourceUtils;
-import org.h2.jdbcx.JdbcDataSource;
-import org.h2.tools.RunScript;
-
-import com.google.common.collect.Sets;
 
 import junit.framework.Assert;
 
@@ -58,7 +50,7 @@ public class R2rmlTestSuiteProcessorH2 {
 			if (database != null) {
 				DataSource dataSource = null;
 				try {
-					dataSource = prepareDataSource(database);
+					dataSource = H2Utils.prepareDataSource(database);
 			
 					try (Connection conn = dataSource.getConnection()) {
 						
@@ -109,7 +101,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							try (Statement stmt = conn.createStatement()) {
 								ResultSet rs = stmt.executeQuery(sqlQuery);
 								
-								BindingMapper bindingMapper = createBindingMapper(rs, usedVarToColumnName, new NodeMapperViaTypeManager());
+								RowToBinding bindingMapper = JdbcUtils.createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
 								
 								while (rs.next()) {
 									 Binding b = bindingMapper.map(rs);
@@ -129,7 +121,7 @@ public class R2rmlTestSuiteProcessorH2 {
 					
 				} finally {
 					if (dataSource != null) {
-						shutdownH2(dataSource);
+						H2Utils.shutdownH2(dataSource);
 					}
 				}
 				
@@ -142,92 +134,5 @@ public class R2rmlTestSuiteProcessorH2 {
 	public static String dequoteColumnName(String columnName) {
 		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
 		return result;
-	}
-	
-		
-	public static BindingMapper createBindingMapper(
-			ResultSet rs,
-			// Set<Var> usedVars,
-			Map<Var, String> usedVarToColumnName,
-			NodeMapper nodeMapper
-			) throws SQLException {
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int columnCount = rsmd.getColumnCount();
-
-		// Iterate the columns in the given order and map those columns
-		// that have a variable in usedVars
-		Set<String> availableColumns = new LinkedHashSet<>();
-		Map<Var, Integer> colNameToIdx = new LinkedHashMap<>();
-
-		Map<String, Var> columnNameToVar = HashBiMap.create(usedVarToColumnName).inverse();
-		for (int i = 1; i <= columnCount; ++i) {
-			String columnName = rsmd.getColumnName(i);			
-			availableColumns.add(columnName);
-			
-			Var usedVar = columnNameToVar.get(columnName);
-//			if (usedVars.contains(cv)) {
-			if (usedVar != null) {
-				colNameToIdx.put(usedVar, i);
-			}
-		}
-		
-		Set<Var> invalidRefs = Sets.difference(usedVarToColumnName.keySet(), colNameToIdx.keySet());
-		if (!invalidRefs.isEmpty()) {
-			throw new RuntimeException("The following non-existent columns are referenced: "
-					+ invalidRefs + "; available: " + availableColumns);
-		}
-		
-		int n = colNameToIdx.size();
-		int[] colIdxs = new int[n];
-		Var[] vars = new Var[n];
-
-		int i = 0;
-		for (Entry<Var, Integer> e : colNameToIdx.entrySet()) {
-			vars[i] = e.getKey();
-			colIdxs[i] = e.getValue();
-			++i;
-		}
-	
-		BindingMapper result = new ResultSetToBindingMapper(colIdxs, vars, nodeMapper);
-		return result;
-	}
-	
-	
-	public static DataSource prepareDataSource(Database database) throws SQLException, IOException {
-
-		DataSource dataSource = createDefaultDatabase("test");
-
-		try (Connection conn = dataSource.getConnection()) {
-			
-			String sqlScriptFile = database.getSqlScriptFile();
-	
-			if (sqlScriptFile != null) {
-				try (InputStream in = R2rmlTestSuiteProcessorH2.class.getClassLoader().getResourceAsStream(sqlScriptFile)) {
-					RunScript.execute(conn, new InputStreamReader(in));
-					System.out.println("Loaded script: " + database.getIdentifier());
-				}
-			}		
-
-		}
-
-
-		return dataSource;
-	}
-
-	public static DataSource createDefaultDatabase(String name) {
-		JdbcDataSource dataSource = new JdbcDataSource();
-		dataSource.setURL("jdbc:h2:mem:" + name + ";MODE=PostgreSQL;DB_CLOSE_DELAY=-1");
-		dataSource.setUser("sa");
-		dataSource.setPassword("");
-
-		return dataSource;
-	}
-
-	public static void shutdownH2(DataSource dataSource) throws SQLException {
-		try (Connection conn = dataSource.getConnection()) {
-			try (Statement stmt = conn.createStatement()) {
-				stmt.execute("SHUTDOWN");
-			}
-		}
 	}
 }
