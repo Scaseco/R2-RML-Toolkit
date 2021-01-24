@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.arq.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrConcat;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -61,7 +62,7 @@ public class R2rmlTemplateParser {
 						throw new RuntimeException("Unescaped '{' in var name not allowed");
 					} else {
 						result.add(NodeValue.makeString(builder.toString()));
-						builder  = new StringBuilder();
+						builder = new StringBuilder();
 						isInVarName = true;
 					}
 					break;
@@ -69,8 +70,10 @@ public class R2rmlTemplateParser {
 				case '}':
 					if(isInVarName) {
 						String varName = builder.toString();
-						result.add(new ExprVar(varName));
-						builder  = new StringBuilder();
+						ExprVar ev = new ExprVar(varName);
+						Expr es = new E_Str(ev);
+						result.add(es);
+						builder = new StringBuilder();
 						isInVarName = false;
 					} else {
 						throw new RuntimeException("Unescaped '}' not allowed");

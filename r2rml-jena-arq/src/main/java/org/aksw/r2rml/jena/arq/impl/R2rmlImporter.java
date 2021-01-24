@@ -164,7 +164,7 @@ public class R2rmlImporter {
 	 * @param varGen
 	 * @return
 	 */
-	public Node allocateVar(TermMap tm, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
+	public static Node allocateVar(TermMap tm, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
 		Node result;
 		BiMap<Expr, Var> exprToNode = nodeToExpr.inverse();
 		
@@ -199,7 +199,7 @@ public class R2rmlImporter {
 	 * @param tm
 	 * @return
 	 */
-	public TriplesMapToSparqlMapping read(TriplesMap tm) {
+	public static TriplesMapToSparqlMapping read(TriplesMap tm) {
 		
 		expandShortcuts(tm);
 
