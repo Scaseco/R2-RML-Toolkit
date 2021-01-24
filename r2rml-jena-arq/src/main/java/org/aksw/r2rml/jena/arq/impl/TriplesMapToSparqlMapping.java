@@ -1,12 +1,15 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import org.apache.jena.ext.com.google.common.collect.BiMap;
+import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.syntax.ElementBind;
+import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
 
 /**
@@ -53,5 +56,20 @@ public class TriplesMapToSparqlMapping {
 
 	public Map<Var, Expr> getVarToExpr() {
 		return varToExpr;
+	}
+
+	@Override
+	public String toString() {
+		Query q = new Query();
+		q.setQueryConstructType();
+		q.setConstructTemplate(template);
+		
+		ElementGroup elt = new ElementGroup();
+		for (Entry<Var, Expr> e : varToExpr.entrySet()) {
+			elt.addElement(new ElementBind(e.getKey(), e.getValue()));
+		}
+		q.setQueryPattern(elt);
+
+		return q.toString();
 	}
 }

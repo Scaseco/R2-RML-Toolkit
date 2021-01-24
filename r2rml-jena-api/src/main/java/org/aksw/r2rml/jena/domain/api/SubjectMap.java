@@ -9,14 +9,9 @@ import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface SubjectMap
-	extends TermMap
+	extends TermMap, HasGraphMap
 {	
-//	GraphMap getGraphMap();
-//	SubjectMap setGraphMap(GraphMap graphMap);
 
-	@Iri(R2RMLStrings.graphMap)
-	Set<GraphMap> getGraphMaps();
-	
 	/**
 	 * Return a set view (never null) of resources specified via rr:class
 	 * 

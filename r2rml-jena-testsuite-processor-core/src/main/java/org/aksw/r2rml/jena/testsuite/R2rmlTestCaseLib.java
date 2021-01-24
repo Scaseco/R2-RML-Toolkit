@@ -39,20 +39,6 @@ public class R2rmlTestCaseLib {
 	}
 
 	
-	public static Database adjustRelativeReferences(String base, Database manifest) {
-		Optional.ofNullable(manifest.getSqlScriptFile())
-			.ifPresent(value -> manifest.setSqlScriptFile(base + value));
-		
-		return manifest;
-	}
-	
-	public static Model adjustRelativeReferences(String base, Model model) {
-		readDatabases(model).forEach(db -> adjustRelativeReferences(base, db));
-		readTestCases(model).forEach(testCase -> adjustRelativeReferences(base, testCase));
-		return model;
-	}
-
-	
 	public static R2rmlTestCase adjustRelativeReferences(String base, R2rmlTestCase manifest) {
 		Optional.ofNullable(manifest.getOutput())
 			.ifPresent(value -> manifest.setOutput(base + value));
@@ -74,13 +60,36 @@ public class R2rmlTestCaseLib {
 		return result;
 	}
 	
+	public static Model loadMappingDocument(R2rmlTestCase manifest) {
+		Model result = Optional.ofNullable(manifest.getMappingDocument())
+			.map(RDFDataMgr::loadModel)
+			.orElse(null);
+	
+		return result;
+	}
+
+	
 	public static Dataset loadOutput(R2rmlTestCase manifest) {
-		String output = manifest.getOutput();
-		Dataset result = output == null
-				? null
-				: RDFDataMgr.loadDataset(output);
+		Dataset result = Optional.ofNullable(manifest.getOutput())
+				.map(RDFDataMgr::loadDataset)
+				.orElse(null);
 		
 		return result;
+	}
+
+	/** Adjust relative references so that resources can be accessed from the e.g. classpath */
+	public static Database adjustRelativeReferences(String base, Database manifest) {
+		Optional.ofNullable(manifest.getSqlScriptFile())
+			.ifPresent(value -> manifest.setSqlScriptFile(base + value));
+		
+		return manifest;
+	}
+	
+	/** Adjust relative references so that resources can be accessed from the e.g. classpath */
+	public static Model adjustRelativeReferences(String base, Model model) {
+		readDatabases(model).forEach(db -> adjustRelativeReferences(base, db));
+		readTestCases(model).forEach(testCase -> adjustRelativeReferences(base, testCase));
+		return model;
 	}
 
 }

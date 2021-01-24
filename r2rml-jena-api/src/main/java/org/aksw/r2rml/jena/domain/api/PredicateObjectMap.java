@@ -12,16 +12,13 @@ import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface PredicateObjectMap
-	extends MappingComponent
+	extends MappingComponent, HasGraphMap
 {
 	@Iri(R2RMLStrings.predicateMap)
 	Set<PredicateMap> getPredicateMaps();
 
 	@Iri(R2RMLStrings.objectMap)
 	Set<ObjectMapType> getObjectMaps();
-
-	@Iri(R2RMLStrings.graphMap)
-	Set<GraphMap> getGraphMaps();
 
 	/** Shorthands for constant objects */
 	@Iri(R2RMLStrings.object)
@@ -30,10 +27,6 @@ public interface PredicateObjectMap
 	/** Shorthands for constant predicates */
 	@Iri(R2RMLStrings.predicate)
 	Set<Resource> getPredicates();
-
-	/** Shorthands for constant graphs */
-	@Iri(R2RMLStrings.graph)
-	Set<Resource> getGraphs();
 
 	/** Shorthands for constant objects as strings*/
 	@Iri(R2RMLStrings.object)
@@ -49,6 +42,17 @@ public interface PredicateObjectMap
 	@Iri(R2RMLStrings.graph)
 	@IriType
 	Set<Resource> getGraphIris();
+	
+	/**
+	 * Allocate a fresh blank node, add it to the set of predicate maps and return a view of it as a PredicateMap.
+	 * 
+	 * @return
+	 */
+	default PredicateMap addNewPredicateMap() {
+		PredicateMap result = getModel().createResource().as(PredicateMap.class);
+		getPredicateMaps().add(result);
+		return result;
+	}
 
 	
 	/**

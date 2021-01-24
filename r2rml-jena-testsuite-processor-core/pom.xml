@@ -10,7 +10,7 @@
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>r2rml-test-runner</artifactId>
+	<artifactId>r2rml-jena-testsuite-processor-core</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -18,6 +18,11 @@
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
 			<artifactId>r2rml-jena-arq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>
 
 		<dependency>

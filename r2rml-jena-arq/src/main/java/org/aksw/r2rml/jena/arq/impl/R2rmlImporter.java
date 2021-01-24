@@ -1,11 +1,12 @@
 package org.aksw.r2rml.jena.arq.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,7 +24,9 @@ import org.apache.jena.ext.com.google.common.collect.BiMap;
 import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
@@ -47,6 +50,63 @@ import org.apache.jena.vocabulary.XSD;
 
 public class R2rmlImporter {
 
+	/**
+	 * Expands rr:subject, rr:predicate, rr:object and rr:graph to term maps
+	 * in order to allow for uniform processing
+	 * 
+	 * @param tm The triple map for which to expant all mentioned short cuts
+	 */
+	public static void expandShortcuts(TriplesMap tm) {
+
+		// Implementation note: The wrapping with new ArrayList<>(...) is needed
+		// because all objects are backed by the same graph which in general
+		// does not allow for concurrent modification.
+		// I.e. In general it is not possible to have an iterator open on a graph
+		// and have another operation modify the same graph (even if the involved triples
+		// are completely unrelated)
+		
+		// 
+		// rr:subject
+		Resource s = tm.getSubject();
+		if (s != null) {
+			tm.getOrSetSubjectMap().setConstant(s);
+			tm.setSubject(null);
+		}
+		
+		
+		// rr:graph on subject map
+		SubjectMap sm = tm.getSubjectMap();		
+		Set<Resource> smgs = sm.getGraphs();
+		for (Resource smg : new ArrayList<>(smgs)) {
+			sm.addNewGraphMap().setConstant(smg);
+		}
+		smgs.clear();
+
+		
+		Set<PredicateObjectMap> poms = tm.getPredicateObjectMaps();
+		for (PredicateObjectMap pom : new ArrayList<>(poms)) {
+
+			// rr:graph on predicate-object map
+			Set<Resource> gs = pom.getGraphs();
+			for (Resource g : new ArrayList<>(gs)) {
+				pom.addNewGraphMap().setConstant(g);
+			}
+			gs.clear();
+
+			Set<Resource> ps = pom.getPredicates();
+			for (Resource p : new ArrayList<>(ps)) {
+				pom.addNewPredicateMap().setConstant(p);
+			}			
+			ps.clear();
+
+			Set<Resource> os = pom.getObjects();
+			for (Resource o : new ArrayList<>(os)) {
+				pom.addNewObjectMap().setConstant(o);
+			}
+			os.clear();
+		}
+	}
+	
 	public static void validateR2rml(Model dataModel) {
 		Model shaclModel = RDFDataMgr.loadModel("r2rml.core.shacl.ttl");
 
@@ -75,7 +135,11 @@ public class R2rmlImporter {
 		validateR2rml(dataModel);
 	}
 
-	public Collection<TriplesMapToSparqlMapping> read(Model model) {
+	public Collection<TriplesMapToSparqlMapping> read(Model rawModel) {
+		Model model = ModelFactory.createDefaultModel();
+		model.add(rawModel);
+		
+		
 		List<TriplesMap> triplesMaps = model.listSubjectsWithProperty(RR.logicalTable).mapWith(r -> r.as(TriplesMap.class)).toList();
 
 //		for(TriplesMap tm : triplesMaps) {
@@ -122,6 +186,8 @@ public class R2rmlImporter {
 		return result;
 	}
 
+	
+
 	/**
 	 * Construct triples by creating the cartesian product between g, s, p, and o term maps
 	 *
@@ -134,11 +200,16 @@ public class R2rmlImporter {
 	 * @return
 	 */
 	public TriplesMapToSparqlMapping read(TriplesMap tm) {
+		
+		expandShortcuts(tm);
+
 		SubjectMap sm = tm.getSubjectMap();
+		Objects.requireNonNull(sm, "SubjectMap was null on " + tm);
+		
 		Set<GraphMap> sgms = sm.getGraphMaps();
 		
 		// Mapping of expressions to allocated variables
-		BiMap<Var, Expr> nodeToExpr = HashBiMap.create();
+		BiMap<Var, Expr> varToExpr = HashBiMap.create();
 		Map<TermMap, Var> termMapToVar = new HashMap<>();
 
 		// Accumulator for generated quads
@@ -163,25 +234,28 @@ public class R2rmlImporter {
 			for(GraphMap gm : egms) {			
 				for(PredicateMap pm : pms) {
 					for(ObjectMapType om : oms) {
-						Node g = gm == null ? Quad.defaultGraphNodeGenerated : allocateVar(gm, nodeToExpr, varGen);
-						Node s = allocateVar(sm, nodeToExpr, varGen);
-						Node p = allocateVar(pm, nodeToExpr, varGen);
-						Node o = allocateVar(om.asTermMap(), nodeToExpr, varGen);
+						Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, varToExpr, varGen);
+						Node s = allocateVar(sm, varToExpr, varGen);
+						Node p = allocateVar(pm, varToExpr, varGen);
+						Node o = allocateVar(om.asTermMap(), varToExpr, varGen);
 						
-						// TODO Add var to term-map mapping
+						// TODO Add booking of var to term-map mapping for debugging purposes
 						
-						Quad quad = new Quad(g, s, p, o);
-						quadAcc.addQuad(quad);
+						if (g.equals(RR.defaultGraph.asNode())) {
+							Triple triple = new Triple(s, p, o);
+							quadAcc.addTriple(triple);
+						} else {
+							Quad quad = new Quad(g, s, p, o);
+							quadAcc.addQuad(quad);
+						}
 					}
 				}
 			}
 		}
 		
-		Map<Var, Expr> varDefs = new LinkedHashMap<>();
-		
 		Template template = new Template(quadAcc);
 		TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
-			tm, template, termMapToVar, varDefs);
+			tm, template, termMapToVar, varToExpr);
 		
 		return result;
 	}
@@ -225,8 +299,10 @@ public class R2rmlImporter {
 									: new E_StrDatatype(column, NodeValue.makeNode(dn));
 
 				} else {
-					String language = Optional.ofNullable(tm.getLanguage()).orElse("");
-					result = new E_StrLang(column, NodeValue.makeString(language));
+					String language = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse("");
+					result = language.isEmpty()
+							? new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
+							: new E_StrLang(column, NodeValue.makeString(language));
 				}
 			} else {
 				throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
