@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrConcat;
+import org.apache.jena.sparql.expr.E_StrEncodeForURI;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprVar;
@@ -71,7 +72,7 @@ public class R2rmlTemplateParser {
 					if(isInVarName) {
 						String varName = builder.toString();
 						ExprVar ev = new ExprVar(varName);
-						Expr es = new E_Str(ev);
+						Expr es = new E_StrEncodeForURI(new E_Str(ev));
 						result.add(es);
 						builder = new StringBuilder();
 						isInVarName = false;

@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,31 +22,36 @@ import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.jdbc.api.RowMapper;
-import org.aksw.r2rml.jena.jdbc.impl.RowToNodeViaTypeManager;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.TypeMapper;
+import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.ext.com.google.common.collect.ComparisonChain;
+import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.ResultSetFactory;
+import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.expr.ExprNotComparableException;
 import org.apache.jena.sparql.expr.ExprVars;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.util.NodeUtils;
-import org.apache.jena.vocabulary.XSD;
-
-import junit.framework.Assert;
+import org.apache.jena.util.ResourceUtils;
+import org.junit.Assert;
 
 
 public class R2rmlTestSuiteProcessorH2 {
@@ -59,103 +63,159 @@ public class R2rmlTestSuiteProcessorH2 {
 //		if (true) return;
 		
 		// Collection<Database> databases = R2rmlTestCaseLoader.importDatabases();
-		Collection <R2rmlTestCase> testCases = R2rmlTestCaseLoader.importTestCases();
-				
-		for (R2rmlTestCase testCase : testCases) {
-			Database database = testCase.getDatabase();
-						
-			if (database != null) {
-				DataSource dataSource = null;
-				try {
-					dataSource = H2Utils.prepareDataSource(database);
+		Dataset manifests = R2rmlTestCaseLoader.loadManifests(true);
+		
+		List<String> manifestNames = Streams.stream(manifests.listNames()).collect(Collectors.toList());
+		
+		for (String manifestName : manifestNames) {
 			
-					try (Connection conn = dataSource.getConnection()) {
-						
-						Dataset expectedOutput = R2rmlTestCaseLib.loadOutput(testCase);
-						
-						Set<Quad> expectedQuads = new LinkedHashSet<>();
-						expectedOutput.asDatasetGraph().find(null, null, null, null)
-							.forEachRemaining(expectedQuads::add);
-						
-						Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
-						
+			System.out.println("Processing manifest: " + manifestName);
+			Model model = manifests.getNamedModel(manifestName);
+			
+			Collection<R2rmlTestCase> testCases = R2rmlTestCaseLib.readTestCases(model);
+			for (R2rmlTestCase testCase : testCases) {
+				System.out.println("Procssing test case: " + testCase.getIdentifier());
 
-						Set<Quad> actualQuads = new LinkedHashSet<>();
-						
-						RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-						List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
-						
-						for (TriplesMap tm : tms) {
+				Model closureModel = ResourceUtils.reachableClosure(testCase);
+//				RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
+				
+				if (!testCase.getHasExpectedOutput()) {
+					continue;
+				}
+				
+				Database database = testCase.getDatabase();
 							
-//							Model closureModel = ResourceUtils.reachableClosure(tm);
-//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
+				if (database != null) {
+					DataSource dataSource = null;
+					try {
+						dataSource = H2Utils.prepareDataSource(database);
+				
+						try (Connection conn = dataSource.getConnection()) {
 							
-							LogicalTable lt = tm.getLogicalTable();							
-							TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
+							Dataset expectedOutput = R2rmlTestCaseLib.loadOutput(testCase);
 							
-							System.out.println(mapping);
+//							Set<Quad> expectedQuads = new LinkedHashSet<>();
+//							expectedOutput.asDatasetGraph().find(null, null, null, null)
+//								.forEachRemaining(expectedQuads::add);
 							
-							Set<Var> usedVars = new HashSet<>();
-							mapping.getVarToExpr().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
-							Map<Var, String> usedVarToColumnName = usedVars.stream()
-									.collect(Collectors.toMap(
-											v -> v,
-											v -> dequoteColumnName(v.getName())
-									));
+							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
 							
-
-							String sqlQuery;
-							if (lt.qualifiesAsBaseTableOrView()) {
-								sqlQuery = "SELECT * FROM " + lt.asBaseTableOrView().getTableName();
-							} else if (lt.qualifiesAsR2rmlView()) {
-								sqlQuery = lt.asR2rmlView().getSqlQuery();
-							} else {
-								System.err.println("No logical table present");
+	
+//							Set<Quad> actualQuads = new LinkedHashSet<>();
+							Dataset actualOutput = DatasetFactory.create();
+							
+							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
+							List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
+							
+							boolean usesJoin = tms.stream()
+								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.joinCondition).toList().size() > 0);
+								
+							if (usesJoin) {
+								System.err.println("Skipping mapping with join");
 								continue;
 							}
 							
-							
-							try (Statement stmt = conn.createStatement()) {
-								ResultSet rs = stmt.executeQuery(sqlQuery);
-								ResultSetMetaData rsmd = rs.getMetaData();
+							for (TriplesMap tm : tms) {
 								
-								RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
+	//							Model closureModel = ResourceUtils.reachableClosure(tm);
+	//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 								
-								while (rs.next()) {
-									 Binding b = bindingMapper.map(rs);
-									 mapping.evalQuads(b).forEach(actualQuads::add);
+								LogicalTable lt = tm.getLogicalTable();							
+								TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
+								
+								System.out.println(mapping);
+								
+								Set<Var> usedVars = new HashSet<>();
+								mapping.getVarToExpr().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
+								Map<Var, String> usedVarToColumnName = usedVars.stream()
+										.collect(Collectors.toMap(
+												v -> v,
+												v -> dequoteColumnName(v.getName())
+										));
+								
+	
+								String sqlQuery;
+								if (lt.qualifiesAsBaseTableOrView()) {
+									sqlQuery = "SELECT * FROM " + lt.asBaseTableOrView().getTableName();
+								} else if (lt.qualifiesAsR2rmlView()) {
+									sqlQuery = lt.asR2rmlView().getSqlQuery();
+								} else {
+									System.err.println("No logical table present");
+									continue;
+								}
+								
+								
+								try (Statement stmt = conn.createStatement()) {
+									ResultSet rs = stmt.executeQuery(sqlQuery);
+									ResultSetMetaData rsmd = rs.getMetaData();
+									
+									RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
+									
+									while (rs.next()) {
+										 Binding b = bindingMapper.map(rs);
+										 mapping.evalQuads(b).forEach(actualOutput.asDatasetGraph()::add);
+									}
 								}
 							}
+							
+							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
+							Assert.assertTrue(isIso);
+							
+//							System.out.println("Expected: " + expectedQuads);
+//							System.out.println("Actual: " + actualQuads);
+//							Set<Quad> missing = difference(expectedQuads, actualQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
+//							Set<Quad> excessive = difference(actualQuads, expectedQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
+//	//						
+//							if (!missing.isEmpty()) {
+//								System.err.println("Missing quads: " + missing);
+//							}
+//							if (!excessive.isEmpty()) {
+//								System.err.println("Excessive quads: " + excessive);
+//							}
+//							
+//							Assert.assertTrue("Non-empty set of missing quads", missing.isEmpty());
+//							Assert.assertTrue("Non-empty set of excessive quads", excessive.isEmpty());
+	//						Assert.assertEquals(expectedQuads, actualQuads);
+	//						RDFDataMgr.write(System.out, actualOutput, RDFFormat.TRIG_PRETTY);
 						}
 						
-						Set<Quad> missing = difference(expectedQuads, actualQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
-						Set<Quad> excessive = difference(actualQuads, expectedQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
-//						
-						if (!missing.isEmpty()) {
-							System.err.println("Missing quads: " + missing);
+					} finally {
+						if (dataSource != null) {
+							H2Utils.shutdownH2(dataSource);
 						}
-						if (!excessive.isEmpty()) {
-							System.err.println("Excessive quads: " + excessive);
-						}
-						
-						Assert.assertTrue("Non-empty set of missing quads", missing.isEmpty());
-						Assert.assertTrue("Non-empty set of excessive quads", excessive.isEmpty());
-//						Assert.assertEquals(expectedQuads, actualQuads);
-//						RDFDataMgr.write(System.out, actualOutput, RDFFormat.TRIG_PRETTY);
 					}
 					
-				} finally {
-					if (dataSource != null) {
-						H2Utils.shutdownH2(dataSource);
-					}
+					
 				}
-				
-				
+			}
+		}
+	}
+
+	
+	public static boolean isIsomorphic(Dataset expected, Dataset actual) {
+		boolean result;
+		
+		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
+		try (QueryExecution qea = QueryExecutionFactory.create(everything, expected);
+			QueryExecution qeb = QueryExecutionFactory.create(everything, actual)) {
+			
+			ResultSetRewindable rsa = ResultSetFactory.copyResults(qea.execSelect());
+			ResultSetRewindable rsb = ResultSetFactory.copyResults(qeb.execSelect());
+									
+			result = ResultSetCompare.equalsByValue(rsa, rsb);
+			
+			if (!result) {
+				rsa.reset();
+				rsb.reset();
+				System.out.println("Expected:");
+				ResultSetFormatter.out(rsa);
+				System.out.println("Actual:");
+				ResultSetFormatter.out(rsb);
 			}
 		}
 		
+		return result;
 	}
-
 	
 	/**
 	 * Difference of two collections w.r.t. a custom comparator.
@@ -204,7 +264,7 @@ public class R2rmlTestSuiteProcessorH2 {
 		NodeValue nva = NodeValue.makeNode(a);
 		NodeValue nvb = NodeValue.makeNode(b);
 		int result = compareAlways(nva, nvb);
-//		System.out.println(nva + (result == 0 ? " == " : " =/=") + nvb);
+		System.out.println(nva + (result == 0 ? " == " : " =/=") + nvb);
 		return result;
 	}
 	

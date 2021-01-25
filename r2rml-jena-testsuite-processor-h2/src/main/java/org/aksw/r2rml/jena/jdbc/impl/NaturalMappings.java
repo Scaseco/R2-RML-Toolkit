@@ -1,16 +1,26 @@
 package org.aksw.r2rml.jena.jdbc.impl;
 
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_StrReplace;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.function.user.UserDefinedFunctionDefinition;
 
 class XsdTerms {
 	public static final String uri = "http://www.w3.org/2001/XMLSchema#";
@@ -20,13 +30,22 @@ class XsdTerms {
 	public static final String integer = uri + "integer";
 	public static final String xdouble = uri + "double";
 	public static final String xboolean = uri + "boolean";
-	public static final String date = uri + "bodateolean";
+	public static final String date = uri + "date";
 	public static final String time = uri + "time";
 	public static final String dateTime = uri + "dateTime";
 	public static final String string = uri + "string";
 }
 
 public class NaturalMappings {
+	
+	private static final Var x = Var.alloc("x");
+	
+	public static final UserDefinedFunctionDefinition udfd_timestamp =
+		new UserDefinedFunctionDefinition(
+			"urn:r2rml:timestamp",
+			new E_StrReplace(
+				new ExprVar(x), NodeValue.makeString(" "), NodeValue.makeString("T"), null), Arrays.asList(x));
+
 
 	/** Put the same value for multiple keys */
 	public static <K, V> void putValue(Map<K, V> map, V value, K ... keys) {
@@ -65,12 +84,39 @@ public class NaturalMappings {
 			String xsdIri = e.getValue();
 			
 			// Really use safe here - or rather bail out early?
-			RDFDatatype dtype = typeMapper.getSafeTypeByName(xsdIri);
+			RDFDatatype dtype = typeMapper.getTypeByName(xsdIri); // .getSafeTypeByName(xsdIri);
 			
 			// TODO Verify that the sqlType-to-java class is actually consistent with specs
 			// when we just use the type mapper
-			Class<?> javaClass = dtype.getJavaClass();
-			result.add(new SqlDatatypeImpl(sqlType, javaClass, dtype));  
+			Class<?> sqlJavaClass = dtype.getJavaClass();
+			
+			
+			Function<Object, Object> compatibilizer = null;
+			Function<Object, String> lexicalFormizer = null;
+			if (sqlType == Types.TIMESTAMP) {
+				
+				if (false) {
+					// Jena keeps appending a 'Z' to the timestamps for GMT
+					// It seems there is no way to turn it off so we have to go
+					// via the lexical form for r2rml compliance
+					compatibilizer = o -> {
+						Timestamp timestamp = (Timestamp)o;
+				        Calendar calendar = Calendar.getInstance();
+				        calendar.setTimeInMillis(timestamp.getTime());
+				        calendar.clear(Calendar.ZONE_OFFSET);
+				        calendar.clear(Calendar.DST_OFFSET);
+				        XSDDateTime r = new XSDDateTime(calendar);
+				        return r;
+					};
+				} else {
+					lexicalFormizer = o -> {
+						String r = o.toString().replace(' ', 'T');
+						return r;
+					};
+				}
+			}
+			
+			result.add(new SqlDatatypeImpl(sqlType, sqlJavaClass, dtype, compatibilizer, lexicalFormizer, null));  
 		}
 
 		return result;

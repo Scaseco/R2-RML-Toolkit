@@ -3,21 +3,22 @@ package org.aksw.r2rml.jena.jdbc.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
-import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 
 public class NodeMapperViaSqlDatatype
 	implements NodeMapper
 {
 	protected SqlDatatype sqlDatatype;
+	protected Function<Object, Node> cachedNodeMapper;
 	
 	public NodeMapperViaSqlDatatype(SqlDatatype sqlDatatype) {
 		super();
 		Objects.requireNonNull(sqlDatatype);
 		this.sqlDatatype = sqlDatatype;
+		this.cachedNodeMapper = sqlDatatype.getNodeMapper();
 	}
 
 	@Override
@@ -28,8 +29,11 @@ public class NodeMapperViaSqlDatatype
 		if (o == null) {
 			result = null;
 		} else {
-			RDFDatatype dtype = sqlDatatype.getRdfDatatype();
-			result = NodeFactory.createLiteralByValue(o, dtype);
+//			if (dtype.getURI().equals(XSD.dateTime.getURI())) {
+//				System.out.println("here");
+//			}
+			result = cachedNodeMapper.apply(o);
+			// result = NodeFactory.createLiteralByValue(o, dtype);
 		}
 		
 		return result;

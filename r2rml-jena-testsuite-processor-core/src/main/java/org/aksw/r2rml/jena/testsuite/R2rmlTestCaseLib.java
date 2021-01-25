@@ -38,27 +38,17 @@ public class R2rmlTestCaseLib {
 		return listResourcesWithPropertyAs(model, sqlScriptFile, Database.class);
 	}
 
-	
-	public static R2rmlTestCase adjustRelativeReferences(String base, R2rmlTestCase manifest) {
-		Optional.ofNullable(manifest.getOutput())
-			.ifPresent(value -> manifest.setOutput(base + value));
 		
-		Optional.ofNullable(manifest.getMappingDocument())
-			.ifPresent(value -> manifest.setMappingDocument(base + value));
-		
-		return manifest;
-	}
 	
-	
-	public static String loadSqlScript(Database database) {
-		String sqlScriptFile = database.getSqlScriptFile();
-		
-//		String result = sqlScriptFile == null ? null
-//				: (sqlScriptFile, StandardCharsets.UTF_8);
+//	public static String loadSqlScript(Database database) {
+//		String sqlScriptFile = database.getSqlScriptFile();
 //		
-		String result = null;
-		return result;
-	}
+////		String result = sqlScriptFile == null ? null
+////				: (sqlScriptFile, StandardCharsets.UTF_8);
+////		
+//		String result = null;
+//		return result;
+//	}
 	
 	public static Model loadMappingDocument(R2rmlTestCase manifest) {
 		Model result = Optional.ofNullable(manifest.getMappingDocument())
@@ -75,6 +65,18 @@ public class R2rmlTestCaseLib {
 				.orElse(null);
 		
 		return result;
+	}
+
+	
+	/** Adjust relative references so that resources can be accessed from the e.g. classpath */
+	public static R2rmlTestCase adjustRelativeReferences(String base, R2rmlTestCase manifest) {
+		Optional.ofNullable(manifest.getOutput())
+			.ifPresent(value -> manifest.setOutput(base + value));
+		
+		Optional.ofNullable(manifest.getMappingDocument())
+			.ifPresent(value -> manifest.setMappingDocument(base + value));
+		
+		return manifest;
 	}
 
 	/** Adjust relative references so that resources can be accessed from the e.g. classpath */

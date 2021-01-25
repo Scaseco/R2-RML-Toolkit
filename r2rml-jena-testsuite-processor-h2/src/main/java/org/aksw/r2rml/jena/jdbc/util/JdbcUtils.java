@@ -59,6 +59,7 @@ public class JdbcUtils {
 		Map<Var, Integer> colNameToIdx = new LinkedHashMap<>();
 
 		Map<String, Var> columnNameToVar = HashBiMap.create(usedVarToColumnName).inverse();
+
 		for (int i = 1; i <= columnCount; ++i) {
 			String columnName = rsmd.getColumnName(i);			
 			availableColumns.add(columnName);
@@ -67,6 +68,18 @@ public class JdbcUtils {
 //			if (usedVars.contains(cv)) {
 			if (usedVar != null) {
 				colNameToIdx.put(usedVar, i);
+			} else {
+				// Secondary matching with ignore case
+				Var secondaryMatch = usedVarToColumnName.entrySet().stream()
+					.filter(e -> e.getValue().equalsIgnoreCase(columnName))
+					.map(Entry::getKey)
+					.findFirst()
+					.orElse(null);
+				
+				if (secondaryMatch != null) {
+					colNameToIdx.put(secondaryMatch, i);
+				}
+				
 			}
 		}
 		

@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.aksw.jena_sparql_api.utils.NodeUtils;
+import org.aksw.r2rml.common.vocab.R2RMLStrings;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -28,7 +28,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
@@ -37,11 +36,15 @@ import org.apache.jena.shacl.lib.ShLib;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
-import org.apache.jena.sparql.expr.E_IsBlank;
+import org.apache.jena.sparql.expr.E_BNode;
+import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.E_IRI;
+import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrDatatype;
+import org.apache.jena.sparql.expr.E_StrEncodeForURI;
 import org.apache.jena.sparql.expr.E_StrLang;
-import org.apache.jena.sparql.expr.E_URI;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.request.QuadAcc;
@@ -221,13 +224,20 @@ public class R2rmlImporter {
 		Expr result;
 		
 		String template;
+		
 		RDFNode constant;
+		
+		// If a datatype has been specified then get its node
+		// and validate that its an IRI
+		Node datatypeNode = getIriNodeOrNull(tm.getDatatype());
+		Node termTypeNode = getIriNodeOrNull(tm.getTermType());
+
 		if((template = tm.getTemplate()) != null) {
 			Expr arg = R2rmlTemplateParser.parseTemplate(template);
-			
-			// TODO Support rr:termType rr:BlankNode
-			result = new E_URI(arg);
-			
+
+			Node effectiveTermType = termTypeNode == null ? RR.IRI.asNode() : termTypeNode;
+			result = applyTermType(arg, effectiveTermType, XSD.xstring.asNode());
+
 		} else if((constant = tm.getConstant()) != null) {
 			result = NodeValue.makeNode(constant.asNode());
 		} else {
@@ -235,33 +245,70 @@ public class R2rmlImporter {
 			if((colName = tm.getColumn()) != null) {
 			
 				ExprVar column = new ExprVar(colName);
-				Resource dtype = tm.getDatatype();
-				if(dtype != null || XSD.xstring.equals(dtype)) {
-					Node dn = dtype.asNode();
-					if (!dn.isURI()) {
-						throw new RuntimeException("Datatype " + dtype + " is not an IRI");
-					}
-					String du = dn.getURI();
+				String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
+				
+				if (langValue != null) {
+					termTypeNode = RR.Literal.asNode();
+				}
+				
+				if(termTypeNode != null && !termTypeNode.equals(RR.Literal.asNode()) ) { //|| XSD.xstring.asNode().equals(datatypeNode)) {
 					
-					result = du.equals(NodeUtils.R2RML_IRI)
-								? new E_URI(column)
-								: du.equals(NodeUtils.R2RML_BlankNode)
-									? new E_IsBlank(column)
-									: new E_StrDatatype(column, NodeValue.makeNode(dn));
+					result = applyTermType(column, termTypeNode, datatypeNode);
 
 				} else {
-					String language = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse("");
+					String language = langValue == null ? "" : langValue;
 					// If there is no indication about the datatype just use the column directly
 					// This will later directly allow evaluation w.r.t. a column's natural RDF datatype
 					result = language.isEmpty()
 							? column // new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
 							: new E_StrLang(column, NodeValue.makeString(language));
 				}
+
 			} else {
 				throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
 			}
 
 		}
+		
+		return result;
+	}
+	
+	public static Node getIriNodeOrNull(RDFNode rdfNode) {
+		Node result = null;
+		if (rdfNode != null) {
+			result = rdfNode.asNode();
+			if (!result.isURI()) {
+				throw new RuntimeException(result + " is not an IRI");
+			}
+		}
+
+		return result;
+	}
+
+	public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
+		String termTypeIri = termType.getURI();
+
+		Expr result;
+		result = termTypeIri.equals(R2RMLStrings.IRI)
+					? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+					: termTypeIri.equals(R2RMLStrings.BlankNode)
+						? new E_BNode(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+						: termTypeIri.equals(R2RMLStrings.Literal)
+							? knownDatatype == null
+								? column
+								: new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
+							: null;
+		return result;
+	}
+	
+	public static Expr applyDatatype(Expr column, Node expectedDatatype, Node knownDatatype) {
+		Objects.requireNonNull(expectedDatatype, "Need an expected datatype");
+		
+		Expr result = expectedDatatype.equals(knownDatatype)
+				? column
+				: expectedDatatype.equals(XSD.xstring.asNode())
+					? new E_Str(column)
+					: new E_Function(knownDatatype.getURI(), new ExprList(column));
 		
 		return result;
 	}
