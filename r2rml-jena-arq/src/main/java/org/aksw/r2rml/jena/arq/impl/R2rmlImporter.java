@@ -46,12 +46,13 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.XSD;
 
 public class R2rmlImporter {
 
 	/**
-	 * Expands rr:subject, rr:predicate, rr:object and rr:graph to term maps
+	 * Expands rr:class, rr:subject, rr:predicate, rr:object and rr:graph to term maps
 	 * in order to allow for uniform processing
 	 * 
 	 * @param tm The triple map for which to expant all mentioned short cuts
@@ -82,6 +83,19 @@ public class R2rmlImporter {
 		}
 		smgs.clear();
 
+		
+		// Note: Classes are expanded here using short cuts that
+		// get expanded again in the immediatly following code
+		List<Resource> classes = new ArrayList<>(sm.getClasses());
+		if (!classes.isEmpty()) {
+			PredicateObjectMap typePom = tm.addNewPredicateObjectMap();			
+			typePom.addPredicate(RDF.Nodes.type);
+			
+			for (Resource c : classes) {
+				typePom.addObject(c);					
+			}
+		}
+		
 		
 		Set<PredicateObjectMap> poms = tm.getPredicateObjectMaps();
 		for (PredicateObjectMap pom : new ArrayList<>(poms)) {
@@ -240,7 +254,15 @@ public class R2rmlImporter {
 						Node o = allocateVar(om.asTermMap(), varToExpr, varGen);
 						
 						// TODO Add booking of var to term-map mapping for debugging purposes
-						
+
+						// Template: creates triples using Quad.defaultGraphNodeGenerated
+						// RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
+						// So the output does not match exactly...
+
+//						if (g.equals(RR.defaultGraph.asNode())) {
+//							g = Quad.defaultGraphIRI;
+//						}
+
 						if (g.equals(RR.defaultGraph.asNode())) {
 							Triple triple = new Triple(s, p, o);
 							quadAcc.addTriple(triple);
@@ -300,8 +322,10 @@ public class R2rmlImporter {
 
 				} else {
 					String language = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse("");
+					// If there is no indication about the datatype just use the column directly
+					// This will later directly allow evaluation w.r.t. a column's natural RDF datatype
 					result = language.isEmpty()
-							? new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
+							? column // new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
 							: new E_StrLang(column, NodeValue.makeString(language));
 				}
 			} else {

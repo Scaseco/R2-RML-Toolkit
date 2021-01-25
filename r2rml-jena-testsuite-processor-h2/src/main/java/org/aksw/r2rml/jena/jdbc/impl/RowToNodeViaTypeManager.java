@@ -52,7 +52,15 @@ public class RowToNodeViaTypeManager
 		} else {
 			RDFDatatype dtype = typeMapper.getTypeByValue(o);
 			Objects.requireNonNull(dtype, "Could not obtain RDFDatatype for " + o + "of type " + o.getClass());
+
 			result = NodeFactory.createLiteralByValue(o, dtype);
+
+// Canonicalize?
+//			Object canonicalValue = dtype.cannonicalise(o);
+//			RDFDatatype canonicaldtype = typeMapper.getTypeByValue(canonicalValue);
+//			
+//			Objects.requireNonNull(canonicaldtype, "Datatype became null after canonicalization from " + dtype + " for value " + o + " -> " + canonicalValue);			
+//			result = NodeFactory.createLiteralByValue(canonicalValue, canonicaldtype);
 		}
 		
 		return result;

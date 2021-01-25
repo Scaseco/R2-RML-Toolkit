@@ -24,7 +24,7 @@ public class RowToBindingImpl
 	// The used column indices
 	protected int[] colIdxs;
 	
-	// The corresponding SPARQL variabls
+	// The corresponding SPARQL variables (colIdxs.length == vars.length)
 	protected Var[] vars;
 	
 	// The mapper that creates the variable's value
