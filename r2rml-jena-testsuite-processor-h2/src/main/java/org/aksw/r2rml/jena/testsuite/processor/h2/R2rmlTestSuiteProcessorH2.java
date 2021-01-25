@@ -115,7 +115,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
 							
 							boolean usesJoin = tms.stream()
-								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.joinCondition).toList().size() > 0);
+								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
 															
 							if (usesJoin) {
 								System.err.println("Skipping mapping with join");
@@ -123,9 +123,10 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							boolean isOnSkipList = Arrays.asList(
-									"R2RMLTC0016b", // Expected output demands decimal, whereas column types map to xsd:double; I'd say double is the correct result
+									"R2RMLTC0016b", // canonical double representation issue
 									"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-									"R2RMLTC0019a"
+									"R2RMLTC0019a", // relative iris
+									"R2RMLTC0012e" // canonical double representation issue: 
 									).contains(testCaseId);
 							if (isOnSkipList) {
 								System.err.println("Skipping mapping");
@@ -136,7 +137,8 @@ public class R2rmlTestSuiteProcessorH2 {
 //							if (!testCaseId.equals("R2RMLTC0005b")) {
 //								continue;
 //							}
-							
+							FunctionEnv env = createDefaultEnv();
+
 							for (TriplesMap tm : tms) {
 								
 	//							Model closureModel = ResourceUtils.reachableClosure(tm);
@@ -165,9 +167,7 @@ public class R2rmlTestSuiteProcessorH2 {
 									System.err.println("No logical table present");
 									continue;
 								}
-								
-								FunctionEnv env = createDefaultEnv();
-								
+
 								try (Statement stmt = conn.createStatement()) {
 									ResultSet rs = stmt.executeQuery(sqlQuery);
 									ResultSetMetaData rsmd = rs.getMetaData();

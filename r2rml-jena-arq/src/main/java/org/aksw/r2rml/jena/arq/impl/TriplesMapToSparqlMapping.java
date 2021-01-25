@@ -1,10 +1,12 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,12 +101,28 @@ public class TriplesMapToSparqlMapping {
 		return evalVars(varToExpr, binding, env);
 	}
 	
-	
+
+
 	public static final Symbol BnodeTracker = Symbol.create("bnodeTracker");
-	static class BnodeTracker {
+	
+	static class BnodeTrackerGlobal {
+		protected Map<Object, Node> argToBnode;
+		
+		public BnodeTrackerGlobal() {
+			super();
+			argToBnode = new HashMap<>();
+		}
+
+		public Map<Object, Node> getMap() {
+			return argToBnode;
+		}
+
+	}
+	
+	static class BnodeTrackerPerVar {
 		protected Table<Var, List<Node>, Node> varToArgToNode;
 		
-		public BnodeTracker() {
+		public BnodeTrackerPerVar() {
 			super();
 			varToArgToNode = HashBasedTable.create();
 		}
@@ -129,25 +147,48 @@ public class TriplesMapToSparqlMapping {
 			if (expr instanceof E_BNode) {
 				E_BNode ebnode = (E_BNode)expr;
 				// Expr bexpr = ebnode.getExpr();
-				List<Node> argVals = ebnode.getArgs().stream()
-					.map(arg -> safeEval(arg, binding, env))
-					.map(nv -> nv == null ? null : nv.asNode())
-					.collect(Collectors.toList());
+				List<Expr> args = ebnode.getArgs();
+				Object argObj;
+				switch (args.size()) {
+				case 0:
+					argObj = Collections.emptyList();
+					break;
+				case 1:
+					// Node.ANY as a null replacement
+					argObj = Optional.ofNullable(safeEval(args.get(0), binding, env))
+						.map(NodeValue::asNode)
+						.orElse(Node.ANY);
+					break;
+				default:
+					argObj = args.stream()
+						.map(arg -> safeEval(arg, binding, env))
+						.map(nv -> nv == null ? null : nv.asNode())
+						.collect(Collectors.toList())
+						.toArray(new Node[0]);
+					break;
+				}				
 				
-				
-				BnodeTracker tracker = env.getContext().get(BnodeTracker);
+				BnodeTrackerGlobal tracker = env.getContext().get(BnodeTracker);
 				if (tracker == null) {
-					tracker = new BnodeTracker();
+					tracker = new BnodeTrackerGlobal();
 					env.getContext().set(BnodeTracker, tracker);
 				}
-				
-				Map<List<Node>, Node> map = tracker.getTable().row(v);
-				node = map.get(argVals);
+
+				Map<Object, Node> map = tracker.getMap();
+				node = map.get(argObj);
 				if (node == null) {
 					NodeValue nv = safeEval(ebnode, binding, env);
 					node = nv.asNode();
-					map.put(argVals, node);
+					map.put(argObj, node);
 				}
+				
+//				Map<List<Node>, Node> map = tracker.getTable().row(v);
+//				node = map.get(argVals);
+//				if (node == null) {
+//					NodeValue nv = safeEval(ebnode, binding, env);
+//					node = nv.asNode();
+//					map.put(argVals, node);
+//				}
 				
 			} else {
 				NodeValue nv = safeEval(expr, binding, env);
@@ -168,8 +209,7 @@ public class TriplesMapToSparqlMapping {
 			nv = expr.eval(binding, env);
 		} catch (ExprEvalException ex) {
 			// Treat as evaluation to null
-
-			ex.printStackTrace();
+			// ex.printStackTrace();
 		}
 
 		return nv;
