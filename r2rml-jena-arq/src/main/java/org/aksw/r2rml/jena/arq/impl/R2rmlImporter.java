@@ -36,12 +36,12 @@ import org.apache.jena.shacl.lib.ShLib;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_IRI;
 import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrDatatype;
-import org.apache.jena.sparql.expr.E_StrEncodeForURI;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -207,9 +207,13 @@ public class R2rmlImporter {
 			}
 		}
 		
+		
+		VarExprList vel = new VarExprList();
+		varToExpr.forEach(vel::add);
+		
 		Template template = new Template(quadAcc);
 		TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
-			tm, template, termMapToVar, varToExpr);
+			tm, template, termMapToVar, vel);
 		
 		return result;
 	}

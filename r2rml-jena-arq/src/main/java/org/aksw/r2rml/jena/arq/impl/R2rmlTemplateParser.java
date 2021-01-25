@@ -62,8 +62,10 @@ public class R2rmlTemplateParser {
 					if(isInVarName) {
 						throw new RuntimeException("Unescaped '{' in var name not allowed");
 					} else {
-						result.add(NodeValue.makeString(builder.toString()));
-						builder = new StringBuilder();
+						if (builder.length() > 0) {
+							result.add(NodeValue.makeString(builder.toString()));
+							builder = new StringBuilder();
+						}
 						isInVarName = true;
 					}
 					break;

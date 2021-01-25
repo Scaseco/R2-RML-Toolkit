@@ -150,6 +150,10 @@ public class NaturalMappings {
 		putValue(sqlToXsd, XsdTerms.string,
 				Types.VARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR);
 
+		// Further mappings
+		
+		putValue(sqlToXsd, XsdTerms.string,
+				Types.CHAR, Types.NCHAR);
 	}
 	
 //	public static String getXsdTypeForColumnType(int columnType) {

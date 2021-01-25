@@ -2,28 +2,36 @@ package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
 import org.apache.jena.ext.com.google.common.collect.Streams;
+import org.apache.jena.ext.com.google.common.collect.Table;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.binding.BindingMap;
+import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
-import org.apache.jena.sparql.util.ExprUtils;
+import org.apache.jena.sparql.util.Symbol;
 
 /**
  * A mapping of a single TriplesMaps to the triples and SPARQL expressions
@@ -44,10 +52,10 @@ public class TriplesMapToSparqlMapping {
 	
 	// The mapping for term maps' variables to the corresponding sparql expression
 	// E.g. a rr:template "foo{bar}" becomes IRI(CONCAT("foo", STR(?var)))
-	protected Map<Var, Expr> varToExpr;
+	protected VarExprList varToExpr;
 
 	public TriplesMapToSparqlMapping(TriplesMap triplesMaps, Template template, Map<TermMap, Var> termMapToVar,
-			Map<Var, Expr> varToExpr) {
+			VarExprList varToExpr) {
 		super();
 		this.triplesMaps = triplesMaps;
 		this.template = template;
@@ -67,40 +75,83 @@ public class TriplesMapToSparqlMapping {
 		return termMapToVar;
 	}
 
-	public Map<Var, Expr> getVarToExpr() {
+	public VarExprList getVarToExpr() {
 		return varToExpr;
 	}
 
-	public Stream<Quad> evalQuads(Binding binding) {
-		Binding eb = evalVars(binding);
+	public Stream<Quad> evalQuads(Binding effectiveBinding) {
+		// Binding eb = evalVars(binding);
 		Iterator<Quad> it = TemplateLib.calcQuads(
 				template.getQuads(),
-				Collections.singleton(eb).iterator());		
+				Collections.singleton(effectiveBinding).iterator());		
 		return Streams.stream(it);
 	}
 
-	public Stream<Triple> evalTriples(Binding binding) {
-		Binding eb = evalVars(binding);
+	public Stream<Triple> evalTriples(Binding effectiveBinding) {
+		// Binding eb = evalVars(binding);
 		Iterator<Triple> it = TemplateLib.calcTriples(
 				template.getTriples(),
-				Collections.singleton(eb).iterator());		
+				Collections.singleton(effectiveBinding).iterator());		
 		return Streams.stream(it);
 	}
 
-	public Binding evalVars(Binding binding) {
-		return evalVars(varToExpr, binding);
-	}	
+	public Binding evalVars(Binding binding, FunctionEnv env) {
+		return evalVars(varToExpr, binding, env);
+	}
 	
-	public static Binding evalVars(Map<Var, Expr> varToExpr, Binding binding) {
+	
+	public static final Symbol BnodeTracker = Symbol.create("bnodeTracker");
+	static class BnodeTracker {
+		protected Table<Var, List<Node>, Node> varToArgToNode;
+		
+		public BnodeTracker() {
+			super();
+			varToArgToNode = HashBasedTable.create();
+		}
+
+		public Table<Var, List<Node>, Node> getTable() {
+			return varToArgToNode;
+		}
+	}
+	
+	public static Binding evalVars(VarExprList varToExpr, Binding binding, FunctionEnv env) {
 		BindingMap result = BindingFactory.create();
-		for (Entry<Var, Expr> e : varToExpr.entrySet()) {
+		for (Entry<Var, Expr> e : varToExpr.getExprs().entrySet()) {
+			
 			Var v = e.getKey();
 			Expr expr = e.getValue();
-			Node node = null;
-			try {
-				node = ExprUtils.eval(expr, binding).asNode();
-			} catch (ExprEvalException ex) {
-				// Treat as evaluation to null
+
+			Node node;
+			
+			// Special handling of bnodes
+			// For each variable that maps to a bnode definition keep a mapping from the argument value
+			// to the generated bnode
+			if (expr instanceof E_BNode) {
+				E_BNode ebnode = (E_BNode)expr;
+				// Expr bexpr = ebnode.getExpr();
+				List<Node> argVals = ebnode.getArgs().stream()
+					.map(arg -> safeEval(arg, binding, env))
+					.map(nv -> nv == null ? null : nv.asNode())
+					.collect(Collectors.toList());
+				
+				
+				BnodeTracker tracker = env.getContext().get(BnodeTracker);
+				if (tracker == null) {
+					tracker = new BnodeTracker();
+					env.getContext().set(BnodeTracker, tracker);
+				}
+				
+				Map<List<Node>, Node> map = tracker.getTable().row(v);
+				node = map.get(argVals);
+				if (node == null) {
+					NodeValue nv = safeEval(ebnode, binding, env);
+					node = nv.asNode();
+					map.put(argVals, node);
+				}
+				
+			} else {
+				NodeValue nv = safeEval(expr, binding, env);
+				node = nv == null ? null : nv.asNode();
 			}
 			
 			if (node != null) {
@@ -111,15 +162,27 @@ public class TriplesMapToSparqlMapping {
 		return result;
 	}
 	
+	public static NodeValue safeEval(Expr expr, Binding binding, FunctionEnv env) {
+		NodeValue nv = null;
+		try {
+			nv = expr.eval(binding, env);
+		} catch (ExprEvalException ex) {
+			// Treat as evaluation to null
+
+			ex.printStackTrace();
+		}
+
+		return nv;
+	}
+	
 	public Query getAsQuery() {
 		Query result = new Query();
 		result.setQueryConstructType();
 		result.setConstructTemplate(template);
 		
 		ElementGroup elt = new ElementGroup();
-		for (Entry<Var, Expr> e : varToExpr.entrySet()) {
-			elt.addElement(new ElementBind(e.getKey(), e.getValue()));
-		}
+		// for (Entry<Var, Expr> e : varToExpr.entrySet()) {
+		varToExpr.forEachVarExpr((v, e) ->  elt.addElement(new ElementBind(v, e)));
 		result.setQueryPattern(elt);
 
 		return result;
