@@ -92,9 +92,9 @@ public class R2rmlTestSuiteProcessorH2 {
 			Collection<R2rmlTestCase> testCases = R2rmlTestCaseLib.readTestCases(model);
 			for (R2rmlTestCase testCase : testCases) {
 				String testCaseId = testCase.getIdentifier();
-				System.out.println("Procssing test case: " + testCaseId);
+				System.out.println("Processing test case: " + testCaseId);
 
-				Model closureModel = ResourceUtils.reachableClosure(testCase);
+//				Model closureModel = ResourceUtils.reachableClosure(testCase);
 //				RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 				
 				if (!testCase.getHasExpectedOutput()) {
@@ -112,17 +112,13 @@ public class R2rmlTestSuiteProcessorH2 {
 							
 							Dataset expectedOutput = R2rmlTestCaseLib.loadOutput(testCase);
 							
-//							Set<Quad> expectedQuads = new LinkedHashSet<>();
-//							expectedOutput.asDatasetGraph().find(null, null, null, null)
-//								.forEachRemaining(expectedQuads::add);
-							
 							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
 							
 	
 //							Set<Quad> actualQuads = new LinkedHashSet<>();
 							Dataset actualOutput = DatasetFactory.create();
 							
-							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
+//							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
 							List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
 							
 							boolean usesJoin = tms.stream()
@@ -136,7 +132,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							boolean isOnSkipList = Arrays.asList(
 									// "R2RMLTC0016b", // canonical double representation issue
 									"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-									"R2RMLTC0019a" // relative iris
+									"R2RMLTC0019a" // Mixed absolute and relative IRIs
 									// "R2RMLTC0012e" // canonical double representation issue: 
 									).contains(testCaseId);
 							if (isOnSkipList) {
@@ -158,7 +154,7 @@ public class R2rmlTestSuiteProcessorH2 {
 								LogicalTable lt = tm.getLogicalTable();							
 								TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
 								
-								System.out.println(mapping);
+								// System.out.println(mapping);
 
 								Set<Var> usedVars = new HashSet<>();
 								mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
@@ -197,6 +193,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
+							System.out.println("Assertion " + isIso);
 							Assert.assertTrue(isIso);
 							
 //							System.out.println("Expected: " + expectedQuads);
@@ -233,8 +230,8 @@ public class R2rmlTestSuiteProcessorH2 {
 	public static boolean isIsomorphic(Dataset expected, Dataset actual) {
 		boolean result;
 		
-//		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
-		String everything = "SELECT ?o { { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } } FILTER(isNumeric(?o))}";
+		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
+//		String everything = "SELECT ?o { { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } } FILTER(isNumeric(?o))}";
 		try (QueryExecution qea = QueryExecutionFactory.create(everything, expected);
 			QueryExecution qeb = QueryExecutionFactory.create(everything, actual)) {
 			
