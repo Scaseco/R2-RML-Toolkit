@@ -2,6 +2,8 @@ package org.aksw.r2rml.jena.jdbc.impl;
 
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
@@ -93,6 +95,13 @@ public class NaturalMappings {
 			
 			Function<Object, Object> compatibilizer = null;
 			Function<Object, String> lexicalFormizer = null;
+			
+			
+			if (xsdIri.equals(XsdTerms.xdouble) && sqlType != Types.DOUBLE) {
+				lexicalFormizer = o -> Float.toString((Float)o);
+				// compatibilizer = o -> o instanceof Float ? ((Float)o).doubleValue() : o;
+			}
+			
 			if (sqlType == Types.TIMESTAMP) {
 				
 				if (false) {

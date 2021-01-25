@@ -29,9 +29,12 @@ import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
 import org.aksw.r2rml.jena.vocab.RR;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.ext.com.google.common.collect.ComparisonChain;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -57,16 +60,24 @@ import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.jena.sparql.util.NodeUtils;
 import org.apache.jena.util.ResourceUtils;
+import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 
 
 public class R2rmlTestSuiteProcessorH2 {
 	public static void main(String[] args) throws SQLException, IOException {
-//		RDFDatatype dtype = TypeMapper.getInstance().getSafeTypeByName(XSD.xshort.getURI());
-//		Node node = NodeFactory.createLiteralByValue(5, dtype);
-//		System.out.println(node);
-//		
-//		if (true) return;
+
+		if (false) {
+			RDFDatatype dtype = TypeMapper.getInstance().getTypeByName(XSD.xdouble.getURI());
+			Node a = NodeFactory.createLiteral("80.25", dtype);
+			Node b = NodeFactory.createLiteral("8.025E1", dtype);
+			
+			NodeValue na = NodeValue.makeNode(a);
+			NodeValue nb = NodeValue.makeNode(b);
+			System.out.println(NodeValue.sameAs(na, nb));
+			System.out.println(na.getDouble() == nb.getDouble());
+			return;
+		}
 		
 		// Collection<Database> databases = R2rmlTestCaseLoader.importDatabases();
 		Dataset manifests = R2rmlTestCaseLoader.loadManifests(true);
@@ -123,10 +134,10 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							boolean isOnSkipList = Arrays.asList(
-									"R2RMLTC0016b", // canonical double representation issue
+									// "R2RMLTC0016b", // canonical double representation issue
 									"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-									"R2RMLTC0019a", // relative iris
-									"R2RMLTC0012e" // canonical double representation issue: 
+									"R2RMLTC0019a" // relative iris
+									// "R2RMLTC0012e" // canonical double representation issue: 
 									).contains(testCaseId);
 							if (isOnSkipList) {
 								System.err.println("Skipping mapping");
@@ -134,7 +145,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 
 							
-//							if (!testCaseId.equals("R2RMLTC0005b")) {
+//							if (!testCaseId.equals("R2RMLTC0016b")) {
 //								continue;
 //							}
 							FunctionEnv env = createDefaultEnv();
@@ -222,7 +233,8 @@ public class R2rmlTestSuiteProcessorH2 {
 	public static boolean isIsomorphic(Dataset expected, Dataset actual) {
 		boolean result;
 		
-		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
+//		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
+		String everything = "SELECT ?o { { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } } FILTER(isNumeric(?o))}";
 		try (QueryExecution qea = QueryExecutionFactory.create(everything, expected);
 			QueryExecution qeb = QueryExecutionFactory.create(everything, actual)) {
 			

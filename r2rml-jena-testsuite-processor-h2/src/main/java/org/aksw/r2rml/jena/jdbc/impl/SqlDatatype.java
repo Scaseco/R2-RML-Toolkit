@@ -49,6 +49,11 @@ public interface SqlDatatype {
 		if (compatibilizer != null) {
 			result = obj -> {
 				Object compat = compatibilizer.apply(obj);
+//				System.out.println("GOT: " + compat);
+//				System.out.println(obj.getClass());
+//				System.out.println(rdfDatatype.getURI());
+//				System.out.println(rdfDatatype.isValidValue(compat));
+
 				Node r = NodeFactory.createLiteralByValue(compat, rdfDatatype);
 				return r;
 			};
@@ -60,6 +65,10 @@ public interface SqlDatatype {
 			};			
 		} else {
 			result = obj -> {
+//				System.out.println("GOT: " + obj);
+//				System.out.println(obj.getClass());
+//				System.out.println(rdfDatatype.getURI());
+//				System.out.println(rdfDatatype.isValidValue(obj));
 				Node r = NodeFactory.createLiteralByValue(obj, rdfDatatype);
 				return r;
 			};
