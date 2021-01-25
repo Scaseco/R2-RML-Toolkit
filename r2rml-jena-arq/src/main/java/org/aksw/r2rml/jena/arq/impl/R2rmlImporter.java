@@ -1,6 +1,5 @@
 package org.aksw.r2rml.jena.arq.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.aksw.jena_sparql_api.utils.NodeUtils;
+import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateMap;
@@ -46,81 +46,10 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Template;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.XSD;
 
 public class R2rmlImporter {
 
-	/**
-	 * Expands rr:class, rr:subject, rr:predicate, rr:object and rr:graph to term maps
-	 * in order to allow for uniform processing
-	 * 
-	 * @param tm The triple map for which to expant all mentioned short cuts
-	 */
-	public static void expandShortcuts(TriplesMap tm) {
-
-		// Implementation note: The wrapping with new ArrayList<>(...) is needed
-		// because all objects are backed by the same graph which in general
-		// does not allow for concurrent modification.
-		// I.e. In general it is not possible to have an iterator open on a graph
-		// and have another operation modify the same graph (even if the involved triples
-		// are completely unrelated)
-		
-		// 
-		// rr:subject
-		Resource s = tm.getSubject();
-		if (s != null) {
-			tm.getOrSetSubjectMap().setConstant(s);
-			tm.setSubject(null);
-		}
-		
-		
-		// rr:graph on subject map
-		SubjectMap sm = tm.getSubjectMap();		
-		Set<Resource> smgs = sm.getGraphs();
-		for (Resource smg : new ArrayList<>(smgs)) {
-			sm.addNewGraphMap().setConstant(smg);
-		}
-		smgs.clear();
-
-		
-		// Note: Classes are expanded here using short cuts that
-		// get expanded again in the immediatly following code
-		List<Resource> classes = new ArrayList<>(sm.getClasses());
-		if (!classes.isEmpty()) {
-			PredicateObjectMap typePom = tm.addNewPredicateObjectMap();			
-			typePom.addPredicate(RDF.Nodes.type);
-			
-			for (Resource c : classes) {
-				typePom.addObject(c);					
-			}
-		}
-		
-		
-		Set<PredicateObjectMap> poms = tm.getPredicateObjectMaps();
-		for (PredicateObjectMap pom : new ArrayList<>(poms)) {
-
-			// rr:graph on predicate-object map
-			Set<Resource> gs = pom.getGraphs();
-			for (Resource g : new ArrayList<>(gs)) {
-				pom.addNewGraphMap().setConstant(g);
-			}
-			gs.clear();
-
-			Set<Resource> ps = pom.getPredicates();
-			for (Resource p : new ArrayList<>(ps)) {
-				pom.addNewPredicateMap().setConstant(p);
-			}			
-			ps.clear();
-
-			Set<Resource> os = pom.getObjects();
-			for (Resource o : new ArrayList<>(os)) {
-				pom.addNewObjectMap().setConstant(o);
-			}
-			os.clear();
-		}
-	}
-	
 	public static void validateR2rml(Model dataModel) {
 		Model shaclModel = RDFDataMgr.loadModel("r2rml.core.shacl.ttl");
 
@@ -143,7 +72,7 @@ public class R2rmlImporter {
 			throw new RuntimeException("Shacl validation failed; see report above");
 		}
 	}
-	
+
 	// It makes sense to have the validation method part of the object - instead of just using a static method
 	public void validate(Model dataModel) {
 		validateR2rml(dataModel);
@@ -215,7 +144,7 @@ public class R2rmlImporter {
 	 */
 	public static TriplesMapToSparqlMapping read(TriplesMap tm) {
 		
-		expandShortcuts(tm);
+		R2rmlLib.expandShortcuts(tm);
 
 		SubjectMap sm = tm.getSubjectMap();
 		Objects.requireNonNull(sm, "SubjectMap was null on " + tm);

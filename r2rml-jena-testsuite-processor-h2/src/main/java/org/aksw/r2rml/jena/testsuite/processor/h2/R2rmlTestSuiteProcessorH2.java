@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.testsuite.processor.h2;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
@@ -21,15 +22,18 @@ import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import org.aksw.r2rml.jena.jdbc.api.RowToBinding;
+import org.aksw.r2rml.jena.jdbc.api.RowMapper;
 import org.aksw.r2rml.jena.jdbc.impl.RowToNodeViaTypeManager;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.ext.com.google.common.collect.ComparisonChain;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -37,17 +41,23 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprNotComparableException;
 import org.apache.jena.sparql.expr.ExprVars;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.NodeUtils;
+import org.apache.jena.vocabulary.XSD;
 
 import junit.framework.Assert;
 
 
 public class R2rmlTestSuiteProcessorH2 {
 	public static void main(String[] args) throws SQLException, IOException {
+//		RDFDatatype dtype = TypeMapper.getInstance().getSafeTypeByName(XSD.xshort.getURI());
+//		Node node = NodeFactory.createLiteralByValue(5, dtype);
+//		System.out.println(node);
+//		
+//		if (true) return;
+		
 		// Collection<Database> databases = R2rmlTestCaseLoader.importDatabases();
 		Collection <R2rmlTestCase> testCases = R2rmlTestCaseLoader.importTestCases();
 				
@@ -107,8 +117,9 @@ public class R2rmlTestSuiteProcessorH2 {
 							
 							try (Statement stmt = conn.createStatement()) {
 								ResultSet rs = stmt.executeQuery(sqlQuery);
+								ResultSetMetaData rsmd = rs.getMetaData();
 								
-								RowToBinding bindingMapper = JdbcUtils.createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
+								RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
 								
 								while (rs.next()) {
 									 Binding b = bindingMapper.map(rs);

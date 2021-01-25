@@ -1,6 +1,5 @@
 package org.aksw.r2rml.jena.jdbc.util;
 
-import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -8,23 +7,50 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 
-import org.aksw.r2rml.jena.jdbc.api.RowToBinding;
-import org.aksw.r2rml.jena.jdbc.api.RowToNode;
+import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
+import org.aksw.r2rml.jena.jdbc.api.RowMapper;
+import org.aksw.r2rml.jena.jdbc.impl.NaturalMappings;
+import org.aksw.r2rml.jena.jdbc.impl.NodeMapperMultiplexer;
 import org.aksw.r2rml.jena.jdbc.impl.RowToBindingImpl;
+import org.aksw.r2rml.jena.jdbc.impl.SqlTypeMapper;
 import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.sparql.core.Var;
 
 
 public class JdbcUtils {
-	public static RowToBinding createBindingMapper(
-			ResultSet rs,
-			// Set<Var> usedVars,
-			Map<Var, String> usedVarToColumnName,
-			RowToNode nodeMapper
-			) throws SQLException {
-		ResultSetMetaData rsmd = rs.getMetaData();
+	
+	/**
+	 * Create an array of node mappers whose size matches the number of columns + 1.
+	 * The first entry is always null because SQL column indices start with 1.
+	 * 
+	 * Node mappers are only created for columns referred to by usedIdxs.
+	 * Hence, the resulting array may have additional null entries.
+	 * 
+	 * 
+	 * @param rsmd ResultSetMetadata
+	 * @param usedIdxs The indices for which to create node mappers
+	 * @param sqlTypeMapper SQL-to-RDF type mappings
+	 * @return
+	 * @throws SQLException
+	 */
+	public static NodeMapper createNodeMapper(ResultSetMetaData rsmd, int[] usedIdxs, SqlTypeMapper sqlTypeMapper) throws SQLException {
+		
+		int columnCount = rsmd.getColumnCount();
+		NodeMapper[] targets = new NodeMapper[columnCount + 1];
+		for (int i = 0; i < usedIdxs.length; ++i) {
+			int colIdx = usedIdxs[i];			
+			int sqlType = rsmd.getColumnType(colIdx);
+		
+			targets[colIdx] = NaturalMappings.createNodeMapper(sqlType, sqlTypeMapper);
+		}
+		return new NodeMapperMultiplexer(targets);
+	}
+	
+	
+	public static Map<Var, Integer> createVarMapping(ResultSetMetaData rsmd, Map<Var, String> usedVarToColumnName) throws SQLException {
 		int columnCount = rsmd.getColumnCount();
 
 		// Iterate the columns in the given order and map those columns
@@ -50,6 +76,34 @@ public class JdbcUtils {
 					+ invalidRefs + "; available: " + availableColumns);
 		}
 		
+		
+		return colNameToIdx;
+	}
+	
+	public static RowMapper createDefaultBindingMapper(
+			ResultSetMetaData rsmd,
+			Map<Var, String> usedVarToColumnName) throws SQLException {
+		SqlTypeMapper sqlTypeMapper = SqlTypeMapper.getInstance();
+
+		Map<Var, Integer> colNameToIdx = createVarMapping(rsmd, usedVarToColumnName);
+		
+		Function<int[], NodeMapper> nodeMapperFactory = usedIdxs -> {
+			try {
+				return createNodeMapper(rsmd, usedIdxs, sqlTypeMapper);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		};
+		
+		RowMapper result = createBindingMapper(colNameToIdx, nodeMapperFactory);
+		return result;
+	}
+	
+	public static RowMapper createBindingMapper(
+			Map<Var, Integer> colNameToIdx,
+			Function<int[], NodeMapper> nodeMapperFactory
+			) throws SQLException {
+		
 		int n = colNameToIdx.size();
 		int[] colIdxs = new int[n];
 		Var[] vars = new Var[n];
@@ -61,7 +115,9 @@ public class JdbcUtils {
 			++i;
 		}
 	
-		RowToBinding result = new RowToBindingImpl(colIdxs, vars, nodeMapper);
+		NodeMapper nodeMapper = nodeMapperFactory.apply(colIdxs);
+
+		RowMapper result = new RowToBindingImpl(colIdxs, vars, nodeMapper);
 		return result;
 	}
 	

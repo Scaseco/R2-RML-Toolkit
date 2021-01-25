@@ -3,8 +3,8 @@ package org.aksw.r2rml.jena.jdbc.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.aksw.r2rml.jena.jdbc.api.RowToBinding;
-import org.aksw.r2rml.jena.jdbc.api.RowToNode;
+import org.aksw.r2rml.jena.jdbc.api.RowMapper;
+import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -19,7 +19,7 @@ import org.apache.jena.sparql.engine.binding.BindingMap;
  *
  */
 public class RowToBindingImpl
-	implements RowToBinding
+	implements RowMapper
 {
 	// The used column indices
 	protected int[] colIdxs;
@@ -28,9 +28,9 @@ public class RowToBindingImpl
 	protected Var[] vars;
 	
 	// The mapper that creates the variable's value
-	protected RowToNode nodeMapper;
+	protected NodeMapper nodeMapper;
 	
-	public RowToBindingImpl(int[] colIdxs, Var[] vars, RowToNode nodeMapper) {
+	public RowToBindingImpl(int[] colIdxs, Var[] vars, NodeMapper nodeMapper) {
 		super();
 		this.colIdxs = colIdxs;
 		this.vars = vars;

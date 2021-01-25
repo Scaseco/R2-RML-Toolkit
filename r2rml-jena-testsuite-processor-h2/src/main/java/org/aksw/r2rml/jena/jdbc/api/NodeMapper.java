@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.apache.jena.graph.Node;
 
-public interface RowToNode {
+@FunctionalInterface
+public interface NodeMapper {
 	Node map(ResultSet resultSet, int columnIdx) throws SQLException;
 }

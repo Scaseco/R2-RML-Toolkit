@@ -21,6 +21,7 @@
 		<module>r2rml-jena-vocab</module>
 		<module>r2rml-jena-api</module>
 		<module>r2rml-jena-arq</module>
+		<module>r2rml-jena-processor-jdbc</module>
 		<module>r2rml-jena-testsuite-processor-core</module>
 		<module>r2rml-jena-testsuite-processor-h2</module>
 		<module>r2rmlx-jena-api</module>

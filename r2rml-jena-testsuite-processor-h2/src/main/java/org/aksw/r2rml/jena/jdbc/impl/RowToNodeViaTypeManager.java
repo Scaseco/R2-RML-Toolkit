@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
-import org.aksw.r2rml.jena.jdbc.api.RowToNode;
+import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -26,7 +26,7 @@ import org.apache.jena.graph.NodeFactory;
  *
  */
 public class RowToNodeViaTypeManager
-	implements RowToNode {
+	implements NodeMapper {
 
 	protected TypeMapper typeMapper;
 	
