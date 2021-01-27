@@ -5,18 +5,18 @@ import java.util.Set;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface R2rmlView
 	extends LogicalTable
 {
-	@Iri(R2RMLStrings.sqlQuery)
+	@Iri(R2rmlTerms.sqlQuery)
 	String getSqlQuery();
 	R2rmlView setSqlQuery(String queryString);	
 
-	@Iri(R2RMLStrings.sqlVersion)
+	@Iri(R2rmlTerms.sqlVersion)
 	Set<Resource> getSqlVersions();
 
 	/**
@@ -24,7 +24,7 @@ public interface R2rmlView
 	 * 
 	 * @return
 	 */
-	@Iri(R2RMLStrings.sqlVersion)
+	@Iri(R2rmlTerms.sqlVersion)
 	@IriType
 	Set<String> getSqlVersionIris();
 }

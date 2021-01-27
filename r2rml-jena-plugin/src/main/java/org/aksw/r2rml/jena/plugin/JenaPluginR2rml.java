@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.plugin;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.r2rml.jena.domain.api.BaseTableOrView;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
+import org.aksw.r2rml.jena.domain.api.JoinCondition;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -40,13 +41,14 @@ public class JenaPluginR2rml
 			BaseTableOrView.class,
 			R2rmlView.class,
 			PredicateObjectMap.class,
+			TermMap.class,
 			GraphMap.class,
 			SubjectMap.class,
 			PredicateMap.class,
 			ObjectMapType.class,
 			ObjectMap.class,
 			RefObjectMap.class,
-			TermMap.class
+			JoinCondition.class
 		);
 		
 		JenaPluginUtils.registerResourceClasses(

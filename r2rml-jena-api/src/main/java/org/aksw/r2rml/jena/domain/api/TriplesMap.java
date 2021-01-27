@@ -4,29 +4,29 @@ import java.util.Set;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.IriType;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.apache.jena.rdf.model.Resource;
 
 public interface TriplesMap
 	extends MappingComponent
 {
-	@Iri(R2RMLStrings.subject)
+	@Iri(R2rmlTerms.subject)
 	Resource getSubject();
 	TriplesMap setSubject(Resource subject);
 
-	@Iri(R2RMLStrings.subject)
+	@Iri(R2rmlTerms.subject)
 	@IriType
 	String getSubjectIri();
 	TriplesMap setSubjectIri(String subjectIri);
 
-	@Iri(R2RMLStrings.subjectMap)
+	@Iri(R2rmlTerms.subjectMap)
 	SubjectMap getSubjectMap();
 	TriplesMap setSubjectMap(SubjectMap subjectMap);
 
-	@Iri(R2RMLStrings.predicateObjectMap)
+	@Iri(R2rmlTerms.predicateObjectMap)
 	Set<PredicateObjectMap> getPredicateObjectMaps();
 
-	@Iri(R2RMLStrings.logicalTable)
+	@Iri(R2rmlTerms.logicalTable)
 	LogicalTable getLogicalTable();
 	TriplesMap setLogicalTable(LogicalTable logicalTable);
 	

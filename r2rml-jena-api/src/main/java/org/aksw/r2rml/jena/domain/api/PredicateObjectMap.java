@@ -5,7 +5,7 @@ import java.util.Set;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -14,32 +14,32 @@ import org.apache.jena.rdf.model.Resource;
 public interface PredicateObjectMap
 	extends MappingComponent, HasGraphMap
 {
-	@Iri(R2RMLStrings.predicateMap)
+	@Iri(R2rmlTerms.predicateMap)
 	Set<PredicateMap> getPredicateMaps();
 
-	@Iri(R2RMLStrings.objectMap)
+	@Iri(R2rmlTerms.objectMap)
 	Set<ObjectMapType> getObjectMaps();
 
 	/** Shorthands for constant objects */
-	@Iri(R2RMLStrings.object)
+	@Iri(R2rmlTerms.object)
 	Set<Resource> getObjects();
 
 	/** Shorthands for constant predicates */
-	@Iri(R2RMLStrings.predicate)
+	@Iri(R2rmlTerms.predicate)
 	Set<Resource> getPredicates();
 
 	/** Shorthands for constant objects as strings*/
-	@Iri(R2RMLStrings.object)
+	@Iri(R2rmlTerms.object)
 	@IriType
 	Set<String> getObjectIris();
 
 	/** Shorthands for constant predicates as strings */
-	@Iri(R2RMLStrings.predicate)
+	@Iri(R2rmlTerms.predicate)
 	@IriType
 	Set<String> getPredicateIris();
 
 	/** Shorthands for constant graphs as strings */
-	@Iri(R2RMLStrings.graph)
+	@Iri(R2rmlTerms.graph)
 	@IriType
 	Set<Resource> getGraphIris();
 	

@@ -11,7 +11,7 @@ package org.aksw.r2rml.common.vocab;
  * @author Claus Stadler
  *
  */
-public class R2RMLStrings {
+public class R2rmlTerms {
 	public static final String uri = "http://www.w3.org/ns/r2rml#";
 
 	public static final String TriplesMap = uri + "TriplesMap";

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,6 +22,7 @@ import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
+import org.aksw.r2rml.jena.domain.api.RefObjectMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.jdbc.api.RowMapper;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
@@ -44,8 +46,6 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -59,7 +59,6 @@ import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.jena.sparql.util.NodeUtils;
-import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 
@@ -119,14 +118,27 @@ public class R2rmlTestSuiteProcessorH2 {
 							Dataset actualOutput = DatasetFactory.create();
 							
 //							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-							List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
+							List<TriplesMap> rawTms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
 							
-							boolean usesJoin = tms.stream()
+							// The effective triples maps include expanded joins
+							List<TriplesMap> tms = new ArrayList<>(rawTms);
+							
+							
+							boolean usesJoin = rawTms.stream()
 								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
 															
-							if (usesJoin) {
-								System.err.println("Skipping mapping with join");
+							if (!usesJoin) {
+								System.err.println("Skipping mapping without join");
 								continue;
+							}
+
+							// Expand joins
+							for (TriplesMap tm : rawTms) {
+								Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
+								if (!map.isEmpty()) {
+									map.values().forEach(R2rmlLib::expandShortcuts);
+								}
+								tms.addAll(map.values());
 							}
 							
 							boolean isOnSkipList = Arrays.asList(

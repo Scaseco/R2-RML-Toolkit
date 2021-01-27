@@ -2,7 +2,7 @@ package org.aksw.r2rml.jena.domain.api;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -17,35 +17,34 @@ import org.apache.jena.rdf.model.Resource;
 public interface TermMap
 	extends MappingComponent
 {
-	@Iri(R2RMLStrings.termType)
+	@Iri(R2rmlTerms.termType)
 	Resource getTermType();
 	TermMap setTermType(Resource termType);
 
-	@Iri(R2RMLStrings.column)
+	@Iri(R2rmlTerms.column)
 	String getColumn();
 	TermMap setColumn(String columnName);
 	
-	@Iri(R2RMLStrings.language)
+	@Iri(R2rmlTerms.language)
 	String getLanguage();
 	TermMap setLanguage(String language);
 	
-	@Iri(R2RMLStrings.datatype)
+	@Iri(R2rmlTerms.datatype)
 	Resource getDatatype();
 	TermMap setDatatype(Resource datatype);
 	
-	@Iri(R2RMLStrings.constant)
+	@Iri(R2rmlTerms.constant)
 	RDFNode getConstant();
 	TermMap setConstant(RDFNode constant);
 
-	@Iri(R2RMLStrings.template)
+	@Iri(R2rmlTerms.template)
 	String getTemplate();
 	TermMap setTemplate(String template);
 
-	@Iri(R2RMLStrings.inverseExpression)
+	@Iri(R2rmlTerms.inverseExpression)
 	String getInverseExpression();
 	TermMap setInverseExpression(String inverseExpression);
 
-	
 	/**
 	 * 
 	 * https://www.w3.org/TR/r2rml/#dfn-column-valued-term-map

@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.apache.jena.rdf.model.Resource;
 
 /**
@@ -17,11 +17,11 @@ import org.apache.jena.rdf.model.Resource;
 public interface HasGraphMap
 	extends Resource
 {
-	@Iri(R2RMLStrings.graphMap)
+	@Iri(R2rmlTerms.graphMap)
 	Set<GraphMap> getGraphMaps();
 
 
-	@Iri(R2RMLStrings.graph)
+	@Iri(R2rmlTerms.graph)
 	Set<Resource> getGraphs();
 
 	default GraphMap addNewGraphMap() {

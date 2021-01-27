@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.aksw.r2rml.common.vocab.R2RMLStrings;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -180,27 +180,31 @@ public class R2rmlImporter {
 			for(GraphMap gm : egms) {			
 				for(PredicateMap pm : pms) {
 					for(ObjectMapType om : oms) {
-						Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, varToExpr, varGen);
-						Node s = allocateVar(sm, varToExpr, varGen);
-						Node p = allocateVar(pm, varToExpr, varGen);
-						Node o = allocateVar(om.asTermMap(), varToExpr, varGen);
 						
-						// TODO Add booking of var to term-map mapping for debugging purposes
-
-						// Template: creates triples using Quad.defaultGraphNodeGenerated
-						// RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
-						// So the output does not match exactly...
-
-//						if (g.equals(RR.defaultGraph.asNode())) {
-//							g = Quad.defaultGraphIRI;
-//						}
-
-						if (g.equals(RR.defaultGraph.asNode())) {
-							Triple triple = new Triple(s, p, o);
-							quadAcc.addTriple(triple);
-						} else {
-							Quad quad = new Quad(g, s, p, o);
-							quadAcc.addQuad(quad);
+						if (!om.qualifiesAsRefObjectMap()) {
+							
+							Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, varToExpr, varGen);
+							Node s = allocateVar(sm, varToExpr, varGen);
+							Node p = allocateVar(pm, varToExpr, varGen);
+							Node o = allocateVar(om.asTermMap(), varToExpr, varGen);
+							
+							// TODO Add book-keeping of var to term-map mapping for debugging purposes
+	
+							// Template: creates triples using Quad.defaultGraphNodeGenerated
+							// RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
+							// So the output does not match exactly...
+	
+	//						if (g.equals(RR.defaultGraph.asNode())) {
+	//							g = Quad.defaultGraphIRI;
+	//						}
+	
+							if (g.equals(RR.defaultGraph.asNode())) {
+								Triple triple = new Triple(s, p, o);
+								quadAcc.addTriple(triple);
+							} else {
+								Quad quad = new Quad(g, s, p, o);
+								quadAcc.addQuad(quad);
+							}
 						}
 					}
 				}
@@ -293,11 +297,11 @@ public class R2rmlImporter {
 		String termTypeIri = termType.getURI();
 
 		Expr result;
-		result = termTypeIri.equals(R2RMLStrings.IRI)
+		result = termTypeIri.equals(R2rmlTerms.IRI)
 					? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
-					: termTypeIri.equals(R2RMLStrings.BlankNode)
+					: termTypeIri.equals(R2rmlTerms.BlankNode)
 						? new E_BNode(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
-						: termTypeIri.equals(R2RMLStrings.Literal)
+						: termTypeIri.equals(R2rmlTerms.Literal)
 							? knownDatatype == null
 								? column
 								: new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
