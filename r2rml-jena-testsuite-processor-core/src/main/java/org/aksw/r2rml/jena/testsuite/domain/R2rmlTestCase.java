@@ -51,6 +51,10 @@ public interface R2rmlTestCase
 	R2rmlTestCase setHasExpectedOutput(Boolean hasExpectedOutput);
 	
 	@IriNs("rdb2rdftest")
+	String getFailMessage();
+	R2rmlTestCase setFailMessage(String failMessage);
+	
+	@IriNs("rdb2rdftest")
 	String getMappingDocument();
 	R2rmlTestCase setMappingDocument(String mappingDocument);
 	

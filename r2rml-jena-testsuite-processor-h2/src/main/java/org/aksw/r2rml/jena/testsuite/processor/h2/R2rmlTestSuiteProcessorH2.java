@@ -45,8 +45,6 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -60,7 +58,6 @@ import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.jena.sparql.util.NodeUtils;
-import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -119,9 +116,6 @@ public class R2rmlTestSuiteProcessorH2 {
 //				Model closureModel = ResourceUtils.reachableClosure(testCase);
 //				RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 				
-				if (!testCase.getHasExpectedOutput()) {
-					continue;
-				}
 				
 				logger.info("Processing test case: " + testCaseId);
 
@@ -136,99 +130,35 @@ public class R2rmlTestSuiteProcessorH2 {
 						try (Connection conn = dataSource.getConnection()) {
 							
 							Dataset expectedOutput = R2rmlTestCaseLib.loadOutput(testCase);
+
+							if (testCase.getHasExpectedOutput()) {
+								if (expectedOutput == null) {
+									throw new IllegalStateException("Test case declared with expected output - but no such output defined");
+								} 
+							} else {
+								if (expectedOutput != null) {
+									logger.warn("Test case declared with no expected output - but output defined; preferring defined output");
+								} else {
+									// Create an empty model to compare to if we don't expect any output
+									expectedOutput = DatasetFactory.create();
+								}
+							}
 							
 							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
-							
-	
-//							Set<Quad> actualQuads = new LinkedHashSet<>();
-							Dataset actualOutput = DatasetFactory.create();
-							
-//							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-							List<TriplesMap> rawTms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
-							
-							// The effective triples maps include expanded joins
-							List<TriplesMap> tms = new ArrayList<>(rawTms);
-							
-							
-//							boolean usesJoin = rawTms.stream()
-//								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
-//															
-//							if (!usesJoin) {
-//								System.err.println("Skipping mapping without join");
-//								continue;
-//							}
+							Dataset actualOutput = processR2rml(conn, r2rmlDocument);
 
-							// Expand joins
-							for (TriplesMap tm : rawTms) {
-								R2rmlLib.expandShortcuts(tm);
-								Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
-								if (!map.isEmpty()) {
-									map.values().forEach(R2rmlLib::expandShortcuts);
-								}
-								
-//								for (TriplesMap joinTm : map.values()) {
-//									RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(joinTm), RDFFormat.TURTLE_PRETTY);
-//								}
-								
-								tms.addAll(map.values());
-							}
-							
-							// RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-
-							FunctionEnv env = createDefaultEnv();
-
-							for (TriplesMap tm : tms) {
-								
-	//							Model closureModel = ResourceUtils.reachableClosure(tm);
-	//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
-								
-								LogicalTable lt = tm.getLogicalTable();							
-								TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
-								
-//								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
-
-								logger.debug("Generated Mapping: " + mapping);
-//								System.out.println(mapping);
-
-								Set<Var> usedVars = new HashSet<>();
-								mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
-								Map<Var, String> usedVarToColumnName = usedVars.stream()
-										.collect(Collectors.toMap(
-												v -> v,
-												v -> R2rmlLib.dequoteColumnName(v.getName())
-										));
-								
-	
-								String sqlQuery;
-								if (lt.qualifiesAsBaseTableOrView()) {
-									sqlQuery = "SELECT * FROM " + lt.asBaseTableOrView().getTableName();
-								} else if (lt.qualifiesAsR2rmlView()) {
-									sqlQuery = lt.asR2rmlView().getSqlQuery();
-								} else {
-									System.err.println("No logical table present");
-									continue;
-								}
-
-								try (Statement stmt = conn.createStatement()) {
-									ResultSet rs = stmt.executeQuery(sqlQuery);
-									ResultSetMetaData rsmd = rs.getMetaData();
-									
-									RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
-									
-									while (rs.next()) {
-										 Binding b = bindingMapper.map(rs);
-										 Binding effectiveBinding = mapping.evalVars(b, env);
-										 
-										 List<Quad> generatedQuads = mapping.evalQuads(effectiveBinding).collect(Collectors.toList()); 
-										 
-										 generatedQuads.forEach(actualOutput.asDatasetGraph()::add);
-									}
-								}
-							}
-							
 							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
 							logger.debug("Expected result equals expected one by value -> " + isIso);
-							Assert.assertTrue(isIso);
+							System.out.println("Asserting: " + testCase.getIdentifier());
+							Assert.assertTrue(isIso);								
+						}
+						
+					} catch (Exception e) {
+						String failMessage = testCase.getFailMessage();
+						if (failMessage != null) {
+							System.out.println("Test failed as expected: " + failMessage);
+						} else {
+							throw new RuntimeException("Test failed unexpectedly", e);
 						}
 						
 					} finally {
@@ -241,6 +171,97 @@ public class R2rmlTestSuiteProcessorH2 {
 				}
 			}
 		}
+	}
+
+
+	public static Dataset processR2rml(Connection conn, Model r2rmlDocument) throws SQLException {
+		
+		//							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
+		List<TriplesMap> rawTms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
+		
+		// The effective triples maps include expanded joins
+		List<TriplesMap> tms = new ArrayList<>(rawTms);
+		
+		
+		//							boolean usesJoin = rawTms.stream()
+		//								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
+		//															
+		//							if (!usesJoin) {
+		//								System.err.println("Skipping mapping without join");
+		//								continue;
+		//							}
+		
+		// Expand joins
+		for (TriplesMap tm : rawTms) {
+			R2rmlLib.expandShortcuts(tm);
+			Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
+			if (!map.isEmpty()) {
+				map.values().forEach(R2rmlLib::expandShortcuts);
+			}
+			
+		//								for (TriplesMap joinTm : map.values()) {
+		//									RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(joinTm), RDFFormat.TURTLE_PRETTY);
+		//								}
+			
+			tms.addAll(map.values());
+		}
+		
+		// RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
+		
+        Dataset actualOutput = DatasetFactory.create();
+
+		FunctionEnv env = createDefaultEnv();
+		
+		for (TriplesMap tm : tms) {
+				
+			//							Model closureModel = ResourceUtils.reachableClosure(tm);
+			//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
+			
+			LogicalTable lt = tm.getLogicalTable();							
+			TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
+			
+			//								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
+			
+			logger.debug("Generated Mapping: " + mapping);
+			//								System.out.println(mapping);
+			
+			Set<Var> usedVars = new HashSet<>();
+			mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
+			Map<Var, String> usedVarToColumnName = usedVars.stream()
+					.collect(Collectors.toMap(
+							v -> v,
+							v -> R2rmlLib.dequoteColumnName(v.getName())
+					));
+			
+			
+			String sqlQuery;
+			if (lt.qualifiesAsBaseTableOrView()) {
+				sqlQuery = "SELECT * FROM " + lt.asBaseTableOrView().getTableName();
+			} else if (lt.qualifiesAsR2rmlView()) {
+				sqlQuery = lt.asR2rmlView().getSqlQuery();
+			} else {
+				System.err.println("No logical table present");
+				continue;
+			}
+			
+			try (Statement stmt = conn.createStatement()) {
+				ResultSet rs = stmt.executeQuery(sqlQuery);
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
+						
+				while (rs.next()) {
+					 Binding b = bindingMapper.map(rs);
+					 Binding effectiveBinding = mapping.evalVars(b, env);
+					 
+					 List<Quad> generatedQuads = mapping.evalQuads(effectiveBinding).collect(Collectors.toList()); 
+					 
+					 generatedQuads.forEach(actualOutput.asDatasetGraph()::add);
+				}
+			}
+		}
+		
+		return actualOutput;
 	}
 
 	
