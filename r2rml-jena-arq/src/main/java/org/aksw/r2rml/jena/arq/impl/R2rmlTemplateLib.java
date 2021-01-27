@@ -10,6 +10,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 /**
  * Parser for R2RML Templates such as:
@@ -22,8 +23,8 @@ import org.apache.jena.sparql.expr.NodeValue;
  * @author Claus Stadler
  *
  */
-public class R2rmlTemplateParser {
-	public static Expr parseTemplate(String str) {
+public class R2rmlTemplateLib {
+	public static Expr parse(String str) {
 		List<Expr> exprs = parseTemplateCore(str);
 		
 		Expr result = exprs.size() == 1
@@ -33,7 +34,7 @@ public class R2rmlTemplateParser {
 
 		return result;
 	}
-	
+		
 	public static List<Expr> parseTemplateCore(String str) {
 		List<Expr> result = new ArrayList<>();
 
@@ -100,6 +101,58 @@ public class R2rmlTemplateParser {
 			}
 		}
 		
+		return result;
+	}
+
+
+	/**
+	 * Convert an expression created from a R2RML template string  back to the R2RML template string.
+	 * Raises an {@link IllegalArgumentException} if the conversion fails.
+	 * 
+	 * @param expr The expression to be serialized as an R2RML template string
+	 * @return The R2RML template string
+	 */
+	public static String deparse(Expr expr) {
+		String result;
+		if (expr instanceof E_StrConcat) {
+			StringBuilder sb = new StringBuilder();
+			E_StrConcat e = (E_StrConcat)expr;
+			for (Expr arg : e.getArgs()) {
+				String str = deparse(arg);
+				sb.append(str);
+			}
+			result = sb.toString();
+		} else if (expr instanceof E_Str) {
+			result = deparse(((E_Str)expr).getArg());
+		} else if (expr instanceof E_StrEncodeForURI) {
+			result = deparse(((E_StrEncodeForURI)expr).getArg());
+		} else if (expr instanceof ExprVar) {
+			ExprVar ev = (ExprVar)expr;
+			String varName = ev.getVarName();
+			result = "{" + escapeR2rml(varName) + "}";
+		} else if (expr instanceof NodeValueString) {
+			String tmp = ((NodeValueString)expr).asUnquotedString();
+			result = escapeR2rml(tmp);
+		} else {
+			throw new IllegalArgumentException("Cannot deparse " + expr + " type = " + (expr == null ? null : expr.getClass()));
+		}
+		
+		return result;
+	}
+
+	
+	/**
+	 * Escape a string to be safe for use in an R2RML template string
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static String escapeR2rml(String str) {
+		String result = str
+				.replace("\\", "\\\\")
+				.replace("\"", "\\\"")
+				.replace("{", "\\{")
+				.replace("}", "\\}");
 		return result;
 	}
 }

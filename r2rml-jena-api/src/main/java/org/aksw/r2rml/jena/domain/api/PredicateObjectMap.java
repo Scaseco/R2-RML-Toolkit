@@ -8,6 +8,7 @@ import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
@@ -22,7 +23,7 @@ public interface PredicateObjectMap
 
 	/** Shorthands for constant objects */
 	@Iri(R2rmlTerms.object)
-	Set<Resource> getObjects();
+	Set<RDFNode> getObjects();
 
 	/** Shorthands for constant predicates */
 	@Iri(R2rmlTerms.predicate)

@@ -30,7 +30,6 @@ import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
-import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.ext.com.google.common.collect.ComparisonChain;
@@ -46,6 +45,8 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -59,11 +60,16 @@ import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.jena.sparql.util.NodeUtils;
+import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class R2rmlTestSuiteProcessorH2 {
+	private static final Logger logger = LoggerFactory.getLogger(R2rmlTestSuiteProcessorH2.class);
+	
 	public static void main(String[] args) throws SQLException, IOException {
 
 		if (false) {
@@ -85,20 +91,40 @@ public class R2rmlTestSuiteProcessorH2 {
 		
 		for (String manifestName : manifestNames) {
 			
-			System.out.println("Processing manifest: " + manifestName);
+			logger.info("Processing manifest: " + manifestName);
 			Model model = manifests.getNamedModel(manifestName);
 			
 			Collection<R2rmlTestCase> testCases = R2rmlTestCaseLib.readTestCases(model);
 			for (R2rmlTestCase testCase : testCases) {
 				String testCaseId = testCase.getIdentifier();
-				System.out.println("Processing test case: " + testCaseId);
 
+				
+				boolean isOnSkipList = Arrays.asList(
+						// "R2RMLTC0016b", // canonical double representation issue
+						"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
+						"R2RMLTC0019a", // Mixed absolute and relative IRIs
+						"R2RMLTC0012e" // fails/succeeds indeterministically due to double rounding issues 
+						).contains(testCaseId);
+				if (isOnSkipList) {
+					System.err.println("Skipping " + isOnSkipList + " due to skip list");
+					continue;
+				}
+
+				
+//				if (!testCaseId.equals("R2RMLTC0012e")) {
+//					continue;
+//				}
+
+				
 //				Model closureModel = ResourceUtils.reachableClosure(testCase);
 //				RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 				
 				if (!testCase.getHasExpectedOutput()) {
 					continue;
 				}
+				
+				logger.info("Processing test case: " + testCaseId);
+
 				
 				Database database = testCase.getDatabase();
 							
@@ -124,38 +150,31 @@ public class R2rmlTestSuiteProcessorH2 {
 							List<TriplesMap> tms = new ArrayList<>(rawTms);
 							
 							
-							boolean usesJoin = rawTms.stream()
-								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
-															
-							if (!usesJoin) {
-								System.err.println("Skipping mapping without join");
-								continue;
-							}
+//							boolean usesJoin = rawTms.stream()
+//								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
+//															
+//							if (!usesJoin) {
+//								System.err.println("Skipping mapping without join");
+//								continue;
+//							}
 
 							// Expand joins
 							for (TriplesMap tm : rawTms) {
+								R2rmlLib.expandShortcuts(tm);
 								Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
 								if (!map.isEmpty()) {
 									map.values().forEach(R2rmlLib::expandShortcuts);
 								}
+								
+//								for (TriplesMap joinTm : map.values()) {
+//									RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(joinTm), RDFFormat.TURTLE_PRETTY);
+//								}
+								
 								tms.addAll(map.values());
 							}
 							
-							boolean isOnSkipList = Arrays.asList(
-									// "R2RMLTC0016b", // canonical double representation issue
-									"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-									"R2RMLTC0019a" // Mixed absolute and relative IRIs
-									// "R2RMLTC0012e" // canonical double representation issue: 
-									).contains(testCaseId);
-							if (isOnSkipList) {
-								System.err.println("Skipping mapping");
-								continue;
-							}
+							// RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
 
-							
-//							if (!testCaseId.equals("R2RMLTC0016b")) {
-//								continue;
-//							}
 							FunctionEnv env = createDefaultEnv();
 
 							for (TriplesMap tm : tms) {
@@ -166,14 +185,17 @@ public class R2rmlTestSuiteProcessorH2 {
 								LogicalTable lt = tm.getLogicalTable();							
 								TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
 								
-								// System.out.println(mapping);
+//								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
+
+								logger.debug("Generated Mapping: " + mapping);
+//								System.out.println(mapping);
 
 								Set<Var> usedVars = new HashSet<>();
 								mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
 								Map<Var, String> usedVarToColumnName = usedVars.stream()
 										.collect(Collectors.toMap(
 												v -> v,
-												v -> dequoteColumnName(v.getName())
+												v -> R2rmlLib.dequoteColumnName(v.getName())
 										));
 								
 	
@@ -205,25 +227,8 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
-							System.out.println("Assertion " + isIso);
+							logger.debug("Expected result equals expected one by value -> " + isIso);
 							Assert.assertTrue(isIso);
-							
-//							System.out.println("Expected: " + expectedQuads);
-//							System.out.println("Actual: " + actualQuads);
-//							Set<Quad> missing = difference(expectedQuads, actualQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
-//							Set<Quad> excessive = difference(actualQuads, expectedQuads, R2rmlTestSuiteProcessorH2::compareQuadsViaNodeValue);
-//	//						
-//							if (!missing.isEmpty()) {
-//								System.err.println("Missing quads: " + missing);
-//							}
-//							if (!excessive.isEmpty()) {
-//								System.err.println("Excessive quads: " + excessive);
-//							}
-//							
-//							Assert.assertTrue("Non-empty set of missing quads", missing.isEmpty());
-//							Assert.assertTrue("Non-empty set of excessive quads", excessive.isEmpty());
-	//						Assert.assertEquals(expectedQuads, actualQuads);
-	//						RDFDataMgr.write(System.out, actualOutput, RDFFormat.TRIG_PRETTY);
 						}
 						
 					} finally {
@@ -339,10 +344,6 @@ public class R2rmlTestSuiteProcessorH2 {
 		return result;
 	}
 	
-	public static String dequoteColumnName(String columnName) {
-		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
-		return result;
-	}
 
 	public static FunctionEnv createDefaultEnv() {
         Context context = ARQ.getContext().copy() ;

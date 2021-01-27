@@ -28,6 +28,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
@@ -110,11 +111,11 @@ public class R2rmlImporter {
 	 * @param varGen
 	 * @return
 	 */
-	public static Node allocateVar(TermMap tm, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
+	public static Node allocateVar(TermMap tm, Resource fallbackTermType, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
 		Node result;
 		BiMap<Expr, Var> exprToNode = nodeToExpr.inverse();
 		
-		Expr expr = termMapToExpr(tm);
+		Expr expr = termMapToExpr(tm, fallbackTermType);
 		result = exprToNode.get(expr);
 		
 		if(result == null) {
@@ -183,10 +184,10 @@ public class R2rmlImporter {
 						
 						if (!om.qualifiesAsRefObjectMap()) {
 							
-							Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, varToExpr, varGen);
-							Node s = allocateVar(sm, varToExpr, varGen);
-							Node p = allocateVar(pm, varToExpr, varGen);
-							Node o = allocateVar(om.asTermMap(), varToExpr, varGen);
+							Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, RR.IRI, varToExpr, varGen);
+							Node s = allocateVar(sm, RR.IRI, varToExpr, varGen);
+							Node p = allocateVar(pm, RR.IRI, varToExpr, varGen);
+							Node o = allocateVar(om.asTermMap(), RR.Literal, varToExpr, varGen);
 							
 							// TODO Add book-keeping of var to term-map mapping for debugging purposes
 	
@@ -228,22 +229,35 @@ public class R2rmlImporter {
 	 * @param tm
 	 * @return
 	 */
-	public static Expr termMapToExpr(TermMap tm) {
+	public static Expr termMapToExpr(TermMap tm, Resource fallbackTermType) {
 		Expr result;
 		
-		String template;
-		
-		RDFNode constant;
-		
+		// In the following derive the effective term type based on the term map's attributes
+		Node effectiveTermType = null;
+
+						
 		// If a datatype has been specified then get its node
 		// and validate that its an IRI
+		String template = tm.getTemplate();
+		RDFNode constant = tm.getConstant();
 		Node datatypeNode = getIriNodeOrNull(tm.getDatatype());
 		Node termTypeNode = getIriNodeOrNull(tm.getTermType());
+		
 
+		if (termTypeNode != null) {
+			effectiveTermType = termTypeNode;
+		} else if (template != null) {
+			effectiveTermType = RR.IRI.asNode();
+		} else if (constant != null) {
+			effectiveTermType = classifyTermType(constant.asNode()).asNode();
+		} else { // if (column != null) {
+			effectiveTermType = fallbackTermType.asNode();
+		}
+		
+		
+		
 		if((template = tm.getTemplate()) != null) {
-			Expr arg = R2rmlTemplateParser.parseTemplate(template);
-
-			Node effectiveTermType = termTypeNode == null ? RR.IRI.asNode() : termTypeNode;
+			Expr arg = R2rmlTemplateLib.parse(template);
 			result = applyTermType(arg, effectiveTermType, XSD.xstring.asNode());
 
 		} else if((constant = tm.getConstant()) != null) {
@@ -256,12 +270,17 @@ public class R2rmlImporter {
 				String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
 				
 				if (langValue != null) {
-					termTypeNode = RR.Literal.asNode();
+					
+					if (effectiveTermType != null && !effectiveTermType.equals(RR.Literal.asNode())) {
+						throw new RuntimeException("Conflicting term types: Effective term type evaluated to " + effectiveTermType + " but presence of language tag demands " + R2rmlTerms.Literal);
+					}
+					
+					effectiveTermType = RR.Literal.asNode();
 				}
 				
-				if(termTypeNode != null && !termTypeNode.equals(RR.Literal.asNode()) ) { //|| XSD.xstring.asNode().equals(datatypeNode)) {
+				if(effectiveTermType != null && !effectiveTermType.equals(RR.Literal.asNode()) ) { //|| XSD.xstring.asNode().equals(datatypeNode)) {
 					
-					result = applyTermType(column, termTypeNode, datatypeNode);
+					result = applyTermType(column, effectiveTermType, datatypeNode);
 
 				} else {
 					String language = langValue == null ? "" : langValue;
@@ -270,6 +289,10 @@ public class R2rmlImporter {
 					result = language.isEmpty()
 							? column // new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
 							: new E_StrLang(column, NodeValue.makeString(language));
+					
+//					if (result == column) {
+//						System.out.println("unknown term type (assuming literal)");
+//					}
 				}
 
 			} else {
@@ -306,6 +329,11 @@ public class R2rmlImporter {
 								? column
 								: new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
 							: null;
+		
+//		if (result == column) {
+//			System.out.println("unknown term type - assuming literal");
+//		}
+		
 		return result;
 	}
 	
@@ -318,6 +346,20 @@ public class R2rmlImporter {
 					? new E_Str(column)
 					: new E_Function(knownDatatype.getURI(), new ExprList(column));
 		
+		return result;
+	}
+	
+	
+	public static Resource classifyTermType(Node node) {
+		Resource result =
+			node.isURI()
+				? RR.IRI
+				: node.isBlank()
+					? RR.BlankNode
+					: node.isLiteral()
+						? RR.Literal
+						: null;
+
 		return result;
 	}
 	
