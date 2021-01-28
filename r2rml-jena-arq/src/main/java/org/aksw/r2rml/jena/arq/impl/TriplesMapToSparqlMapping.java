@@ -28,6 +28,7 @@ import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.VariableNotBoundException;
 import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.ElementBind;
@@ -207,9 +208,12 @@ public class TriplesMapToSparqlMapping {
 		NodeValue nv = null;
 		try {
 			nv = expr.eval(binding, env);
+		} catch (VariableNotBoundException ex) {
+			// Just ignore
 		} catch (ExprEvalException ex) {
 			// Treat as evaluation to null
-			// ex.printStackTrace();
+			 // ex.printStackTrace();
+			throw new RuntimeException("Eval exception", ex);
 		}
 
 		return nv;

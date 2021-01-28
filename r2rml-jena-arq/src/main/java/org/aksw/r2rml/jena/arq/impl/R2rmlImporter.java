@@ -33,6 +33,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
+import org.apache.jena.shacl.compact.reader.ShaclcParseException;
 import org.apache.jena.shacl.lib.ShLib;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -61,7 +62,15 @@ public class R2rmlImporter {
 		// also as the shapes model - you may have them separated
 //		Resource result = ValidationUtil.validateModel(dataModel, shaclModel, true);		
 
-	    ValidationReport report = ShaclValidator.get().validate(shaclModel.getGraph(), dataModel.getGraph());
+		ValidationReport report;
+		try {
+			report = ShaclValidator.get().validate(shaclModel.getGraph(), dataModel.getGraph());
+		} catch (Exception e) {
+			RDFDataMgr.write(System.err, shaclModel, RDFFormat.NTRIPLES);
+			throw new RuntimeException("Internal error during shacl validation - model printed to stderr", e);
+		}
+	    
+	    
 //	    ShLib.printReport(report);
 //	    System.out.println();
 //	    RDFDataMgr.write(System.out, report.getModel(), Lang.TTL);
