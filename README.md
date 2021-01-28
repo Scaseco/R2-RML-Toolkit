@@ -65,14 +65,19 @@ Just include
 
 
 ### Modules
-* r2rml-resource-w3c-testsuite: The W3C R2RML test suite resources (no code)
-* r2rml-reousrce-shacl: Shacl file for R2RML (no code) - work in progress
+* r2rml-resource-ontology: A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
+* r2rml-resource-w3c-testsuite: The W3C R2RML test suite resources (editor's draf)
+* r2rml-resource-shacl: Shacl file for R2RML 
 * r2rml-common-vocab: String-based R2RML vocabulary
 * r2rml-jena-vocab: Jena-based R2RML vocabulary
 * r2rml-jena-domain: Jena-based R2RML domain interfaces with RDF annotations
-* r2rml-jena-api-arq: Utilities to import/export the R2RML model as jena constructs. For example in order to export the triple patterns expressed in an R2RML mapping as jena triples.
-* r2rml-jena-api-extensions: Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns.
+* r2rml-jena-arq: Utilities to import/export the R2RML model as jena constructs. Converts triples maps to jena triples, R2RML template strings to SPARQL expressions and computes effective triples maps from RefObjectMaps and more.
 * r2rml-jena-plugin: Jena plugin; registers domain interfaces with jena; includes an annotation processor to create the implementations
+* r2rml-jena-processor-jdbc: A standard conforming R2RML processor for JDBC datasources based on [r2rml-jena-arq](r2rml-jena-arq).
+* r2rml-jena-testsuite-processor-core: Test harnish for [r2rml-resource-w3c-testsuite](r2rml-resource-w3c-testsuite).
+* r2rml-jena-testsuite-processor-h2: Test harnish tied to a H2 database.
+* r2rmlx-jena-api: Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns.
+* r2rmlx-jena-plugin: Jena plugin that registers the r2rmlx extensions when added as a maven dependency
 
 
 
