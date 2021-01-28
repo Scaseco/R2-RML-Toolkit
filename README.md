@@ -79,4 +79,10 @@ Just include
 * [r2rmlx-jena-api](r2rmlx-jena-api): Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns. Registers the r2rmlx extensions when added as a maven dependency.
 
 
+## License
+The **source code** and **shacl** specification of this repo is published under the [Apache License Version 2.0](https://github.com/AKSW/jena-sparql-api/blob/master/LICENSE).
+
+
+* The R2RML ontology is under http://creativecommons.org/licenses/by/3.0/
+* The w3c test suite is under its respective license.
 

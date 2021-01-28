@@ -10,3 +10,5 @@ The orginal ZIP archive is described and linked to from [this wiki page](https:/
 Click here for the [direct download](https://dvcs.w3.org/hg/rdb2rdf-tests/raw-file/default/rdb2rdf-ts.zip)
 
 
+There is also a [wiki page]((https://www.w3.org/2001/sw/wiki/RDB2RDF/SQL_Version_IRIs) with IRIs for use with `rr:sqlVersion`.
+
