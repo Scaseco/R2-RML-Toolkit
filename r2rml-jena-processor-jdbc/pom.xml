@@ -25,11 +25,6 @@
 			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
-			<artifactId>r2rml-resource-w3c-testsuite</artifactId>
-		</dependency>
-
 	</dependencies>
 </project>
 

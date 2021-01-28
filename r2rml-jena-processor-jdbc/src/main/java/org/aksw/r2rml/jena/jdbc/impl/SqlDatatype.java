@@ -7,6 +7,13 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.function.user.UserDefinedFunctionDefinition;
 
+/**
+ * SqlDatatype or rather a NoRDFDatatype in the sense of "Not-only RDF datatype".
+ * Interface to convert non-RDF or RDF values to RDF Terms with corresponding RDFDatatype.
+ * 
+ * @author raven
+ *
+ */
 public interface SqlDatatype {
 	int getSqlType();
 	Class<?> getJavaClass(); // e.g. java.sql.Timestamp for java.sql.Types.Timstamp
@@ -24,7 +31,7 @@ public interface SqlDatatype {
 	// May be null
 	Function<Object, String> getLexicalFormizer();
 	
-	// Algebra transformation associated with the datatype to convert an sql value to rdf
+	// Macro SPARQL expression associated with the datatype to convert an sql value to rdf
 	UserDefinedFunctionDefinition convertSqlToRdf();
 	
 	
@@ -39,7 +46,12 @@ public interface SqlDatatype {
 	// Object convertForRdf(Object);
 	// Node convertToNode(Object o);
 	
-	
+	/**
+	 * Create a function that for a given compatible source object returns an {@link Node} based
+	 * on the state of this interface's implementation.
+	 * 
+	 * @return
+	 */
 	default Function<Object, Node> getNodeMapper() {
 		RDFDatatype rdfDatatype = getRdfDatatype();
 		Function<Object, Object> compatibilizer = getCompatibilizer();

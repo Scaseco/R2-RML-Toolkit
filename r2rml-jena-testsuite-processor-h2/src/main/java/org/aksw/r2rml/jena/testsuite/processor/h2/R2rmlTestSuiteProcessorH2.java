@@ -2,41 +2,25 @@ package org.aksw.r2rml.jena.testsuite.processor.h2;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
-import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import org.aksw.r2rml.jena.jdbc.api.RowMapper;
-import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
+import org.aksw.r2rml.jena.jdbc.processor.R2rmlProcessorJdbc;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.ext.com.google.common.collect.ComparisonChain;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryExecution;
@@ -45,20 +29,8 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.web.LangTag;
-import org.apache.jena.sparql.ARQConstants;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.ExecutionContext;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.expr.ExprNotComparableException;
-import org.apache.jena.sparql.expr.ExprVars;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
-import org.apache.jena.sparql.util.Context;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
-import org.apache.jena.sparql.util.NodeUtils;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -150,7 +122,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							
 							R2rmlImporter.validateR2rml(r2rmlDocument);
 							
-							Dataset actualOutput = processR2rml(conn, r2rmlDocument);
+							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument);
 
 							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
 							logger.debug("Expected result equals expected one by value -> " + isIso);
@@ -179,97 +151,18 @@ public class R2rmlTestSuiteProcessorH2 {
 	}
 
 
-	public static Dataset processR2rml(Connection conn, Model r2rmlDocument) throws SQLException {
-		
-		//							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-		List<TriplesMap> rawTms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
-		
-		// The effective triples maps include expanded joins
-		List<TriplesMap> tms = new ArrayList<>(rawTms);
-		
-		
-		//							boolean usesJoin = rawTms.stream()
-		//								.anyMatch(x -> x.getModel().listSubjectsWithProperty(RR.parentTriplesMap).toList().size() > 0);
-		//															
-		//							if (!usesJoin) {
-		//								System.err.println("Skipping mapping without join");
-		//								continue;
-		//							}
-		
-		// Expand joins
-		for (TriplesMap tm : rawTms) {
-			R2rmlLib.expandShortcuts(tm);
-			Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
-			if (!map.isEmpty()) {
-				map.values().forEach(R2rmlLib::expandShortcuts);
-			}
-			
-		//								for (TriplesMap joinTm : map.values()) {
-		//									RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(joinTm), RDFFormat.TURTLE_PRETTY);
-		//								}
-			
-			tms.addAll(map.values());
-		}
-		
-		// RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
-		
-        Dataset actualOutput = DatasetFactory.create();
 
-		FunctionEnv env = createDefaultEnv();
-		
-		for (TriplesMap tm : tms) {
-				
-			//							Model closureModel = ResourceUtils.reachableClosure(tm);
-			//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
-			
-			LogicalTable lt = tm.getLogicalTable();							
-			TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm);
-			
-			//								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
-			
-			logger.debug("Generated Mapping: " + mapping);
-			//								System.out.println(mapping);
-			
-			Set<Var> usedVars = new HashSet<>();
-			mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
-			Map<Var, String> usedVarToColumnName = usedVars.stream()
-					.collect(Collectors.toMap(
-							v -> v,
-							v -> R2rmlLib.dequoteColumnName(v.getName())
-					));
-			
-			
-			String sqlQuery;
-			if (lt.qualifiesAsBaseTableOrView()) {
-				sqlQuery = "SELECT * FROM " + lt.asBaseTableOrView().getTableName();
-			} else if (lt.qualifiesAsR2rmlView()) {
-				sqlQuery = lt.asR2rmlView().getSqlQuery();
-			} else {
-				System.err.println("No logical table present");
-				continue;
-			}
-			
-			try (Statement stmt = conn.createStatement()) {
-				ResultSet rs = stmt.executeQuery(sqlQuery);
-				ResultSetMetaData rsmd = rs.getMetaData();
-				
-				RowMapper bindingMapper = JdbcUtils.createDefaultBindingMapper(rsmd, usedVarToColumnName); // .createBindingMapper(rs, usedVarToColumnName, new RowToNodeViaTypeManager());
-						
-				while (rs.next()) {
-					 Binding b = bindingMapper.map(rs);
-					 Binding effectiveBinding = mapping.evalVars(b, env);
-					 
-					 List<Quad> generatedQuads = mapping.evalQuads(effectiveBinding).collect(Collectors.toList()); 
-					 
-					 generatedQuads.forEach(actualOutput.asDatasetGraph()::add);
-				}
-			}
-		}
-		
-		return actualOutput;
-	}
 
-	
+	/**
+	 * Check two datasets for isomorphism using comparison by value.
+	 * Internally converts the datasets into result sets with ?g ?s ?p ?o) bindings
+	 * and compares them using {@link ResultSetCompare#equalsByValue(org.apache.jena.query.ResultSet, org.apache.jena.query.ResultSet)}
+	 * 
+	 * 
+	 * @param expected
+	 * @param actual
+	 * @return
+	 */
 	public static boolean isIsomorphic(Dataset expected, Dataset actual) {
 		boolean result;
 		
@@ -296,86 +189,78 @@ public class R2rmlTestSuiteProcessorH2 {
 		return result;
 	}
 	
-	/**
-	 * Difference of two collections w.r.t. a custom comparator.
-	 * Runs in O(n^2)
-	 * 
-	 * @param <T>
-	 * @param a
-	 * @param b
-	 * @param cmp
-	 * @return
-	 */
-	public static <T> Set<T> difference(
-			Collection<? extends T> a ,
-			Collection<? extends T> b,
-			Comparator<? super T> cmp) {
-		Set<T> result = a.stream()
-			.filter(ai -> b.stream().noneMatch(bi -> cmp.compare(ai, bi) == 0))
-			.collect(Collectors.toSet());
-		
-
-//		System.out.println("Diff:");
-//		result.forEach(System.out::println);
-		return result;
-	}
+//	/**
+//	 * Difference of two collections w.r.t. a custom comparator.
+//	 * Runs in O(n^2)
+//	 * 
+//	 * @param <T>
+//	 * @param a
+//	 * @param b
+//	 * @param cmp
+//	 * @return
+//	 */
+//	public static <T> Set<T> difference(
+//			Collection<? extends T> a ,
+//			Collection<? extends T> b,
+//			Comparator<? super T> cmp) {
+//		Set<T> result = a.stream()
+//			.filter(ai -> b.stream().noneMatch(bi -> cmp.compare(ai, bi) == 0))
+//			.collect(Collectors.toSet());
+//		
+//
+////		System.out.println("Diff:");
+////		result.forEach(System.out::println);
+//		return result;
+//	}
+//	
+//	
+//    public static int compareAlways(NodeValue nv1, NodeValue nv2)
+//    {
+//    	int result;
+//        try {
+//            result = NodeValue.compare(nv1, nv2);
+//        } catch (ExprNotComparableException ex) {
+//        	result =  NodeUtils.compareRDFTerms(nv1.asNode(), nv2.asNode());
+//        }
+//        return result;
+//    }
+//
+//	/**
+//	 * Compare nodes such that e.g. "10"^^xsd:int is equal to "10"^^xsd:integer
+//	 * 
+//	 * @param a
+//	 * @param b
+//	 * @return
+//	 */
+//	public static int compareNodesViaNodeValue(Node a, Node b) {
+//		NodeValue nva = NodeValue.makeNode(a);
+//		NodeValue nvb = NodeValue.makeNode(b);
+//		int result = compareAlways(nva, nvb);
+//		System.out.println(nva + (result == 0 ? " == " : " =/=") + nvb);
+//		return result;
+//	}
+//	
+//	public static int compareNodesEquiv(Node a, Node b) {
+//		int result = Quad.isDefaultGraph(a) && Quad.isDefaultGraph(b)
+//				? 0
+//				: compareNodesViaNodeValue(a, b);
+//		return result;
+//	}
+//
+//	
+//	public static int compareQuadsViaNodeValue(Quad a, Quad b) {
+//		return compareQuads(a, b, R2rmlTestSuiteProcessorH2::compareNodesEquiv);
+//	}
+//	
+//	public static int compareQuads(Quad a, Quad b, Comparator<? super Node> nodeComparator) {
+//		int result = ComparisonChain.start()
+//			.compare(a.getGraph(), b.getGraph(), nodeComparator)
+//			.compare(a.getSubject(), b.getSubject(), nodeComparator)
+//			.compare(a.getPredicate(), b.getPredicate(), nodeComparator)
+//			.compare(a.getObject(), b.getObject(), nodeComparator)
+//			.result();
+//		
+//		return result;
+//	}
 	
-	
-    public static int compareAlways(NodeValue nv1, NodeValue nv2)
-    {
-    	int result;
-        try {
-            result = NodeValue.compare(nv1, nv2);
-        } catch (ExprNotComparableException ex) {
-        	result =  NodeUtils.compareRDFTerms(nv1.asNode(), nv2.asNode());
-        }
-        return result;
-    }
-
-	/**
-	 * Compare nodes such that e.g. "10"^^xsd:int is equal to "10"^^xsd:integer
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static int compareNodesViaNodeValue(Node a, Node b) {
-		NodeValue nva = NodeValue.makeNode(a);
-		NodeValue nvb = NodeValue.makeNode(b);
-		int result = compareAlways(nva, nvb);
-		System.out.println(nva + (result == 0 ? " == " : " =/=") + nvb);
-		return result;
-	}
-	
-	public static int compareNodesEquiv(Node a, Node b) {
-		int result = Quad.isDefaultGraph(a) && Quad.isDefaultGraph(b)
-				? 0
-				: compareNodesViaNodeValue(a, b);
-		return result;
-	}
-
-	
-	public static int compareQuadsViaNodeValue(Quad a, Quad b) {
-		return compareQuads(a, b, R2rmlTestSuiteProcessorH2::compareNodesEquiv);
-	}
-	
-	public static int compareQuads(Quad a, Quad b, Comparator<? super Node> nodeComparator) {
-		int result = ComparisonChain.start()
-			.compare(a.getGraph(), b.getGraph(), nodeComparator)
-			.compare(a.getSubject(), b.getSubject(), nodeComparator)
-			.compare(a.getPredicate(), b.getPredicate(), nodeComparator)
-			.compare(a.getObject(), b.getObject(), nodeComparator)
-			.result();
-		
-		return result;
-	}
-	
-
-	public static FunctionEnv createDefaultEnv() {
-        Context context = ARQ.getContext().copy() ;
-        context.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime()) ;
-        FunctionEnv env = new ExecutionContext(context, null, null, null) ; 
-
-        return env;
-	}
 }
