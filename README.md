@@ -80,7 +80,7 @@ Just include
 
 
 ## License
-The **source code** and **shacl** specification of this repo is published under the [Apache License Version 2.0](https://github.com/AKSW/jena-sparql-api/blob/master/LICENSE).
+The **source code** and **shacl** specification of this repo is published under the [Apache License Version 2.0](LICENSE).
 
 
 * The R2RML ontology is under http://creativecommons.org/licenses/by/3.0/
