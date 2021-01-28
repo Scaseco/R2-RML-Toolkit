@@ -65,8 +65,8 @@ Just include
 
 
 ### Modules
-* r2rml-resource-ontology: A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
-* r2rml-resource-w3c-testsuite: The W3C R2RML test suite resources (editor's draf)
+* (r2rml-resource-ontology): A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
+* r2rml-resource-w3c-testsuite: The W3C R2RML test suite resources (editor's draft)
 * r2rml-resource-shacl: Shacl file for R2RML 
 * r2rml-common-vocab: String-based R2RML vocabulary
 * r2rml-jena-vocab: Jena-based R2RML vocabulary
