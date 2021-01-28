@@ -23,6 +23,8 @@ import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.ext.com.google.common.collect.BiMap;
 import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
+import org.apache.jena.ext.com.google.common.collect.Streams;
+import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -33,7 +35,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
-import org.apache.jena.shacl.compact.reader.ShaclcParseException;
 import org.apache.jena.shacl.lib.ShLib;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -51,11 +52,37 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.apache.jena.vocabulary.XSD;
 
 public class R2rmlImporter {
 
+	public static Set<String> checkForUsageOfUndefinedTerms(Model ontology, Model data, String namespace) {
+		Set<String> knownTerms = GraphUtil.listSubjects(ontology.getGraph(), null, null)
+				.filterKeep(Node::isURI)
+				.mapWith(Node::getURI)
+				.filterKeep(str -> str.startsWith(namespace))
+				.toSet();
+		
+		Set<String> usedTerms = Streams.stream(GraphUtils.allNodes(data.getGraph()))
+				.filter(Node::isURI)
+				.map(Node::getURI)
+				.filter(str -> str.startsWith(namespace))
+				.collect(Collectors.toSet());
+
+		Set<String> result = Sets.difference(usedTerms, knownTerms);
+		return result;
+	}
+	
 	public static void validateR2rml(Model dataModel) {
+		Model r2rmlOntModel = RDFDataMgr.loadModel("www.w3.org/ns/r2rml.ttl");
+
+		Set<String> undefinedUses = checkForUsageOfUndefinedTerms(r2rmlOntModel, dataModel, R2rmlTerms.uri);
+		
+		if (!undefinedUses.isEmpty()) {
+			throw new RuntimeException("Used terms without definition: " + undefinedUses);
+		}
+				
 		Model shaclModel = RDFDataMgr.loadModel("r2rml.core.shacl.ttl");
 
 		// Perform the validation of everything, using the data model

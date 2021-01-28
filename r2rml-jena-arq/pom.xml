@@ -22,6 +22,12 @@
 
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-resource-ontology</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
 			<artifactId>r2rml-resource-shacl</artifactId>
 		</dependency>
 
