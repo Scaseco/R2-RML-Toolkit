@@ -147,7 +147,11 @@ public class R2rmlImporter {
 	 * @param varGen
 	 * @return
 	 */
-	public static Node allocateVar(TermMap tm, Resource fallbackTermType, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
+	public static Node allocateVar(
+			TermMap tm,
+			Resource fallbackTermType,
+			BiMap<Var, Expr> nodeToExpr,
+			VarAlloc varGen) {
 		Node result;
 		BiMap<Expr, Var> exprToNode = nodeToExpr.inverse();
 		
@@ -183,6 +187,10 @@ public class R2rmlImporter {
 	 * @return
 	 */
 	public static TriplesMapToSparqlMapping read(TriplesMap tm) {
+		return read(tm, null);
+	}
+	
+	public static TriplesMapToSparqlMapping read(TriplesMap tm, String baseIri) {
 		
 		R2rmlLib.expandShortcuts(tm);
 
@@ -352,11 +360,29 @@ public class R2rmlImporter {
 		return result;
 	}
 
+	/* base iri handling makes more sense on the R2RML processor rather than trying to capture it
+	 * with algebraic expressions here
+	 * note that jena's E_IRI supports getting the base IRI out of the ARQ context
+	public static Expr applyIriType(Expr expr, String baseIri) {
+		Expr result = baseIri == null
+				? new E_IRI(expr)
+				: applyIriWithFallbackToBaseIri(expr, baseIri);
+		return result;
+	}
+	
+	public static Expr applyIriWithFallbackToBaseIri(Expr expr, String baseIri) {
+		return new E_Coalesce(new ExprList(Arrays.asList(
+				new E_IRI(expr),
+				new E_IRI(new E_StrConcat(new ExprList(Arrays.asList(NodeValue.makeString(baseIri), expr)))))));
+	}
+	*/
+	
 	public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
 		String termTypeIri = termType.getURI();
 
 		Expr result;
 		result = termTypeIri.equals(R2rmlTerms.IRI)
+					// ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
 					? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
 					: termTypeIri.equals(R2rmlTerms.BlankNode)
 						? new E_BNode(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))

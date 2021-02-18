@@ -31,6 +31,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFParserBuilder;
+import org.apache.jena.riot.other.BatchedStreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprTransformer;
@@ -50,6 +53,9 @@ public class R2rmlLib {
 		return Streams.stream(it).map(r -> r.as(TriplesMap.class)).onClose(it::close);
 	}
 	
+	
+	/** Create a new TriplesMap for each RefObjectMap. The new TriplesMap will have a generated SQL
+	 * query string that performs the appropriate join. */
 	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(TriplesMap triplesMap) {
 		Model outModel = triplesMap.getModel();
 
@@ -256,8 +262,8 @@ public class R2rmlLib {
 	
 	/**
 	 * Decompose triples map<b>s</b> such that they become triple (singular!) maps:
-	 * One triple maps for every triple that gets generated.
-	 * Hence, just one subjectMap, one predicteObjectMap, one predicateMap and one objectMap
+	 * I.e. one triple maps for every triple that gets generated or in other words
+	 * just one subjectMap, one predicteObjectMap, one predicateMap and one objectMap
 	 */
 	public static void decompose() {
 		// TODO Implement me

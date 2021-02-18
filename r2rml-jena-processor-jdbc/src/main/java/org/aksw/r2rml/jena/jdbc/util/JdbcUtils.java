@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
-import org.aksw.r2rml.jena.jdbc.api.RowMapper;
+import org.aksw.r2rml.jena.jdbc.api.BindingMapper;
 import org.aksw.r2rml.jena.jdbc.impl.NaturalMappings;
 import org.aksw.r2rml.jena.jdbc.impl.NodeMapperMultiplexer;
 import org.aksw.r2rml.jena.jdbc.impl.RowToBindingImpl;
@@ -50,6 +50,20 @@ public class JdbcUtils {
 	}
 	
 	
+	/**
+	 * Wrapper for {@link Map#put(Object, Object)} that raises a RuntimeException
+	 * upon reassignment of a key.
+	 */
+	public static <K, V, M extends Map<K, V>> M putNew(M map, K k, V v) {
+		if (map.containsKey(k)) {
+			V existingValue = map.get(v);
+			throw new RuntimeException("Key " + k + " already mapped to " + existingValue);
+		} else {
+			map.put(k, v);
+		}
+		return map;
+	}
+	
 	public static Map<Var, Integer> createVarMapping(ResultSetMetaData rsmd, Map<Var, String> usedVarToColumnName) throws SQLException {
 		int columnCount = rsmd.getColumnCount();
 
@@ -67,7 +81,7 @@ public class JdbcUtils {
 			Var usedVar = columnNameToVar.get(columnName);
 //			if (usedVars.contains(cv)) {
 			if (usedVar != null) {
-				colNameToIdx.put(usedVar, i);
+				putNew(colNameToIdx, usedVar, i);
 			} else {
 				// Secondary matching with ignore case
 				Var secondaryMatch = usedVarToColumnName.entrySet().stream()
@@ -77,7 +91,7 @@ public class JdbcUtils {
 					.orElse(null);
 				
 				if (secondaryMatch != null) {
-					colNameToIdx.put(secondaryMatch, i);
+					putNew(colNameToIdx, secondaryMatch, i);
 				}
 				
 			}
@@ -93,9 +107,10 @@ public class JdbcUtils {
 		return colNameToIdx;
 	}
 	
-	public static RowMapper createDefaultBindingMapper(
+	public static BindingMapper createDefaultBindingMapper(
 			ResultSetMetaData rsmd,
-			Map<Var, String> usedVarToColumnName) throws SQLException {
+			Map<Var, String> usedVarToColumnName,
+			Set<Var> nullableVars) throws SQLException {
 		SqlTypeMapper sqlTypeMapper = SqlTypeMapper.getInstance();
 
 		Map<Var, Integer> colNameToIdx = createVarMapping(rsmd, usedVarToColumnName);
@@ -108,29 +123,33 @@ public class JdbcUtils {
 			}
 		};
 		
-		RowMapper result = createBindingMapper(colNameToIdx, nodeMapperFactory);
+		BindingMapper result = createBindingMapper(colNameToIdx, nodeMapperFactory, nullableVars);
 		return result;
 	}
 	
-	public static RowMapper createBindingMapper(
+	public static BindingMapper createBindingMapper(
 			Map<Var, Integer> colNameToIdx,
-			Function<int[], NodeMapper> nodeMapperFactory
+			Function<int[], NodeMapper> nodeMapperFactory,
+			Set<Var> nullableVars
 			) throws SQLException {
 		
 		int n = colNameToIdx.size();
 		int[] colIdxs = new int[n];
 		Var[] vars = new Var[n];
+		boolean[] nullable = new boolean[n];
 
 		int i = 0;
 		for (Entry<Var, Integer> e : colNameToIdx.entrySet()) {
-			vars[i] = e.getKey();
+			Var var = e.getKey();
+			vars[i] = var;
 			colIdxs[i] = e.getValue();
+			nullable[i] = nullableVars.contains(var);
 			++i;
 		}
 	
 		NodeMapper nodeMapper = nodeMapperFactory.apply(colIdxs);
 
-		RowMapper result = new RowToBindingImpl(colIdxs, vars, nodeMapper);
+		BindingMapper result = new RowToBindingImpl(colIdxs, vars, nullable, nodeMapper);
 		return result;
 	}
 	

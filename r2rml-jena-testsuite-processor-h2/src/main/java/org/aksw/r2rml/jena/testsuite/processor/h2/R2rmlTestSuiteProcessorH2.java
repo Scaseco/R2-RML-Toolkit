@@ -70,8 +70,8 @@ public class R2rmlTestSuiteProcessorH2 {
 
 				boolean isOnSkipList = Arrays.asList(
 						// "R2RMLTC0016b", // canonical double representation issue
-						"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-						"R2RMLTC0019a", // Mixed absolute and relative IRIs
+						// "R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
+						// "R2RMLTC0019a", // Mixed absolute and relative IRIs
 						"R2RMLTC0012e", // fails/succeeds indeterministically; appears to be double rounding issues
 						// "R2RMLTC0003a", // Tests SQL version identifiers; this should be captured by test whether all terms in the r2rml namespace are known
 						"R2RMLTC0015b"  // Either Jena's LangTag.check() is too permissive or the test case too strict (lang tags "spanish" and "english" used)
@@ -119,14 +119,15 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
-							
+
 							R2rmlImporter.validateR2rml(r2rmlDocument);
 							
-							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument);
+							String baseIri = "http://example.com/base/";
+							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument, baseIri);
 
 							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
 							logger.debug("Expected result equals expected one by value -> " + isIso);
-							System.out.println("Asserting: " + testCase.getIdentifier());
+							System.out.println("Asserted " + testCase.getIdentifier() + " " + (isIso ? "[ OK ]" : "[FAIL]"));
 							Assert.assertTrue(isIso);								
 						}
 						

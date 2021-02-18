@@ -18,6 +18,7 @@ import org.apache.jena.ext.com.google.common.collect.Table;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
+import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -98,8 +99,8 @@ public class TriplesMapToSparqlMapping {
 		return Streams.stream(it);
 	}
 
-	public Binding evalVars(Binding binding, FunctionEnv env) {
-		return evalVars(varToExpr, binding, env);
+	public Binding evalVars(Binding binding, FunctionEnv env, boolean strictIriValidation) {
+		return evalVars(varToExpr, binding, env, strictIriValidation);
 	}
 	
 
@@ -133,7 +134,20 @@ public class TriplesMapToSparqlMapping {
 		}
 	}
 	
-	public static Binding evalVars(VarExprList varToExpr, Binding binding, FunctionEnv env) {
+	/**
+	 * 
+	 * @param varToExpr
+	 * @param binding
+	 * @param env
+	 * @param strictIriValidation
+	 * 
+	 * @return
+	 */
+	public static Binding evalVars(
+			VarExprList varToExpr,
+			Binding binding,
+			FunctionEnv env,
+			boolean strictIriValidation) {
 		BindingMap result = BindingFactory.create();
 		for (Entry<Var, Expr> e : varToExpr.getExprs().entrySet()) {
 			
@@ -141,11 +155,11 @@ public class TriplesMapToSparqlMapping {
 			Expr expr = e.getValue();
 
 			Node node;
-			
-			// Special handling of bnodes
-			// For each variable that maps to a bnode definition keep a mapping from the argument value
-			// to the generated bnode
+
 			if (expr instanceof E_BNode) {
+				// Special handling of bnodes
+				// For each variable that maps to a bnode definition keep a mapping from the argument value
+				// to the generated bnode
 				E_BNode ebnode = (E_BNode)expr;
 				// Expr bexpr = ebnode.getExpr();
 				List<Expr> args = ebnode.getArgs();
@@ -196,7 +210,14 @@ public class TriplesMapToSparqlMapping {
 				node = nv == null ? null : nv.asNode();
 			}
 			
-			if (node != null) {
+			if (node != null) {				
+				if (node.isURI()) {
+					if (strictIriValidation) {
+						String iriStr = node.getURI();
+						IRIResolver.validateIRI(iriStr);
+					}
+				}
+				
 				result.add(v, node);
 			}
 		}
