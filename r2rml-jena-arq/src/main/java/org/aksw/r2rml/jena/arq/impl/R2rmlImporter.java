@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.arq.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,6 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidationException;
+import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidator;
+import org.aksw.jena_sparql_api.langtag.validator.impl.LangTagValidators;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
@@ -27,6 +31,7 @@ import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
@@ -110,6 +115,48 @@ public class R2rmlImporter {
 		    ShLib.printReport(report);
 			RDFDataMgr.write(System.err, report.getModel(), RDFFormat.TURTLE_PRETTY);
 			throw new RuntimeException("Shacl validation failed; see report above");
+		}
+		
+		// Check all language tags in the model;
+		// this could be handled with sparql extension functions + shacl in the future
+		validateR2rmlLanguage(dataModel);
+		
+	}
+	
+	public static void validateR2rmlLanguage(Model model) {
+//		Set<String> usedLangTags = model.listObjects()
+//			.filterKeep(RDFNode::isLiteral)
+//			.mapWith(RDFNode::asLiteral)
+//			.mapWith(Literal::getLanguage)
+//			.filterDrop(String::isEmpty)
+//			.toSet();
+		Set<String> usedLangTags = model.listObjectsOfProperty(RR.language)
+				.filterKeep(RDFNode::isLiteral)
+				.mapWith(RDFNode::asLiteral)
+				.mapWith(Literal::getLexicalForm)
+				.filterDrop(String::isEmpty)
+				.toSet();
+		
+		validateLangTags(usedLangTags);
+	}
+	
+	public static void validateLangTags(Set<String> langTags) {
+		LangTagValidator langTagValidator = LangTagValidators.getDefault();
+		Map<String, String> invalidLangTags = new LinkedHashMap<>();
+		for (String langTag : langTags) {
+			try {
+				langTagValidator.validate(langTag);
+			} catch (LangTagValidationException e) {
+				invalidLangTags.put(langTag, e.getMessage());
+			}
+		}
+		
+		if (!invalidLangTags.isEmpty()) {
+			String msg = invalidLangTags.entrySet().stream()
+			.map(e -> e.getKey() + ": " + e.getValue())			
+			.collect(Collectors.joining("\n"));
+			
+			throw new RuntimeException("The following used lang tags failed to validate:\n" + msg);
 		}
 	}
 

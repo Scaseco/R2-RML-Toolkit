@@ -139,7 +139,7 @@ public class TriplesMapToSparqlMapping {
 	 * @param varToExpr
 	 * @param binding
 	 * @param env
-	 * @param strictIriValidation
+	 * @param strictIriValidation If true then every generated IRI is checked for validity and exceptions are raised accordingly.
 	 * 
 	 * @return
 	 */
