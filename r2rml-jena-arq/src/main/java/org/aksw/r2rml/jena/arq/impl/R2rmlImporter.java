@@ -117,7 +117,7 @@ public class R2rmlImporter {
 			throw new RuntimeException("Shacl validation failed; see report above");
 		}
 		
-		// Check all language tags in the model;
+		// Check all values given for rr:languages (demanded by test case R2RMLTC0015b)
 		// this could be handled with sparql extension functions + shacl in the future
 		validateR2rmlLanguage(dataModel);
 		
