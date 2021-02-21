@@ -190,10 +190,11 @@
 				<version>${jena-sparql-api.version}</version>
 			</dependency>
 
+			<!-- Using version 3.2 instead of 4.0 for compatibility with ontop -->
 			<dependency>
 				<groupId>com.github.jsqlparser</groupId>
 				<artifactId>jsqlparser</artifactId>
-				<version>4.0</version>
+				<version>3.2</version>
 			</dependency>
 
 			<!-- <dependency> -->
