@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.commons.codec.entity.api.EntityCodec;
+import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.r2rml.jena.arq.impl.R2rmlTemplateLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
@@ -31,9 +33,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.RDFParserBuilder;
-import org.apache.jena.riot.other.BatchedStreamRDF;
-import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprTransformer;
@@ -75,11 +74,12 @@ public class R2rmlLib {
 	
 	/** Create a new TriplesMap for each RefObjectMap. The new TriplesMap will have a generated SQL
 	 * query string that performs the appropriate join. */
-	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(TriplesMap triplesMap) {
+	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(
+			TriplesMap triplesMap, SqlCodec sqlCodec) {
 		Model outModel = triplesMap.getModel();
 
 		Model tmp = ModelFactory.createDefaultModel();
-		Map<RefObjectMap, TriplesMap> result = expandRefObjectMaps(tmp, triplesMap);
+		Map<RefObjectMap, TriplesMap> result = expandRefObjectMaps(tmp, triplesMap, sqlCodec);
 		
 		outModel.add(tmp);
 
@@ -93,15 +93,20 @@ public class R2rmlLib {
 
 	
 	/**
-	 * Create a new triples map where the ref object map has been turned into a ObjectMap
+	 * Create a new triples map where any ref object map has been turned into a new TriplesMap
+	 * whose logical table is an SQL query string with the appropriate join.
 	 * 
+	 * @param The model into which to append the expanded TriplesMaps
+	 * @param The TriplesMaps whose RefObjectMaps to expand
+	 * @param SqlCodec sqlCodec for encoding/decoding column names
 	 * 
-	 * 
-	 * 
-	 * @param refObjectMap
-	 * @return
+	 * @return A map from any encountered RefObjectMap (in the given TriplesMap) to the TriplesMap
+	 * 			it was expanded to.
 	 */
-	public static Map<RefObjectMap, TriplesMap> expandRefObjectMaps(Model outModel, TriplesMap tm) {
+	public static Map<RefObjectMap, TriplesMap> expandRefObjectMaps(
+			Model outModel,
+			TriplesMap tm,
+			SqlCodec sqlCodec) {
 		// TriplesMap result = ModelFactory.createDefaultModel().createResource().as(TriplesMap.class);
 		Map<RefObjectMap, TriplesMap> result = new LinkedHashMap<>();
 		
@@ -179,12 +184,14 @@ public class R2rmlLib {
 						for (Var parentVar : parentVars) {
 							if (childVars.contains(parentVar)) {
 								String parentName = parentVar.getName();
-								String unquoted = dequoteColumnName(parentName);
+								EntityCodec<String> columnNameCodec = sqlCodec.forColumnName();
+
+								String unquoted = columnNameCodec.decodeOrGetAsGiven(parentName);
 
 								String tmp = "parent_" + unquoted; 
 								String newVarName = unquoted.equals(parentName)
 									? tmp
-									: quoteColumnName(tmp);
+									: columnNameCodec.encode(tmp);
 								
 								parentRenames.put(parentVar, Var.alloc(newVarName));
 							}
@@ -354,15 +361,16 @@ public class R2rmlLib {
 		return target;
 	}
 	
-	public static String dequoteColumnName(String columnName) {
-		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
-		return result;
-	}
-
-	public static String quoteColumnName(String columnName) {
-		String result = "\"" + columnName + "\"";
-		return result;
-	}
+//  Use SqlCodec.forColumnName().encode/decode
+//	public static String dequoteColumnName(String columnName) {
+//		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
+//		return result;
+//	}
+//
+//	public static String quoteColumnName(String columnName) {
+//		String result = "\"" + columnName + "\"";
+//		return result;
+//	}
 
 	/**
 	 * Expands rr:class, rr:subject, rr:predicate, rr:object and rr:graph to term maps

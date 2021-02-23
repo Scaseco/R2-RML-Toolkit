@@ -6,13 +6,13 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
@@ -41,7 +41,11 @@ import org.slf4j.LoggerFactory;
 public class R2rmlProcessorJdbc {
 	private static final Logger logger = LoggerFactory.getLogger(R2rmlProcessorJdbc.class);
 	
-	public static Dataset processR2rml(Connection conn, Model r2rmlDocument, String baseIri) throws SQLException {
+	public static Dataset processR2rml(
+			Connection conn,
+			Model r2rmlDocument,
+			String baseIri,
+			SqlCodec sqlCodec) throws SQLException {
 		
 		//							RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);
 		List<TriplesMap> rawTms = R2rmlLib.streamTriplesMaps(r2rmlDocument).collect(Collectors.toList());
@@ -61,7 +65,7 @@ public class R2rmlProcessorJdbc {
 		// Expand joins
 		for (TriplesMap tm : rawTms) {
 			R2rmlLib.expandShortcuts(tm);
-			Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm);
+			Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm, sqlCodec);
 			if (!map.isEmpty()) {
 				map.values().forEach(R2rmlLib::expandShortcuts);
 			}
@@ -101,7 +105,7 @@ public class R2rmlProcessorJdbc {
 			Map<Var, String> usedVarToColumnName = usedVars.stream()
 					.collect(Collectors.toMap(
 							v -> v,
-							v -> R2rmlLib.dequoteColumnName(v.getName())
+							v -> sqlCodec.forColumnName().decodeOrGetAsGiven(v.getName())
 					));
 			
 			

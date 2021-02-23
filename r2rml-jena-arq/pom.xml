@@ -15,6 +15,12 @@
 
 	<dependencies>
 
+		<!-- Used for en/de-quoting of column names -->
+		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
 			<artifactId>r2rml-jena-api</artifactId>
