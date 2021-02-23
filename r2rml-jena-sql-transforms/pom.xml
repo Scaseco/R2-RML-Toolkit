@@ -21,6 +21,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+		</dependency>
+
+
+		<dependency>
 			<groupId>com.github.jsqlparser</groupId>
 			<artifactId>jsqlparser</artifactId>
 		</dependency>

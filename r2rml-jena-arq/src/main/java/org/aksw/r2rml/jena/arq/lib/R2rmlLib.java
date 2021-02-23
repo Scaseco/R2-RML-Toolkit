@@ -54,6 +54,25 @@ public class R2rmlLib {
 	}
 	
 	
+	  /**
+	   * Returns all triples maps for the given predicate.
+	   *
+	   * @param predicate the predicate
+	   * @param model the model
+	   * @return the [[TriplesMap]]s that use the given predicate
+	   */
+//	public static Stream<TriplesMap> triplesMapsHavingPredicate(Model model, Property predicate) {
+//		return streamTriplesMaps(model)
+//				.filters
+//		
+//	    model
+//	      .listResourcesWithProperty(RR.subjectMap).asScala
+//	      .map(_.as(classOf[TriplesMap]))
+//	      .filter(tm =>
+//	        tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
+//	  }
+	
+	
 	/** Create a new TriplesMap for each RefObjectMap. The new TriplesMap will have a generated SQL
 	 * query string that performs the appropriate join. */
 	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(TriplesMap triplesMap) {

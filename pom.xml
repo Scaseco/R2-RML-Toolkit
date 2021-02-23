@@ -66,6 +66,9 @@
 		<jena-sparql-api.subversion>1-SNAPSHOT</jena-sparql-api.subversion>
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
 
+
+		<aksw-commons.version>0.8.16-SNAPSHOT</aksw-commons.version>
+
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
@@ -82,6 +85,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.aksw.commons</groupId>
+				<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+				<version>${aksw-commons.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>r2rml-common-vocab</artifactId>

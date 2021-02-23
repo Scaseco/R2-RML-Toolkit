@@ -15,9 +15,15 @@ import org.apache.jena.rdf.model.Resource;
 public interface PredicateObjectMap
 	extends MappingComponent, HasGraphMap
 {
+	/**
+	 * @return A mutable set view of the predicat maps. Never null.
+	 */
 	@Iri(R2rmlTerms.predicateMap)
 	Set<PredicateMap> getPredicateMaps();
 
+	/**
+	 * @return A mutable set view of the object map types. Never null.
+	 */
 	@Iri(R2rmlTerms.objectMap)
 	Set<ObjectMapType> getObjectMaps();
 
