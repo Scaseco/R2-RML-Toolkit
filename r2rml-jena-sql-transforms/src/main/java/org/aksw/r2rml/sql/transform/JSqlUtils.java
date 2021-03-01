@@ -29,7 +29,7 @@ public class JSqlUtils {
 				tableRef[0] = table;
 			}
 		};
-		statement.accept(tablesNamesFinder);
+		tablesNamesFinder.getTableList(statement);
 
 		Table table = tableRef[0];
 		Objects.requireNonNull(table, "Could not parse colmn " + tableName + " in context " + dummy);
@@ -49,7 +49,7 @@ public class JSqlUtils {
 				columnRef[0] = column;
 			}
 		};
-		statement.accept(tablesNamesFinder);
+		tablesNamesFinder.getTableList(statement);
 
 		Column column = columnRef[0];
 		Objects.requireNonNull(column, "Could not parse colmn " + columnName + " in context " + dummy);
@@ -103,7 +103,7 @@ public class JSqlUtils {
 			}
 		};
 
-		statement.accept(tablesNamesFinder);
+		tablesNamesFinder.getTableList(statement);
 		String result = statement.toString();
 		return result;
 	}
@@ -121,7 +121,7 @@ public class JSqlUtils {
 			}
 		};
 
-		statement.accept(tablesNamesFinder);
+		tablesNamesFinder.getTableList(statement);
 		String result = statement.toString();
 		return result;
 	}

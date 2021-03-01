@@ -116,7 +116,7 @@ public class R2rmlSqlLib {
 				for (PredicateMap pm : pom.getPredicateMaps()) {
 					String col = pm.getColumn();
 					if (col != null) {
-						sm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
+						pm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
 					}
 				}
 
@@ -126,7 +126,7 @@ public class R2rmlSqlLib {
 						TermMap otm = om.asTermMap();
 						String col = otm.getColumn();
 						if (col != null) {
-							sm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
+							otm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
 						}
 					}
 				}
