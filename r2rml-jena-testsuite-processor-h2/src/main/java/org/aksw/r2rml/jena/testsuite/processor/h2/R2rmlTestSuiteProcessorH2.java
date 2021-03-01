@@ -179,11 +179,11 @@ public class R2rmlTestSuiteProcessorH2 {
 			
 			ResultSetRewindable rsa = ResultSetFactory.copyResults(qea.execSelect());
 			ResultSetRewindable rsb = ResultSetFactory.copyResults(qeb.execSelect());
-									
+
 			result = compareByValue
 					? ResultSetCompare.equalsByValue(rsa, rsb)
 					: ResultSetCompare.equalsByTerm(rsa, rsb); 
-			
+
 			if (!result) {
 				rsa.reset();
 				rsb.reset();
@@ -193,7 +193,7 @@ public class R2rmlTestSuiteProcessorH2 {
 				ResultSetFormatter.out(rsb);
 			}
 		}
-		
+
 		return result;
 	}
 	

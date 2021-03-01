@@ -6,16 +6,14 @@ import org.aksw.r2rml.sql.transform.SqlUtils;
 import org.junit.Test;
 
 public class SqlTransformTests {
-
-		
 	
 	@Test
 	public void test() throws SqlParseException {
 		SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark();
 		String sqlStr = "SELECT tableAlias.columnName AS columnAlias FROM schemaName.TableName AS tableAlias WHERE columnAlias = 'foo'";
-		String str = SqlUtils.harmonizeIdentifiers(sqlStr, sqlCodec);
+		String str = SqlUtils.harmonizeQueryString(sqlStr, sqlCodec);
 		
-		str = SqlUtils.harmonizeIdentifiers(str, sqlCodec);
+		str = SqlUtils.harmonizeQueryString(str, sqlCodec);
 		
 		System.out.println(str);
 	}

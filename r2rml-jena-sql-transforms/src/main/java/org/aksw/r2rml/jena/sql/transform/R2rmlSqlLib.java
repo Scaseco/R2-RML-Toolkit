@@ -3,6 +3,8 @@ package org.aksw.r2rml.jena.sql.transform;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.codec.entity.util.EntityCodecUtils;
+import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -19,6 +21,31 @@ import net.sf.jsqlparser.JSQLParserException;
 
 public class R2rmlSqlLib {
 	
+//	public static Model harmonizeIdentifiers(
+//			Model model,
+//			SqlCodec sqlCodec) throws SqlParseException {
+//		List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(model).collect(Collectors.toList());
+//
+//		for (TriplesMap tm : tms) {
+//			LogicalTable lt = tm.getOrSetLogicalTable();
+//			if (lt.qualifiesAsBaseTableOrView()) {
+//				// FIXME We need to check whether the table name is already qualified
+//				String oldTableName = lt.asBaseTableOrView().getTableName();
+//				String newTableName = SqlUtils.harmonizeTableName(oldTableName, sqlCodec);
+//				
+//				lt.asBaseTableOrView().setTableName(newTableName);
+//			} else {
+//				R2rmlView view = lt.asR2rmlView();
+//				String queryStr = view.getSqlQuery();
+//				queryStr = SqlUtils.harmonizeIdentifiers(queryStr, sqlCodec);
+//				view.setSqlQuery(queryStr);
+//			}
+//		}
+//		;
+//		return model;
+//	}
+
+	
 	/**
 	 * Make all table identifiers being qualified with the given database resp.
 	 * schema name.
@@ -29,13 +56,21 @@ public class R2rmlSqlLib {
 	 * @throws JSQLParserException
 	 * @throws SqlParseException 
 	 */
-	public static Model makeQualifiedTableIdentifiers(Model model, String schemaName, boolean replaceAll) throws SqlParseException {
+	public static Model makeQualifiedTableIdentifiers(
+			Model model,
+			String schemaName,
+			SqlCodec sqlCodec,
+			boolean replaceAll) throws SqlParseException {
 		List<TriplesMap> tms = R2rmlLib.streamTriplesMaps(model).collect(Collectors.toList());
 
 		for (TriplesMap tm : tms) {
 			LogicalTable lt = tm.getOrSetLogicalTable();
 			if (lt.qualifiesAsBaseTableOrView()) {
-				lt.asBaseTableOrView().setTableName(schemaName + "." + lt.asBaseTableOrView().getTableName());
+				// FIXME We need to check whether the table name is already qualified
+				String schemaPart = schemaName == null ? "" : EntityCodecUtils.harmonize(schemaName, sqlCodec::forSchemaName) + ".";
+				String tablePart = EntityCodecUtils.harmonize(lt.asBaseTableOrView().getTableName(), sqlCodec::forTableName);
+				
+				lt.asBaseTableOrView().setTableName(schemaPart + tablePart);
 			} else {
 				R2rmlView view = lt.asR2rmlView();
 				String queryStr = view.getSqlQuery();
@@ -47,15 +82,57 @@ public class R2rmlSqlLib {
 		return model;
 	}
 
-	/**
-	 * In-place unescaping of all SQL identifiers, i.e. the table and column names.
-	 *
-	 * @param model with the R2RML mappings
-	 * @return the same model with updated R2RML mappings
-	 */
-	public static Model unescapeIdentifiers(Model model) {
-		// escapeChars.foreach(c => replaceEscapeChars(model, s"$c", ""))
-		// model
+	
+	public static Model harmonizeSqlIdentifiers(Model model, SqlCodec sqlCodec)
+			throws SqlParseException {
+		List<TriplesMap> triplesMaps = R2rmlLib.streamTriplesMaps(model).collect(Collectors.toList());
+
+		for (TriplesMap tm : triplesMaps) {
+			LogicalTable lt = tm.getOrSetLogicalTable();
+
+			if (lt.qualifiesAsBaseTableOrView()) {
+				String oldTableName = lt.asBaseTableOrView().getTableName();
+				String newTableName = SqlUtils.harmonizeTableName(oldTableName, sqlCodec);
+				lt.asBaseTableOrView().setTableName(newTableName);
+			} else {
+				R2rmlView view = lt.asR2rmlView();
+				String queryStr = view.getSqlQuery();
+				queryStr = SqlUtils.harmonizeQueryString(queryStr, sqlCodec);
+				view.setSqlQuery(queryStr);
+			}
+
+			// column names
+			// s
+			SubjectMap sm = tm.getSubjectMap();
+			if (sm != null) {
+				String col = sm.getColumn();
+				if (col != null) {
+					sm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
+				}
+			}
+
+			for (PredicateObjectMap pom : tm.getPredicateObjectMaps()) {
+				// p
+				for (PredicateMap pm : pom.getPredicateMaps()) {
+					String col = pm.getColumn();
+					if (col != null) {
+						sm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
+					}
+				}
+
+				// o
+				for (ObjectMapType om : pom.getObjectMaps()) {
+					if (om.qualifiesAsTermMap()) {
+						TermMap otm = om.asTermMap();
+						String col = otm.getColumn();
+						if (col != null) {
+							sm.setColumn(SqlUtils.harmonizeColumnName(col, sqlCodec));
+						}
+					}
+				}
+			}
+		}
+
 		return model;
 	}
 
@@ -69,6 +146,7 @@ public class R2rmlSqlLib {
 	 * @return the modified R2RML mappings
 	 * @throws JSQLParserException
 	 */
+	@Deprecated
 	public static Model replaceEscapeChars(Model model, String oldEscapeChar, String newEscapeChar)
 			throws SqlParseException {
 		List<TriplesMap> triplesMaps = R2rmlLib.streamTriplesMaps(model).collect(Collectors.toList());

@@ -13,6 +13,10 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
+/**
+ * Sql utility methods that are sufficiently generic such that abstraction from JSQL seems reasonable.
+ * Most methods delegate to JsqlUtils but this may change anytime.
+ * */
 public class SqlUtils {
 	
 	/**
@@ -34,10 +38,18 @@ public class SqlUtils {
 	}
 	
 	/** Public utility method for harmonizing identifiers w.r.t. an sql codec */
-	public static String harmonizeIdentifiers(String sqlStr, SqlCodec sqlCodec) throws SqlParseException {
+	public static String harmonizeQueryString(String sqlStr, SqlCodec sqlCodec) throws SqlParseException {
 		return wrapJsqlException(() -> JSqlUtils.harmonizeIdentifiers(sqlStr, sqlCodec));
 	}
+
+	public static String harmonizeTableName(String tableName, SqlCodec sqlCodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.harmonizeTable(JSqlUtils.parseTableName(tableName), sqlCodec)).toString();
+	}
 	
+	public static String harmonizeColumnName(String columnName, SqlCodec sqlCodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.harmonizeColumn(JSqlUtils.parseColumnName(columnName), sqlCodec)).toString();
+	}
+
 
 	/**
 	 * 
