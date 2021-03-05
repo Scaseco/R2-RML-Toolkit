@@ -61,18 +61,22 @@ public class JSqlUtils {
 		String harmonizedTableName = EntityCodecUtils.harmonize(table.getName(), sqlCodec::forTableName);
 		table.setName(harmonizedTableName);
 
-		String harmonizedSchemaName = EntityCodecUtils.harmonize(table.getSchemaName(), sqlCodec::forSchemaName);
-		table.setSchemaName(harmonizedSchemaName);
+		String schemaName = table.getSchemaName();
+		
+		if (schemaName != null) {
+			String harmonizedSchemaName = EntityCodecUtils.harmonize(schemaName, sqlCodec::forSchemaName);
+			table.setSchemaName(harmonizedSchemaName);
+		}
 
 		Alias alias = table.getAlias();
 		if (alias != null) {
-			List<AliasColumn> aliasColumns = alias.getAliasColumns();
-			if (aliasColumns != null) {
-				for (AliasColumn aliasColumn : aliasColumns) {
-					//columnAlias.
-					System.out.println(aliasColumn);
-				}
-			}
+//			List<AliasColumn> aliasColumns = alias.getAliasColumns();
+//			if (aliasColumns != null) {
+//				for (AliasColumn aliasColumn : aliasColumns) {
+//					// columnAlias.
+//					// System.out.println(aliasColumn);
+//				}
+//			}
 			
 			String harmonizedAlias = EntityCodecUtils.harmonize(alias.getName(), sqlCodec::forAlias);
 			alias.setName(harmonizedAlias);
