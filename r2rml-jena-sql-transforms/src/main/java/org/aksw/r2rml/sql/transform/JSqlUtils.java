@@ -1,6 +1,5 @@
 package org.aksw.r2rml.sql.transform;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -9,7 +8,6 @@ import org.aksw.commons.sql.codec.api.SqlCodec;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Alias.AliasColumn;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -86,11 +84,43 @@ public class JSqlUtils {
 		return table;
 	}
 	
+	public static Table reencodeTable(Table table, SqlCodec sqlDecodec, SqlCodec sqlEncodec) {
+		String reencodedTableName = EntityCodecUtils.reencode(table.getName(), sqlDecodec::forTableName, sqlEncodec::forTableName);
+		table.setName(reencodedTableName);
+
+		String schemaName = table.getSchemaName();
+		
+		if (schemaName != null) {
+			String reencodedSchemaName = EntityCodecUtils.reencode(schemaName, sqlDecodec::forSchemaName, sqlEncodec::forSchemaName);
+			table.setSchemaName(reencodedSchemaName);
+		}
+
+		Alias alias = table.getAlias();
+		if (alias != null) {
+			String reencodedAlias = EntityCodecUtils.reencode(alias.getName(), sqlDecodec::forAlias, sqlEncodec::forAlias);
+			alias.setName(reencodedAlias);
+			table.setAlias(alias);
+		}
+		
+		return table;
+	}
+	
+	
 	public static Column harmonizeColumn(Column column, SqlCodec sqlCodec) {
 		String harmonizedName = EntityCodecUtils.harmonize(column.getColumnName(), sqlCodec::forColumnName);
 		column.setColumnName(harmonizedName);
 		return column;
 	}
+
+	public static Column reencodeColumn(Column column, SqlCodec decodec, SqlCodec encodec) {
+		String harmonizedName = EntityCodecUtils.reencode(
+				column.getColumnName(),
+				decodec::forColumnName,
+				encodec::forColumnName);
+		column.setColumnName(harmonizedName);
+		return column;
+	}
+
 	
 	public static String harmonizeIdentifiers(String sqlSelectQueryStr, SqlCodec sqlCodec) throws JSQLParserException {
 		Statement statement = CCJSqlParserUtil.parse(sqlSelectQueryStr);
@@ -112,6 +142,27 @@ public class JSqlUtils {
 		return result;
 	}
 	
+	
+	public static String reencodeIdentifiers(String sqlSelectQueryStr, SqlCodec sqlDecodec, SqlCodec sqlEncodec) throws JSQLParserException {
+		Statement statement = CCJSqlParserUtil.parse(sqlSelectQueryStr);
+
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder() {
+			@Override
+			public void visit(Table table) {
+				reencodeTable(table, sqlDecodec, sqlEncodec);
+			}
+			
+			@Override
+			public void visit(Column tableColumn) {
+				reencodeColumn(tableColumn, sqlDecodec, sqlEncodec);
+			}
+		};
+
+		tablesNamesFinder.getTableList(statement);
+		String result = statement.toString();
+		return result;
+	}
+
 	
 	public static String applySchemaTransform(String query, Function<String, String> schemaTransform) throws JSQLParserException {
 		Statement statement = CCJSqlParserUtil.parse(query);

@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.r2rml.jena.sql.transform.SqlParseException;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -50,6 +51,41 @@ public class SqlUtils {
 		return wrapJsqlException(() -> JSqlUtils.harmonizeColumn(JSqlUtils.parseColumnName(columnName), sqlCodec)).toString();
 	}
 
+
+	
+	public static String reencodeQueryString(String sqlStr, SqlCodec sqlDecodec, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeIdentifiers(sqlStr, sqlDecodec, sqlEncodec));
+	}
+
+	public static String reencodeTableName(String tableName, SqlCodec sqlDecodec, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeTable(JSqlUtils.parseTableName(tableName), sqlDecodec, sqlEncodec)).toString();
+	}
+	
+	public static String reencodeColumnName(String columnName, SqlCodec sqlDecodec, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeColumn(JSqlUtils.parseColumnName(columnName), sqlDecodec, sqlEncodec)).toString();
+	}
+
+	
+	public static String reencodeQueryStringDefault(String sqlStr, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeIdentifiers(
+				sqlStr,
+				SqlCodecUtils.createSqlCodecDefault(),
+				sqlEncodec));
+	}
+
+	public static String reencodeTableNameDefault(String tableName, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeTable(
+				JSqlUtils.parseTableName(tableName),
+				SqlCodecUtils.createSqlCodecDefault(),
+				sqlEncodec)).toString();
+	}
+	
+	public static String reencodeColumnNameDefault(String columnName, SqlCodec sqlEncodec) throws SqlParseException {
+		return wrapJsqlException(() -> JSqlUtils.reencodeColumn(
+				JSqlUtils.parseColumnName(columnName),
+				SqlCodecUtils.createSqlCodecDefault(),
+				sqlEncodec)).toString();
+	}
 
 	/**
 	 * 
