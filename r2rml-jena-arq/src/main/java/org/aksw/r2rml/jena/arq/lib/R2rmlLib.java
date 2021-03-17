@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.commons.codec.entity.api.EntityCodec;
+import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.r2rml.jena.arq.impl.R2rmlTemplateLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
@@ -50,11 +52,34 @@ public class R2rmlLib {
 		return Streams.stream(it).map(r -> r.as(TriplesMap.class)).onClose(it::close);
 	}
 	
-	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(TriplesMap triplesMap) {
+	
+	  /**
+	   * Returns all triples maps for the given predicate.
+	   *
+	   * @param predicate the predicate
+	   * @param model the model
+	   * @return the [[TriplesMap]]s that use the given predicate
+	   */
+//	public static Stream<TriplesMap> triplesMapsHavingPredicate(Model model, Property predicate) {
+//		return streamTriplesMaps(model)
+//				.filters
+//		
+//	    model
+//	      .listResourcesWithProperty(RR.subjectMap).asScala
+//	      .map(_.as(classOf[TriplesMap]))
+//	      .filter(tm =>
+//	        tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
+//	  }
+	
+	
+	/** Create a new TriplesMap for each RefObjectMap. The new TriplesMap will have a generated SQL
+	 * query string that performs the appropriate join. */
+	public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(
+			TriplesMap triplesMap, SqlCodec sqlCodec) {
 		Model outModel = triplesMap.getModel();
 
 		Model tmp = ModelFactory.createDefaultModel();
-		Map<RefObjectMap, TriplesMap> result = expandRefObjectMaps(tmp, triplesMap);
+		Map<RefObjectMap, TriplesMap> result = expandRefObjectMaps(tmp, triplesMap, sqlCodec);
 		
 		outModel.add(tmp);
 
@@ -68,15 +93,20 @@ public class R2rmlLib {
 
 	
 	/**
-	 * Create a new triples map where the ref object map has been turned into a ObjectMap
+	 * Create a new triples map where any ref object map has been turned into a new TriplesMap
+	 * whose logical table is an SQL query string with the appropriate join.
 	 * 
+	 * @param The model into which to append the expanded TriplesMaps
+	 * @param The TriplesMaps whose RefObjectMaps to expand
+	 * @param SqlCodec sqlCodec for encoding/decoding column names
 	 * 
-	 * 
-	 * 
-	 * @param refObjectMap
-	 * @return
+	 * @return A map from any encountered RefObjectMap (in the given TriplesMap) to the TriplesMap
+	 * 			it was expanded to.
 	 */
-	public static Map<RefObjectMap, TriplesMap> expandRefObjectMaps(Model outModel, TriplesMap tm) {
+	public static Map<RefObjectMap, TriplesMap> expandRefObjectMaps(
+			Model outModel,
+			TriplesMap tm,
+			SqlCodec sqlCodec) {
 		// TriplesMap result = ModelFactory.createDefaultModel().createResource().as(TriplesMap.class);
 		Map<RefObjectMap, TriplesMap> result = new LinkedHashMap<>();
 		
@@ -154,12 +184,14 @@ public class R2rmlLib {
 						for (Var parentVar : parentVars) {
 							if (childVars.contains(parentVar)) {
 								String parentName = parentVar.getName();
-								String unquoted = dequoteColumnName(parentName);
+								EntityCodec<String> columnNameCodec = sqlCodec.forColumnName();
+
+								String unquoted = columnNameCodec.decodeOrGetAsGiven(parentName);
 
 								String tmp = "parent_" + unquoted; 
 								String newVarName = unquoted.equals(parentName)
 									? tmp
-									: quoteColumnName(tmp);
+									: columnNameCodec.encode(tmp);
 								
 								parentRenames.put(parentVar, Var.alloc(newVarName));
 							}
@@ -256,8 +288,8 @@ public class R2rmlLib {
 	
 	/**
 	 * Decompose triples map<b>s</b> such that they become triple (singular!) maps:
-	 * One triple maps for every triple that gets generated.
-	 * Hence, just one subjectMap, one predicteObjectMap, one predicateMap and one objectMap
+	 * I.e. one triple maps for every triple that gets generated or in other words
+	 * just one subjectMap, one predicteObjectMap, one predicateMap and one objectMap
 	 */
 	public static void decompose() {
 		// TODO Implement me
@@ -329,15 +361,16 @@ public class R2rmlLib {
 		return target;
 	}
 	
-	public static String dequoteColumnName(String columnName) {
-		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
-		return result;
-	}
-
-	public static String quoteColumnName(String columnName) {
-		String result = "\"" + columnName + "\"";
-		return result;
-	}
+//  Use SqlCodec.forColumnName().encode/decode
+//	public static String dequoteColumnName(String columnName) {
+//		String result = columnName.replaceAll("(^(\"))|((\")$)", "");
+//		return result;
+//	}
+//
+//	public static String quoteColumnName(String columnName) {
+//		String result = "\"" + columnName + "\"";
+//		return result;
+//	}
 
 	/**
 	 * Expands rr:class, rr:subject, rr:predicate, rr:object and rr:graph to term maps

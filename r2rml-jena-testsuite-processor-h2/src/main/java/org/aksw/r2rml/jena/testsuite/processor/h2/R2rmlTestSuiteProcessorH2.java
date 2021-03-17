@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
 import org.aksw.r2rml.jena.jdbc.processor.R2rmlProcessorJdbc;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
@@ -42,6 +44,8 @@ public class R2rmlTestSuiteProcessorH2 {
 	
 	public static void main(String[] args) throws SQLException, IOException {
 
+		SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecDefault();
+		
 		if (false) {
 			RDFDatatype dtype = TypeMapper.getInstance().getTypeByName(XSD.xdouble.getURI());
 			Node a = NodeFactory.createLiteral("80.25", dtype);
@@ -70,11 +74,11 @@ public class R2rmlTestSuiteProcessorH2 {
 
 				boolean isOnSkipList = Arrays.asList(
 						// "R2RMLTC0016b", // canonical double representation issue
-						"R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
-						"R2RMLTC0019a", // Mixed absolute and relative IRIs
-						"R2RMLTC0012e", // fails/succeeds indeterministically; appears to be double rounding issues
+						// "R2RMLTC0020a", // Skipped because of encode-for-url application on value basis, mix of absolute and relative IRIs in column
+						// "R2RMLTC0019a", // Mixed absolute and relative IRIs
+						"R2RMLTC0012e" // fails/succeeds indeterministically; appears to be double rounding issues
 						// "R2RMLTC0003a", // Tests SQL version identifiers; this should be captured by test whether all terms in the r2rml namespace are known
-						"R2RMLTC0015b"  // Either Jena's LangTag.check() is too permissive or the test case too strict (lang tags "spanish" and "english" used)
+						// "R2RMLTC0015b"  // Either Jena's LangTag.check() is too permissive or the test case too strict (lang tags "spanish" and "english" used)
 						).contains(testCaseId);
 				if (isOnSkipList) {
 					System.err.println("Skipping " + isOnSkipList + " due to skip list");
@@ -82,7 +86,7 @@ public class R2rmlTestSuiteProcessorH2 {
 				}
 
 				
-//				if (!testCaseId.equals("R2RMLTC0012e")) {
+//				if (!testCaseId.equals("R2RMLTC0015b")) {
 //					continue;
 //				}
 
@@ -119,14 +123,15 @@ public class R2rmlTestSuiteProcessorH2 {
 							}
 							
 							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
-							
+
 							R2rmlImporter.validateR2rml(r2rmlDocument);
 							
-							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument);
+							String baseIri = "http://example.com/base/";
+							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument, baseIri, sqlCodec);
 
-							boolean isIso = isIsomorphic(expectedOutput, actualOutput);
+							boolean isIso = isIsomorphic(expectedOutput, actualOutput, true);
 							logger.debug("Expected result equals expected one by value -> " + isIso);
-							System.out.println("Asserting: " + testCase.getIdentifier());
+							System.out.println("Asserted " + testCase.getIdentifier() + " " + (isIso ? "[ OK ]" : "[FAIL]"));
 							Assert.assertTrue(isIso);								
 						}
 						
@@ -161,9 +166,10 @@ public class R2rmlTestSuiteProcessorH2 {
 	 * 
 	 * @param expected
 	 * @param actual
+	 * @param compareByValue 'false' tests for equivalence of terms whereas 'true' tests for that of values 
 	 * @return
 	 */
-	public static boolean isIsomorphic(Dataset expected, Dataset actual) {
+	public static boolean isIsomorphic(Dataset expected, Dataset actual, boolean compareByValue) {
 		boolean result;
 		
 		String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
@@ -173,9 +179,11 @@ public class R2rmlTestSuiteProcessorH2 {
 			
 			ResultSetRewindable rsa = ResultSetFactory.copyResults(qea.execSelect());
 			ResultSetRewindable rsb = ResultSetFactory.copyResults(qeb.execSelect());
-									
-			result = ResultSetCompare.equalsByValue(rsa, rsb);
-			
+
+			result = compareByValue
+					? ResultSetCompare.equalsByValue(rsa, rsb)
+					: ResultSetCompare.equalsByTerm(rsa, rsb); 
+
 			if (!result) {
 				rsa.reset();
 				rsb.reset();
@@ -185,7 +193,7 @@ public class R2rmlTestSuiteProcessorH2 {
 				ResultSetFormatter.out(rsb);
 			}
 		}
-		
+
 		return result;
 	}
 	

@@ -3,6 +3,7 @@ package org.aksw.r2rml.jena.arq.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,6 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidationException;
+import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidator;
+import org.aksw.jena_sparql_api.langtag.validator.impl.LangTagValidators;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
@@ -27,6 +31,7 @@ import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
@@ -111,6 +116,48 @@ public class R2rmlImporter {
 			RDFDataMgr.write(System.err, report.getModel(), RDFFormat.TURTLE_PRETTY);
 			throw new RuntimeException("Shacl validation failed; see report above");
 		}
+		
+		// Check all values given for rr:languages (demanded by test case R2RMLTC0015b)
+		// this could be handled with sparql extension functions + shacl in the future
+		validateR2rmlLanguage(dataModel);
+		
+	}
+	
+	public static void validateR2rmlLanguage(Model model) {
+//		Set<String> usedLangTags = model.listObjects()
+//			.filterKeep(RDFNode::isLiteral)
+//			.mapWith(RDFNode::asLiteral)
+//			.mapWith(Literal::getLanguage)
+//			.filterDrop(String::isEmpty)
+//			.toSet();
+		Set<String> usedLangTags = model.listObjectsOfProperty(RR.language)
+				.filterKeep(RDFNode::isLiteral)
+				.mapWith(RDFNode::asLiteral)
+				.mapWith(Literal::getLexicalForm)
+				.filterDrop(String::isEmpty)
+				.toSet();
+		
+		validateLangTags(usedLangTags);
+	}
+	
+	public static void validateLangTags(Set<String> langTags) {
+		LangTagValidator langTagValidator = LangTagValidators.getDefault();
+		Map<String, String> invalidLangTags = new LinkedHashMap<>();
+		for (String langTag : langTags) {
+			try {
+				langTagValidator.validate(langTag);
+			} catch (LangTagValidationException e) {
+				invalidLangTags.put(langTag, e.getMessage());
+			}
+		}
+		
+		if (!invalidLangTags.isEmpty()) {
+			String msg = invalidLangTags.entrySet().stream()
+			.map(e -> e.getKey() + ": " + e.getValue())			
+			.collect(Collectors.joining("\n"));
+			
+			throw new RuntimeException("The following used lang tags failed to validate:\n" + msg);
+		}
 	}
 
 	// It makes sense to have the validation method part of the object - instead of just using a static method
@@ -147,7 +194,11 @@ public class R2rmlImporter {
 	 * @param varGen
 	 * @return
 	 */
-	public static Node allocateVar(TermMap tm, Resource fallbackTermType, BiMap<Var, Expr> nodeToExpr, VarAlloc varGen) {
+	public static Node allocateVar(
+			TermMap tm,
+			Resource fallbackTermType,
+			BiMap<Var, Expr> nodeToExpr,
+			VarAlloc varGen) {
 		Node result;
 		BiMap<Expr, Var> exprToNode = nodeToExpr.inverse();
 		
@@ -183,6 +234,10 @@ public class R2rmlImporter {
 	 * @return
 	 */
 	public static TriplesMapToSparqlMapping read(TriplesMap tm) {
+		return read(tm, null);
+	}
+	
+	public static TriplesMapToSparqlMapping read(TriplesMap tm, String baseIri) {
 		
 		R2rmlLib.expandShortcuts(tm);
 
@@ -352,11 +407,29 @@ public class R2rmlImporter {
 		return result;
 	}
 
+	/* base iri handling makes more sense on the R2RML processor rather than trying to capture it
+	 * with algebraic expressions here
+	 * note that jena's E_IRI supports getting the base IRI out of the ARQ context
+	public static Expr applyIriType(Expr expr, String baseIri) {
+		Expr result = baseIri == null
+				? new E_IRI(expr)
+				: applyIriWithFallbackToBaseIri(expr, baseIri);
+		return result;
+	}
+	
+	public static Expr applyIriWithFallbackToBaseIri(Expr expr, String baseIri) {
+		return new E_Coalesce(new ExprList(Arrays.asList(
+				new E_IRI(expr),
+				new E_IRI(new E_StrConcat(new ExprList(Arrays.asList(NodeValue.makeString(baseIri), expr)))))));
+	}
+	*/
+	
 	public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
 		String termTypeIri = termType.getURI();
 
 		Expr result;
 		result = termTypeIri.equals(R2rmlTerms.IRI)
+					// ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
 					? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
 					: termTypeIri.equals(R2rmlTerms.BlankNode)
 						? new E_BNode(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))

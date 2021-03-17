@@ -6,7 +6,7 @@
 
 	<groupId>org.aksw.r2rml</groupId>
 	<artifactId>r2rml-api-parent</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>0.9.0</version>
 
 	<packaging>pom</packaging>
 
@@ -25,6 +25,7 @@
 		<module>r2rml-jena-processor-jdbc</module>
 		<module>r2rml-jena-testsuite-processor-core</module>
 		<module>r2rml-jena-testsuite-processor-h2</module>
+		<module>r2rml-jena-sql-transforms</module>
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
 	</modules>
@@ -62,8 +63,11 @@
 
 	<properties>
 		<jena.version>3.17.0</jena.version>
-		<jena-sparql-api.subversion>1-SNAPSHOT</jena-sparql-api.subversion>
+		<jena-sparql-api.subversion>1</jena-sparql-api.subversion>
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
+
+
+		<aksw-commons.version>0.9.0</aksw-commons.version>
 
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
@@ -81,6 +85,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.aksw.commons</groupId>
+				<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+				<version>${aksw-commons.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>r2rml-common-vocab</artifactId>
@@ -173,6 +184,12 @@
 
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-langtag-validator</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-mapper-proxy</artifactId>
 				<version>${jena-sparql-api.version}</version>
 			</dependency>
@@ -181,6 +198,13 @@
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-mapper-annotations</artifactId>
 				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
+			<!-- Using version 3.2 instead of 4.0 for compatibility with ontop -->
+			<dependency>
+				<groupId>com.github.jsqlparser</groupId>
+				<artifactId>jsqlparser</artifactId>
+				<version>3.2</version>
 			</dependency>
 
 			<!-- <dependency> -->

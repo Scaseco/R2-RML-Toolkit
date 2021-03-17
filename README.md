@@ -1,6 +1,6 @@
 ## A Jena-based R2RML API
 
-An **complete**, **beautiful** and **extensible** R2RML API based on [Apache Jena](https://jena.apache.org/)'s native polymorphism system.
+A modular R2RML suite built on Apache Jena. Featuring a complete domain API built on Jena's polymorphism system, SHACL validation, an R2RML processor with 100% standard conformance based an Jena's ARQ plus common tooling every R2RML project needs. 
 
 ### Example
 
@@ -76,6 +76,7 @@ Just include
 * [r2rml-jena-processor-jdbc](r2rml-jena-processor-jdbc): A standard conforming R2RML processor for JDBC datasources based on [r2rml-jena-arq](r2rml-jena-arq).
 * [r2rml-jena-testsuite-processor-core](r2rml-jena-testsuite-processor-core): Test harnish for [r2rml-resource-w3c-testsuite](r2rml-resource-w3c-testsuite).
 * [r2rml-jena-testsuite-processor-h2](r2rml-jena-testsuite-processor-h2): Test harnish tied to a H2 database.
+* [r2rml-jena-sql-transforms](r2rml-jena-sql-transforms): R2RML model transformations that affect the SQL query strings using the JSQL parser.
 * [r2rmlx-jena-api](r2rmlx-jena-api): Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns. Registers the r2rmlx extensions when added as a maven dependency.
 
 
