@@ -21,7 +21,7 @@ public interface SqlDatatype {
 	
 	
 	// Convert an SQL object to one that is compatible with the RDFDatatype
-	// Useful to avoids conversion via lexical forms
+	// Useful to avoid conversion via lexical forms
 	// May be null
 	Function<Object, Object> getCompatibilizer();
 	
