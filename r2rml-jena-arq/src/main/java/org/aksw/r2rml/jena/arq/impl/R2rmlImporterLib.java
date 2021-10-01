@@ -49,7 +49,6 @@ import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_IRI;
 import org.apache.jena.sparql.expr.E_Str;
-import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -443,7 +442,8 @@ public class R2rmlImporterLib {
                         : termTypeIri.equals(R2rmlTerms.Literal)
                             ? knownDatatype == null
                                 ? column
-                                : new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
+                                // : new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
+                                : new E_Function(knownDatatype.getURI(), new ExprList(column))
                             : null;
 
 //		if (result == column) {
