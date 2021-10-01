@@ -14,7 +14,7 @@ rs:rr sh:declare [ sh:prefix "rr" ; sh:namespace <http://www.w3.org/ns/r2rml#>  
 ## TermMaps - with rule to prevent incorrectly matching RefObjectMaps
 rs:TermMapSparqlTarget
   a sh:SPARQLTarget ;
-  sh:prefixes rs:rr: ;
+  sh:prefixes rs:rr ;
   sh:select
 """SELECT ?this {
     { [] rr:graphMap|rr:subjectMap|rr:predicateMap ?this }
@@ -22,19 +22,19 @@ rs:TermMapSparqlTarget
     { [] rr:objectMap ?this FILTER NOT EXISTS { ?this rr:parentTriplesMap [] } }
 }""" ;
   .
-  
+
 
 rs:ObjectMapSparqlTarget
   a sh:SPARQLTarget ;
-  sh:prefixes rs:rr: ;
+  sh:prefixes rs:rr ;
   sh:select "SELECT ?this { [] rr:objectMap ?this FILTER NOT EXISTS { ?this rr:parentTriplesMap [] } }" ;
   .
 
 
 rs:HasGraphSparqlTarget
   a sh:SPARQLTarget ;
-  sh:prefixes rs:rr: ;
-  sh:select "SELECT ?this [ [] rr:subjectMap|rr:predicateObjectMap ?this }" ;
+  sh:prefixes rs:rr ;
+  sh:select "SELECT ?this { [] rr:subjectMap|rr:predicateObjectMap ?this }" ;
   .
 
 
@@ -42,7 +42,7 @@ rs:TermMapShape
   rdf:type sh:NodeShape ;
   rdfs:label "TermMap Shape" ;
   sh:target rs:TermMapSparqlTarget ;
-  sh:property [ sh:path rr:termType ; sh:minCount 0 ; sh:maxCount 1 ] ;	
+  sh:property [ sh:path rr:termType ; sh:minCount 0 ; sh:maxCount 1 ] ;
   sh:xone (
     [ sh:property [ sh:path rr:column   ; sh:minCount 1 ; sh:maxCount 1 ] ]
     [ sh:property [ sh:path rr:template ; sh:minCount 1 ; sh:maxCount 1 ] ]
@@ -105,7 +105,7 @@ rs:TriplesMapShape
 rs:HasGraphShape
   a sh:NodeShape ;
   rdfs:label "HasGraph Shape" ;
-  sh:target rs:GraphShapeSparqlTarget ;
+  sh:target rs:HasGraphSparqlTarget ;
   sh:property [ sh:path rr:graph    ; sh:minCount 0 ] ;
   sh:property [ sh:path rr:graphMap ; sh:minCount 0 ] ;
   .
@@ -125,7 +125,7 @@ rs:RefObjectMapShape
   rdf:type sh:NodeShape ;
   rdfs:label "RefObjectMapShape Shape" ;
   sh:targetSubjectsOf rr:parentTriplesMap ;
-  sh:property [ sh:path rr:parentTriplesMap ; sh:minCount 0 ; sh:maxCount 1 ] ;	
+  sh:property [ sh:path rr:parentTriplesMap ; sh:minCount 0 ; sh:maxCount 1 ] ;
   sh:property [ sh:path rr:joinCondition    ; sh:minCount 0 ] ;
   .
 
@@ -133,9 +133,9 @@ rs:JoinShape
   rdf:type sh:NodeShape ;
   rdfs:label "Join Shape" ;
   sh:targetObjectsOf rr:joinCondition ;
-  sh:property [ sh:path rr:parent ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;	
+  sh:property [ sh:path rr:parent ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
   sh:property [ sh:path rr:child  ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
   .
 
 
- 
+
