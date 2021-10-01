@@ -27,7 +27,7 @@ rs:TermMapSparqlTarget
 rs:ObjectMapSparqlTarget
   a sh:SPARQLTarget ;
   sh:prefixes rs:rr: ;
-  sh:select "[] rr:objectMap ?this FILTER NOT EXISTS { ?this rr:parentTriplesMap [] }" ;
+  sh:select "SELECT ?this { [] rr:objectMap ?this FILTER NOT EXISTS { ?this rr:parentTriplesMap [] } }" ;
   .
 
 

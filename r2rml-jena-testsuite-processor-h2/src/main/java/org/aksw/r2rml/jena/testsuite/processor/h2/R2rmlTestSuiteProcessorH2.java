@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
-import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
+import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.jdbc.processor.R2rmlProcessorJdbc;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLib;
 import org.aksw.r2rml.jena.testsuite.R2rmlTestCaseLoader;
@@ -124,7 +124,7 @@ public class R2rmlTestSuiteProcessorH2 {
 							
 							Model r2rmlDocument = R2rmlTestCaseLib.loadMappingDocument(testCase);
 
-							R2rmlImporter.validateR2rml(r2rmlDocument);
+							R2rmlImporterLib.validateR2rml(r2rmlDocument);
 							
 							String baseIri = "http://example.com/base/";
 							Dataset actualOutput = R2rmlProcessorJdbc.processR2rml(conn, r2rmlDocument, baseIri, sqlCodec);

@@ -62,12 +62,12 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.0.0</jena.version>
+		<jena.version>4.2.0</jena.version>
 		<jena-sparql-api.subversion>1-SNAPSHOT</jena-sparql-api.subversion>
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
 
 
-		<aksw-commons.version>0.9.0</aksw-commons.version>
+		<aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
 
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>

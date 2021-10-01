@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
-import org.aksw.r2rml.jena.arq.impl.R2rmlImporter;
+import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
@@ -93,7 +93,7 @@ public class R2rmlProcessorJdbc {
 			//							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 			
 			LogicalTable lt = tm.getLogicalTable();							
-			TriplesMapToSparqlMapping mapping = R2rmlImporter.read(tm, baseIri);
+			TriplesMapToSparqlMapping mapping = R2rmlImporterLib.read(tm, baseIri);
 			
 			//								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
 			

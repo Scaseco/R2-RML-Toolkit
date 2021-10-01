@@ -19,7 +19,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.irix.IRIs;
 import org.apache.jena.query.Query;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -39,7 +38,7 @@ import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Symbol;
 
 /**
- * A mapping of a single TriplesMaps to the triples and SPARQL expressions
+ * A mapping of a single TriplesMap to the triples and SPARQL expressions
  * is corresponds to.
  *
  * @author Claus Stadler
@@ -47,7 +46,7 @@ import org.apache.jena.sparql.util.Symbol;
  */
 public class TriplesMapToSparqlMapping {
     // The triples map from which this mapping was created
-    protected TriplesMap triplesMaps;
+    protected TriplesMap triplesMap;
 
     // The triples / quads constructed from the triples map
     protected Template template;
@@ -59,17 +58,17 @@ public class TriplesMapToSparqlMapping {
     // E.g. a rr:template "foo{bar}" becomes IRI(CONCAT("foo", STR(?var)))
     protected VarExprList varToExpr;
 
-    public TriplesMapToSparqlMapping(TriplesMap triplesMaps, Template template, Map<TermMap, Var> termMapToVar,
+    public TriplesMapToSparqlMapping(TriplesMap triplesMap, Template template, Map<TermMap, Var> termMapToVar,
             VarExprList varToExpr) {
         super();
-        this.triplesMaps = triplesMaps;
+        this.triplesMap = triplesMap;
         this.template = template;
         this.termMapToVar = termMapToVar;
         this.varToExpr = varToExpr;
     }
 
-    public TriplesMap getTriplesMaps() {
-        return triplesMaps;
+    public TriplesMap getTriplesMap() {
+        return triplesMap;
     }
 
     public Template getTemplate() {
