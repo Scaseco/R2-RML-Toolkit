@@ -5,11 +5,11 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-@prefix rs: <http://www.w3.org/ns/r2rml#> .
+@prefix rs: <http://aksw.org/ns/r2rml/shapes#> .
 
 
 ## r2rml namespace declaration
-rs:rr sh:declare [ sh:prefix "ns" ; sh:namespace <http://www.w3.org/ns/r2rml#>  ] .
+rs:rr sh:declare [ sh:prefix "rr" ; sh:namespace <http://www.w3.org/ns/r2rml#>  ] .
 
 ## TermMaps - with rule to prevent incorrectly matching RefObjectMaps
 rs:TermMapSparqlTarget
