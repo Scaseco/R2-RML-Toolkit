@@ -23,8 +23,8 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.engine.binding.BindingMap;
 import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
@@ -148,7 +148,7 @@ public class TriplesMapToSparqlMapping {
             Binding binding,
             FunctionEnv env,
             boolean strictIriValidation) {
-        BindingMap result = BindingFactory.create();
+        BindingBuilder builder = BindingFactory.builder();
         for (Entry<Var, Expr> e : varToExpr.getExprs().entrySet()) {
 
             Var v = e.getKey();
@@ -219,11 +219,11 @@ public class TriplesMapToSparqlMapping {
                     }
                 }
 
-                result.add(v, node);
+                builder.add(v, node);
             }
         }
 
-        return result;
+        return builder.build();
     }
 
     public static NodeValue safeEval(Expr expr, Binding binding, FunctionEnv env) {

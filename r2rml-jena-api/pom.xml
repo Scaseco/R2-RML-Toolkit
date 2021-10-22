@@ -31,8 +31,8 @@
 <!-- 		</dependency> -->
 		
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-mapper-annotations</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-annotations-reprogen</artifactId>
 		</dependency>
 
 	</dependencies>

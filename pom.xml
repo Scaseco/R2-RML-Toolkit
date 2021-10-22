@@ -62,9 +62,8 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.2.0</jena.version>
-		<jena-sparql-api.subversion>1-SNAPSHOT</jena-sparql-api.subversion>
-		<jenax.version>${jena.version}-${jena-sparql-api.subversion}</jenax.version>
+		<jena.version>4.3.0-SNAPSHOT</jena.version>
+		<jenax.version>4.3.0-1-SNAPSHOT</jenax.version>
 
 
 		<aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
@@ -186,20 +185,20 @@
 				<version>${jenax.version}</version> </dependency> -->
 
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-langtag-validator</artifactId>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-arq-langtag-validator</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-mapper-proxy</artifactId>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-reprogen-core</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-mapper-annotations</artifactId>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-annotations-reprogen</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
 
