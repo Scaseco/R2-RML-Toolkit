@@ -320,6 +320,22 @@ public class R2rmlImporterLib {
         return result;
     }
 
+
+    /** Raises an exception if both arguments are non-null and they differ.
+     *  Otherwise returns the first non-null argument. */
+    public static <T> T requireNullOrEqual(T a, T b) {
+        T result;
+
+        boolean isInconsistent = a != null && b != null && !Objects.equals(a, b);
+        if (isInconsistent) {
+            throw new IllegalArgumentException(String.format("Arguments %s and %s must both be equal or one must be null", a, b));
+        } else {
+            result = a == null ? b : a;
+        }
+
+        return result;
+    }
+
     /**
      * Convert a term map to a corresponing SPARQL expression
      *
@@ -340,17 +356,26 @@ public class R2rmlImporterLib {
         Node datatypeNode = getIriNodeOrNull(tm.getDatatype());
         Node termTypeNode = getIriNodeOrNull(tm.getTermType());
 
+        String colName = tm.getColumn();
+        String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
+
+        // Infer the effective term type
 
         if (termTypeNode != null) {
             effectiveTermType = termTypeNode;
-        } else if (template != null) {
-            effectiveTermType = RR.IRI.asNode();
-        } else if (constant != null) {
-            effectiveTermType = classifyTermType(constant.asNode()).asNode();
-        } else { // if (column != null) {
-            effectiveTermType = fallbackTermType.asNode();
         }
 
+        if (constant != null) {
+            effectiveTermType = requireNullOrEqual(effectiveTermType, classifyTermType(constant.asNode()).asNode());
+        }
+
+        if (langValue != null) {
+            effectiveTermType = requireNullOrEqual(effectiveTermType, RR.Literal.asNode());
+        }
+
+        if (effectiveTermType == null) {
+            effectiveTermType = fallbackTermType.asNode();
+        }
 
 
         if((template = tm.getTemplate()) != null) {
@@ -360,38 +385,14 @@ public class R2rmlImporterLib {
         } else if((constant = tm.getConstant()) != null) {
             result = NodeValue.makeNode(constant.asNode());
         } else {
-            String colName;
-            if((colName = tm.getColumn()) != null) {
-
+            if(colName != null) {
                 ExprVar column = new ExprVar(colName);
-                String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
 
                 if (langValue != null) {
-
-                    if (effectiveTermType != null && !effectiveTermType.equals(RR.Literal.asNode())) {
-                        throw new RuntimeException("Conflicting term types: Effective term type evaluated to " + effectiveTermType + " but presence of language tag demands " + R2rmlTerms.Literal);
-                    }
-
-                    effectiveTermType = RR.Literal.asNode();
-                }
-
-                if(effectiveTermType != null && !effectiveTermType.equals(RR.Literal.asNode()) ) { //|| XSD.xstring.asNode().equals(datatypeNode)) {
-
-                    result = applyTermType(column, effectiveTermType, datatypeNode);
-
+                    result = new E_StrLang(column, NodeValue.makeString(langValue));
                 } else {
-                    String language = langValue == null ? "" : langValue;
-                    // If there is no indication about the datatype just use the column directly
-                    // This will later directly allow evaluation w.r.t. a column's natural RDF datatype
-                    result = language.isEmpty()
-                            ? column // new E_StrDatatype(column, NodeValue.makeNode(XSD.xstring.asNode()))
-                            : new E_StrLang(column, NodeValue.makeString(language));
-
-//					if (result == column) {
-//						System.out.println("unknown term type (assuming literal)");
-//					}
+                    result = applyTermType(column, effectiveTermType, datatypeNode);
                 }
-
             } else {
                 throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
             }
