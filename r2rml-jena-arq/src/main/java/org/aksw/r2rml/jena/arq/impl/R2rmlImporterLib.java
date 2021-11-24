@@ -373,6 +373,10 @@ public class R2rmlImporterLib {
             effectiveTermType = requireNullOrEqual(effectiveTermType, RR.Literal.asNode());
         }
 
+        if (effectiveTermType == null && template != null) {
+            effectiveTermType = RR.IRI.asNode();
+        }
+
         if (effectiveTermType == null) {
             effectiveTermType = fallbackTermType.asNode();
         }
