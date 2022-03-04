@@ -6,7 +6,7 @@
 
 	<groupId>org.aksw.r2rml</groupId>
 	<artifactId>r2rml-api-parent</artifactId>
-	<version>0.9.1-SNAPSHOT</version>
+	<version>0.9.1</version>
 
 	<packaging>pom</packaging>
 
