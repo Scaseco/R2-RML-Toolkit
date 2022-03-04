@@ -63,7 +63,7 @@
 
 	<properties>
 		<jena.version>4.4.0</jena.version>
-		<jenax.version>4.4.0-1-SNAPSHOT</jenax.version>
+		<jenax.version>4.4.0-1</jenax.version>
 
 
 		<aksw-commons.version>0.9.2</aksw-commons.version>
