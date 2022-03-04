@@ -1,6 +1,6 @@
 package org.aksw.r2rml.jena.domain.api;
 
-import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
+import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.r2rml.jena.vocab.RR;
 
 /**

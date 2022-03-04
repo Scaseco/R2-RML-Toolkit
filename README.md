@@ -50,6 +50,14 @@ Note, that any of the many serialization formats supported by Jena could be used
 ] .
 ```
 
+## Jena Compatibility
+
+|   |   |
+|---|---|
+| 0.9.0 | Jena 3.17 |
+| 0.9.1 (in development) | Jena 4.1 |
+
+
 ## Usage with Maven
 
 Just include

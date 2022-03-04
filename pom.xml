@@ -6,7 +6,7 @@
 
 	<groupId>org.aksw.r2rml</groupId>
 	<artifactId>r2rml-api-parent</artifactId>
-	<version>0.9.0</version>
+	<version>0.9.1</version>
 
 	<packaging>pom</packaging>
 
@@ -62,19 +62,18 @@
 	</developers>
 
 	<properties>
-		<jena.version>3.17.0</jena.version>
-		<jena-sparql-api.subversion>1</jena-sparql-api.subversion>
-		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
+		<jena.version>4.4.0</jena.version>
+		<jenax.version>4.4.0-1</jenax.version>
 
 
-		<aksw-commons.version>0.9.0</aksw-commons.version>
+		<aksw-commons.version>0.9.2</aksw-commons.version>
 
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
 		<!-- Project Settings -->
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.release>11</maven.compiler.release>
+
 		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
 		<file.encoding>UTF-8</file.encoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -182,22 +181,25 @@
 				<version>4.12</version>
 			</dependency>
 
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-core-rdfterm</artifactId> 
+				<version>${jenax.version}</version> </dependency> -->
+
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-langtag-validator</artifactId>
-				<version>${jena-sparql-api.version}</version>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-arq-langtag-validator</artifactId>
+				<version>${jenax.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-mapper-proxy</artifactId>
-				<version>${jena-sparql-api.version}</version>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-reprogen-core</artifactId>
+				<version>${jenax.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.jena-sparql-api</groupId>
-				<artifactId>jena-sparql-api-mapper-annotations</artifactId>
-				<version>${jena-sparql-api.version}</version>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-annotations-reprogen</artifactId>
+				<version>${jenax.version}</version>
 			</dependency>
 
 			<!-- Using version 3.2 instead of 4.0 for compatibility with ontop -->
@@ -210,7 +212,7 @@
 			<!-- <dependency> -->
 			<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
 			<!-- <artifactId>jena-sparql-api-algebra</artifactId> -->
-			<!-- <version>${jena-sparql-api.version}</version> -->
+			<!-- <version>${jenax.version}</version> -->
 			<!-- </dependency> -->
 
 		</dependencies>
@@ -272,10 +274,9 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.8.1</version>
 					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<release>${maven.compiler.release}</release>
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</configuration>
 				</plugin>
@@ -453,7 +454,24 @@
 			</plugin> </plugins> </build> </profile> -->
 
 		<profile>
+			<id>release-aksw</id>
+			<distributionManagement>
+				<repository>
+					<id>maven.aksw.internal</id>
+					<name>AKSW Internal Release Repository</name>
+					<url>https://maven.aksw.org/repository/internal</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+
+		<profile>
 			<id>release</id>
+			<distributionManagement>
+				<repository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
 			<activation>
 				<property>
 					<name>performRelease</name>
@@ -479,36 +497,27 @@
 		</profile>
 	</profiles>
 
+
 	<repositories>
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>University Leipzig, AKSW Maven2 Internal Repository</name>
-			<url>http://maven.aksw.org/repository/internal/</url>
+			<url>https://maven.aksw.org/repository/internal/</url>
 		</repository>
 
 		<repository>
 			<id>maven.aksw.snapshots</id>
 			<name>University Leipzig, AKSW Maven2 Snapshot Repository</name>
-			<url>http://maven.aksw.org/repository/snapshots/</url>
+			<url>https://maven.aksw.org/repository/snapshots/</url>
 		</repository>
 	</repositories>
 
 	<distributionManagement>
-		<!-- <repository> -->
-		<!-- <id>maven.aksw.internal</id> -->
-		<!-- <name>AKSW Internal Release Repository</name> -->
-		<!-- <url>http://maven.aksw.org/repository/internal</url> -->
-		<!-- </repository> -->
-
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
 
 		<snapshotRepository>
 			<id>maven.aksw.snapshots</id>
 			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/repository/snapshots</url>
+			<url>https://maven.aksw.org/repository/snapshots</url>
 		</snapshotRepository>
 
 	</distributionManagement>

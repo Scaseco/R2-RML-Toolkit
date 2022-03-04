@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.r2rml</groupId>
 		<artifactId>r2rml-api-parent</artifactId>
-		<version>0.9.0</version>
+		<version>0.9.1</version>
 	</parent>
 
 	<artifactId>r2rml-jena-api</artifactId>
@@ -31,8 +31,8 @@
 <!-- 		</dependency> -->
 		
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-mapper-annotations</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-annotations-reprogen</artifactId>
 		</dependency>
 
 	</dependencies>
