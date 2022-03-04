@@ -2,8 +2,6 @@ package org.aksw.r2rml.jena.jdbc.impl;
 
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.DecimalFormat;
-import java.text.Format;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
