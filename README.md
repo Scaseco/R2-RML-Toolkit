@@ -52,11 +52,12 @@ Note, that any of the many serialization formats supported by Jena could be used
 
 ## Jena Compatibility
 
-|   |   |
-|---|---|
-| 0.9.0 | Jena 3.17 |
-| 0.9.1 (in development) | Jena 4.1 |
-
+|           r2rml-api |  jena  |
+|---------------------|--------|
+|               0.9.0 | 3.17.0 |
+|               0.9.1 |  4.4.0 |
+|               0.9.2 |  4.4.0 |
+| 0.9.3 (in progress) |  4.5.0 |
 
 ## Usage with Maven
 
