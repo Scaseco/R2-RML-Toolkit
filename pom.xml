@@ -62,8 +62,8 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.4.0</jena.version>
-		<jenax.version>4.4.0-2</jenax.version>
+		<jena.version>4.5.0</jena.version>
+		<jenax.version>4.5.0-1-SNAPSHOT</jenax.version>
 		<aksw-commons.version>0.9.3</aksw-commons.version>
 
 		<timestamp>${maven.build.timestamp}</timestamp>
