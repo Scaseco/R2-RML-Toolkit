@@ -6,7 +6,7 @@
 
 	<groupId>org.aksw.r2rml</groupId>
 	<artifactId>r2rml-api-parent</artifactId>
-	<version>0.9.3-SNAPSHOT</version>
+	<version>4.6.0-1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -62,9 +62,9 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.5.0</jena.version>
-		<jenax.version>4.5.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.3</aksw-commons.version>
+		<jena.version>4.6.0-SNAPSHOT</jena.version>
+		<jenax.version>4.6.0-1-SNAPSHOT</jenax.version>
+		<aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
 
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
