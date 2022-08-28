@@ -443,7 +443,7 @@ public class R2rmlImporterLib {
                     // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
                     ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
                     : termTypeIri.equals(R2rmlTerms.BlankNode)
-                        ? new E_BNode(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                        ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
                         : termTypeIri.equals(R2rmlTerms.Literal)
                             ? knownDatatype == null
                                 ? column
