@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
@@ -250,6 +251,19 @@ public class TriplesMapToSparqlMapping {
         // for (Entry<Var, Expr> e : varToExpr.entrySet()) {
         varToExpr.forEachVarExpr((v, e) ->  elt.addElement(new ElementBind(v, e)));
         result.setQueryPattern(elt);
+
+        // Copying prefixes is not that useful because it can lead to huge prefix declarations
+        // which makes queries hard to read
+        // It seems better to let the application handle this
+        // result.setPrefixMapping(triplesMap.getModel());
+
+        LogicalTable logicalTable = triplesMap.getLogicalTable();
+        if (logicalTable != null && triplesMap.getLogicalTable().qualifiesAsBaseTableOrView()) {
+            String tableName = logicalTable.asBaseTableOrView().getTableName();
+            if (tableName != null) {
+                result.getGraphURIs().add(tableName);
+            }
+        }
 
         return result;
     }
