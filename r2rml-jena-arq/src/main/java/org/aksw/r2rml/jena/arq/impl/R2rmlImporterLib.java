@@ -297,10 +297,10 @@ public class R2rmlImporterLib {
     //						}
 
                             if (g.equals(RR.defaultGraph.asNode())) {
-                                Triple triple = new Triple(s, p, o);
+                                Triple triple = Triple.create(s, p, o);
                                 quadAcc.addTriple(triple);
                             } else {
-                                Quad quad = new Quad(g, s, p, o);
+                                Quad quad = Quad.create(g, s, p, o);
                                 quadAcc.addQuad(quad);
                             }
                         }

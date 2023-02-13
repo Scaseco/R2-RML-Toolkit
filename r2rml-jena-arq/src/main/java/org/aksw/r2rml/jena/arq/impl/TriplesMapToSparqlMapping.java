@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
@@ -29,9 +30,11 @@ import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
+import org.apache.jena.sparql.expr.ExprTransformer;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.VariableNotBoundException;
 import org.apache.jena.sparql.function.FunctionEnv;
+import org.apache.jena.sparql.graph.NodeTransformExpr;
 import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
@@ -243,13 +246,22 @@ public class TriplesMapToSparqlMapping {
     }
 
     public Query getAsQuery() {
+        return getAsQuery(true);
+    }
+
+    public Query getAsQuery(boolean safeVars) {
         Query result = new Query();
         result.setQueryConstructType();
         result.setConstructTemplate(template);
 
         ElementGroup elt = new ElementGroup();
         // for (Entry<Var, Expr> e : varToExpr.entrySet()) {
-        varToExpr.forEachVarExpr((v, e) ->  elt.addElement(new ElementBind(v, e)));
+        varToExpr.forEachVarExpr((v, e) ->  {
+            Expr ee = !safeVars
+                    ? e
+                    : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
+            elt.addElement(new ElementBind(v, ee));
+        });
         result.setQueryPattern(elt);
 
         // Copying prefixes is not that useful because it can lead to huge prefix declarations
