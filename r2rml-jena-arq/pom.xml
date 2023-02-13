@@ -32,10 +32,14 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-utils</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
 			<artifactId>r2rml-resource-ontology</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
