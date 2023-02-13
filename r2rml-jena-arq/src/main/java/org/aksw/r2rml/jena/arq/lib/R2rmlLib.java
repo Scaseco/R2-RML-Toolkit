@@ -236,7 +236,7 @@ public class R2rmlLib {
     public static <T extends Collection<Var>> T collectReferencedColumns(T out, TermMap termMap) {
 
         if (termMap.getColumn() != null) {
-            out.add(Var.alloc(termMap.getColumn()));
+            out.add(VarUtils.safeVar(termMap.getColumn()));
         }
 
         String templateStr = termMap.getTemplate();
@@ -253,7 +253,7 @@ public class R2rmlLib {
     public static void renameVariables(TermMap termMap, NodeTransform nodeTransform) {
 
         if (termMap.getColumn() != null) {
-            termMap.setColumn(nodeTransform.apply(Var.alloc(termMap.getColumn())).getName());
+            termMap.setColumn(nodeTransform.apply(VarUtils.safeVar(termMap.getColumn())).getName());
         }
 
         String templateStr = termMap.getTemplate();
