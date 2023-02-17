@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.aksw.r2rml</groupId>
+		<artifactId>r2rml-api-parent</artifactId>
+		<version>4.8.0-1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>rml-jena-arq</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-reprogen-core</artifactId>
+		</dependency>
+
+		<!-- Used for en/de-quoting of column names -->
+		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-jena-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-jena-arq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-jena-plugin</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-langtag-validator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-utils</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-resource-ontology</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-resource-shacl</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-shacl</artifactId>
+		</dependency>
+
+	</dependencies>
+</project>
+

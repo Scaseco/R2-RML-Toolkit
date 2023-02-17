@@ -1,0 +1,40 @@
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix fno:      <https://w3id.org/function/ontology#> .
+@prefix grel:     <http://users.ugent.be/~bjdmeest/function/grel.ttl#> .
+@prefix moin-fn: <http://example.com/moin/function/> .
+@prefix lib:      <http://example.com/library#> .
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+#######################
+### Moin Functions ###
+#######################
+
+moin-fn:timeNormalize
+    a                   fno:Function ;
+    fno:name            "time normalize" ;
+    rdfs:label          "time normalize" ;
+    dcterms:description "Returns a normalized valid time for GTFS arrival and departure time if hours are greater than 23." ;
+    fno:expects         ( grel:valueParam ) ;
+    fno:returns         ( moin-fn:timeOut ) ;
+    lib:providedBy      [ lib:localLibrary "GTFS-Functions.jar" ;
+                          lib:class        "org.moin.rml.functions.GTFSFunctions" ;
+                          lib:method       "timeNormalize" ] .
+
+grel:valueParam
+    a             fno:Parameter ;
+    fno:name      "input value" ;
+    rdfs:label    "input value" ;
+    fno:type      xsd:string ;
+    fno:predicate grel:valueParameter .
+
+moin-fn:timeOut
+    a             fno:Output ;
+    fno:name      "output time" ;
+    rdfs:label    "output time" ;
+    fno:type      xsd:time ;
+    fno:predicate moin-fn:timeOutput .
+

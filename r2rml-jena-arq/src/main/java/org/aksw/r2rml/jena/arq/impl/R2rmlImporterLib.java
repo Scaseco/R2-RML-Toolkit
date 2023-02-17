@@ -189,6 +189,19 @@ public class R2rmlImporterLib {
         return result;
     }
 
+    /** Variant of {@link #allocateVar(TermMap, Resource, BiMap, VarAlloc)} that tracks var-termMap mapping */
+    public static Node allocateVar(
+            TermMap tm,
+            Resource fallbackTermType,
+            BiMap<Var, Expr> nodeToExpr,
+            VarAlloc varGen,
+            Map<TermMap, Var> termMapToVar) {
+        Node result = allocateVar(tm, fallbackTermType, nodeToExpr, varGen);
+        if (result.isVariable()) {
+            termMapToVar.put(tm, (Var)result);
+        }
+        return result;
+    }
 
     /**
      * Allocates a variable for a given term map and maps it to the term map's corresponding
@@ -281,12 +294,10 @@ public class R2rmlImporterLib {
 
                         if (!om.qualifiesAsRefObjectMap()) {
 
-                            Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, RR.IRI, varToExpr, varGen);
-                            Node s = allocateVar(sm, RR.IRI, varToExpr, varGen);
-                            Node p = allocateVar(pm, RR.IRI, varToExpr, varGen);
-                            Node o = allocateVar(om.asTermMap(), RR.Literal, varToExpr, varGen);
-
-                            // TODO Add book-keeping of var to term-map mapping for debugging purposes
+                            Node g = gm == null ? RR.defaultGraph.asNode() : allocateVar(gm, RR.IRI, varToExpr, varGen, termMapToVar);
+                            Node s = allocateVar(sm, RR.IRI, varToExpr, varGen, termMapToVar);
+                            Node p = allocateVar(pm, RR.IRI, varToExpr, varGen, termMapToVar);
+                            Node o = allocateVar(om.asTermMap(), RR.Literal, varToExpr, varGen, termMapToVar);
 
                             // Template: creates triples using Quad.defaultGraphNodeGenerated
                             // RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
@@ -308,7 +319,6 @@ public class R2rmlImporterLib {
                 }
             }
         }
-
 
         VarExprList vel = new VarExprList();
         varToExpr.forEach(vel::add);

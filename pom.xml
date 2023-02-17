@@ -24,6 +24,7 @@
 		<module>r2rml-jena-sql-transforms</module>
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
+		<module>rml-jena-arq</module>
 	</modules>
 	<issueManagement>
 		<url>https://github.com/SmartDataAnalytics/RdfProcessingToolkit/issues</url>
