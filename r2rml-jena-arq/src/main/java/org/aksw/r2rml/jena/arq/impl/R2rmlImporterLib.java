@@ -350,7 +350,7 @@ public class R2rmlImporterLib {
     /**
      * Convert a term map to a corresponing SPARQL expression
      *
-     * @param tm
+     * @param triplesMap
      * @return
      */
 //    public static Expr termMapToExpr(TermMap tm, Resource fallbackTermType) {

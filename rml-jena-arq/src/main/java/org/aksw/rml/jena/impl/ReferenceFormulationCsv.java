@@ -11,6 +11,7 @@ import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.syntax.Element;
 
 public class ReferenceFormulationCsv
@@ -27,6 +28,6 @@ public class ReferenceFormulationCsv
     @Override
     public Expr reference(Var itemVar, String expr) {
         String jsonPath = "http://jsa.aksw.org/fn/json/path";
-        return new E_Function(jsonPath, ExprList.create(Arrays.asList(new ExprVar(itemVar), new ExprVar("$." + expr))));
+        return new E_Function(jsonPath, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString("$." + expr))));
     }
 }

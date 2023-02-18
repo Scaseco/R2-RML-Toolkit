@@ -8,7 +8,6 @@ import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
-import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -45,7 +44,7 @@ public class RmlLib {
         fnMap.setSubjectIri("urn:x-r2rml:dummy-subject");
 
 
-        TriplesMapToSparqlMapping mapping = R2rmlImporterLib.read(fnMap);
+        TriplesMapToSparqlMapping mapping = RmlImporter.read(fnMap, null, fnmlModel);
         Map<TermMap, Var> tmToVar = mapping.getTermMapToVar();
         VarExprList varToExpr = mapping.getVarToExpr();
 

@@ -6,8 +6,9 @@ import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
-import org.aksw.rml.model.HasLogicalSource;
 import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.RmlTermMap;
+import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
 public class JenaPluginRml
@@ -41,8 +42,9 @@ public class JenaPluginRml
 
         // Rml
         JenaPluginUtils.registerResourceClasses(
-            HasLogicalSource.class,
-            LogicalSource.class
+            RmlTriplesMap.class,
+            LogicalSource.class,
+            RmlTermMap.class
         );
     }
 }

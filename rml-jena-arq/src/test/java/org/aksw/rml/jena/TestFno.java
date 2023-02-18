@@ -47,8 +47,8 @@ public class TestFno {
 
         Model fnmlModel = RDFDataMgr.loadModel("functions_moin.ttl");
 
-        RmlImporter importer = new RmlImporter(fnmlModel);
-        TriplesMapToSparqlMapping mapping = importer.read(map, null);
+        // TriplesMapProcessorRml importer = new TriplesMapProcessorRml(fnmlModel);
+        TriplesMapToSparqlMapping mapping = RmlImporter.read(map, null, fnmlModel);
         System.out.println(mapping.getAsQuery());
     }
 }
