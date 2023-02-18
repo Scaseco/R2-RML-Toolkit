@@ -1,4 +1,4 @@
-package org.aksw.rml.jena;
+package org.aksw.rml.jena.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class RmlLib {
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#logicalSource", "http://www.w3.org/ns/r2rml#logicalTable");
     }
 
-    public static Expr buildFunctionCall(Model fnModel, TriplesMap rawFnMap) {
+    public static Expr buildFunctionCall(Model fnmlModel, TriplesMap rawFnMap) {
         Model extra = ModelFactory.createDefaultModel();
         Model union = ModelFactory.createUnion(rawFnMap.getModel(), extra);
 
@@ -62,7 +62,7 @@ public class RmlLib {
 
         ObjectMap om = args.get(FnoTerms.executes).asTermMap();
         Node fnId = om.asTermMap().getConstant().asNode();
-        RDFNode fnn = fnModel.asRDFNode(fnId);
+        RDFNode fnn = fnmlModel.asRDFNode(fnId);
         if (fnn == null) {
             throw new RuntimeException("No function declaration found for" + fnId);
         }

@@ -376,7 +376,7 @@ public class R2rmlLib {
      * Expands rr:class, rr:subject, rr:predicate, rr:object and rr:graph to term maps
      * in order to allow for uniform processing
      *
-     * @param tm The triple map for which to expant all mentioned short cuts
+     * @param tm The triple map for which to expand all mentioned short cuts
      */
     public static void expandShortcuts(TriplesMap tm) {
 
