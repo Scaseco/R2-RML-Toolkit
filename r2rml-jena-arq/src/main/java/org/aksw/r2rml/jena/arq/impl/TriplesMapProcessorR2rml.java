@@ -238,8 +238,8 @@ public class TriplesMapProcessorR2rml {
 
         }
 
-        // Resolve all variable names. This gives e.g. an RML processor to process all variable names (=references)
-        // with the reference formulation.
+        // Resolve all variable names. This gives e.g. an RML processor the chance
+        // to resolve all variable names (=references) against the reference formulation.
         result = ExprTransformer.transform(new ExprTransformCopy() {
             @Override
             public Expr transform(ExprVar exprVar) {
@@ -252,6 +252,7 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
+    /** Extension point for resolving RML references */
     protected Expr referenceToExpr(String colName) {
         ExprVar column = new ExprVar(colName);
         return column;

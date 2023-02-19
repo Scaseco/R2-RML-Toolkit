@@ -1,8 +1,10 @@
 package org.aksw.rml.jena.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.aksw.commons.collections.IterableUtils;
 import org.aksw.fno.model.FnoTerms;
 import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
@@ -14,6 +16,8 @@ import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.Rml;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -30,10 +34,20 @@ public class RmlLib {
         UpdateUtils.renameNamespace(model.getGraph(), FnoTerms.OLD_NS, FnoTerms.NS);
     }
 
+    @Deprecated // We now have a proper RML model so we don't need to rely on such hacks
     public static void renameRmlToR2rml(Model model) {
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#reference", "http://www.w3.org/ns/r2rml#column");
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#source", "http://www.w3.org/ns/r2rml#tableName");
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#logicalSource", "http://www.w3.org/ns/r2rml#logicalTable");
+    }
+
+    /** Extract the only logical source from a given model. Null if none found; exception if more than one. */
+    public static LogicalSource getLogicalSource(Model model) {
+        List<LogicalSource> matches = model.listResourcesWithProperty(Rml.logicalSource)
+                .mapWith(r -> r.as(LogicalSource.class))
+                .toList();
+        LogicalSource result = IterableUtils.expectZeroOrOneItems(matches);
+        return result;
     }
 
     public static Expr buildFunctionCall(Model fnmlModel, TriplesMap rawFnMap) {
