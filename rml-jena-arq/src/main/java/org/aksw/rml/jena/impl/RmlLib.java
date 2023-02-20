@@ -43,7 +43,7 @@ public class RmlLib {
 
     /** Extract the only logical source from a given model. Null if none found; exception if more than one. */
     public static LogicalSource getLogicalSource(Model model) {
-        List<LogicalSource> matches = model.listResourcesWithProperty(Rml.logicalSource)
+        List<LogicalSource> matches = model.listResourcesWithProperty(Rml.source)
                 .mapWith(r -> r.as(LogicalSource.class))
                 .toList();
         LogicalSource result = IterableUtils.expectZeroOrOneItems(matches);

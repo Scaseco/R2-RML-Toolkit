@@ -19,6 +19,23 @@
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-reprogen-core</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-csvw</artifactId>
+<!--			<version>4.8.0-1-SNAPSHOT</version>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-models-csvw-univocity</artifactId>
+		</dependency>
+
+		<!-- Needed for JenaUrlUtils ; that class should better go to jenax-arq-utils -->
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-plugins-bundle</artifactId>
+		</dependency>
 
 		<!-- Used for en/de-quoting of column names -->
 		<dependency>
