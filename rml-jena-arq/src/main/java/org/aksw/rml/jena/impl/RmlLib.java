@@ -9,6 +9,8 @@ import org.aksw.fno.model.FnoTerms;
 import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
+import org.aksw.jenax.arq.util.syntax.ElementUtils;
+import org.aksw.jenax.arq.util.triple.GraphVarImpl;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
@@ -18,15 +20,21 @@ import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.Rml;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
+import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.syntax.Element;
 
 
 public class RmlLib {
@@ -39,6 +47,21 @@ public class RmlLib {
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#reference", "http://www.w3.org/ns/r2rml#column");
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#source", "http://www.w3.org/ns/r2rml#tableName");
         UpdateUtils.renameProperty(model.getGraph(), "http://semweb.mmlab.be/ns/rml#logicalSource", "http://www.w3.org/ns/r2rml#logicalTable");
+    }
+
+
+    /**
+     * Extract a logical source from a service node.
+     * Attempts to collect the SPARQL expression's triples into an RDF graph.
+     */
+    public static LogicalSource getLogicalSource(OpService opService) {
+        Op subOp = opService.getSubOp();
+        Query query = OpAsQuery.asQuery(subOp);
+        Element elt = query.getQueryPattern();
+        Graph graph = ElementUtils.toGraph(elt, new GraphVarImpl());
+        Model model = ModelFactory.createModelForGraph(graph);
+        LogicalSource result = RmlLib.getLogicalSource(model);
+        return result;
     }
 
     /** Extract the only logical source from a given model. Null if none found; exception if more than one. */

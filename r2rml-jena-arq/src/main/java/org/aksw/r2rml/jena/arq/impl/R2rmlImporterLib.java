@@ -1,13 +1,10 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,22 +12,12 @@ import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidationException
 import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidator;
 import org.aksw.jena_sparql_api.langtag.validator.impl.LangTagValidators;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
-import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
-import org.aksw.r2rml.jena.domain.api.GraphMap;
-import org.aksw.r2rml.jena.domain.api.ObjectMapType;
-import org.aksw.r2rml.jena.domain.api.PredicateMap;
-import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.SubjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
-import org.apache.jena.ext.com.google.common.collect.BiMap;
-import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -41,24 +28,14 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
 import org.apache.jena.shacl.lib.ShLib;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.core.VarAlloc;
-import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_IRI;
 import org.apache.jena.sparql.expr.E_Str;
-import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.modify.request.QuadAcc;
-import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.apache.jena.vocabulary.XSD;
-
 
 /**
  * Methods to import and validate R2RML.
@@ -174,7 +151,6 @@ public class R2rmlImporterLib {
     public static Collection<TriplesMapToSparqlMapping> read(Model rawModel) {
         Model model = ModelFactory.createDefaultModel();
         model.add(rawModel);
-
 
         List<TriplesMap> triplesMaps = model.listSubjectsWithProperty(RR.logicalTable).mapWith(r -> r.as(TriplesMap.class)).toList();
 
