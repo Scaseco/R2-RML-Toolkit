@@ -8,12 +8,14 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.query.Query;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
+import org.apache.jena.sparql.expr.E_Equals;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
-import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
 
@@ -64,19 +66,46 @@ public class RmlQueryGenerator {
         String parentRfIri = parentSource.getReferenceFormulationIri();
         ReferenceFormulation parentRf = registry.getOrThrow(parentRfIri);
 
-        Element childElt = childRf.source(childSource, join.getChildVar());
-        Element parentElt = parentRf.source(parentSource, join.getParentVar());
+        Element childSourceElt = childRf.source(childSource, join.getChildVar());
+        Element parentSourceElt = parentRf.source(parentSource, join.getParentVar());
 
         ElementBind childSubjectElt = join.getChildSubjectDefinition();
         ElementBind parentSubjectElt = join.getParentSubjectDefinition();
 
         ElementGroup elt = new ElementGroup();
-        elt.addElement(childElt);
-        elt.addElement(parentElt);
 
-        for (Expr expr : join.getConditionExprs()) {
-            elt.addElementFilter(new ElementFilter(expr));
+        // Build the syntax such that it enforces a hash join:
+        // SELECT * WHERE {
+        //   { SERVICE <childSource> { } BIND(childJoinConditionExpr As ?jc) }
+        //   { SERVICE <parentSource> { } BIND(parentJoinConditionExpr As ?jc) }
+        // }
+
+        ExprList joinExprs = join.getConditionExprs();
+
+        // Child group
+        ElementGroup childGrp = new ElementGroup();
+        childGrp.addElement(childSourceElt);
+        for (int i = 0; i < joinExprs.size(); ++i) {
+            Expr expr = joinExprs.get(i);
+            E_Equals eq = (E_Equals)expr;
+            childGrp.addElement(new ElementBind(Var.alloc("jc" + i), eq.getArg2()));
         }
+
+        // Parent group
+        ElementGroup parentGrp = new ElementGroup();
+        parentGrp.addElement(parentSourceElt);
+        for (int i = 0; i < joinExprs.size(); ++i) {
+            Expr expr = joinExprs.get(i);
+            E_Equals eq = (E_Equals)expr;
+            parentGrp.addElement(new ElementBind(Var.alloc("jc" + i), eq.getArg1()));
+        }
+
+        elt.addElement(childGrp);
+        elt.addElement(parentGrp);
+
+//        for (Expr expr : join.getConditionExprs()) {
+//            elt.addElementFilter(new ElementFilter(expr));
+//        }
 
         elt.addElement(childSubjectElt);
         elt.addElement(parentSubjectElt);
