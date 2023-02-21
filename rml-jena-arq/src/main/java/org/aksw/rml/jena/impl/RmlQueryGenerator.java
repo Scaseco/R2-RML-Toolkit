@@ -13,6 +13,7 @@ import org.apache.jena.query.Query;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.Template;
 
@@ -36,14 +37,19 @@ public class RmlQueryGenerator {
         Element childElt = childRf.source(childSource, join.getChildVar());
         Element parentElt = parentRf.source(parentSource, join.getParentVar());
 
+        ElementBind childSubjectElt = join.getChildSubjectDefinition();
+        ElementBind parentSubjectElt = join.getParentSubjectDefinition();
+
         List<Element> elts = new ArrayList<>();
         elts.add(childElt);
-        // TODO We need to add subject map expressions
         elts.add(parentElt);
 
         for (Expr expr : join.getConditionExprs()) {
             elts.add(new ElementFilter(expr));
         }
+
+        elts.add(childSubjectElt);
+        elts.add(parentSubjectElt);
 
         Element elt = ElementUtils.groupIfNeeded(elts);
 

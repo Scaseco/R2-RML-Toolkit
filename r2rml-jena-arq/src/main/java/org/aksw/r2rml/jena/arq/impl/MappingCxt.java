@@ -13,6 +13,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.modify.request.QuadAcc;
+import org.apache.jena.sparql.syntax.ElementBind;
 
 /**
  * This class captures the state for mapping TriplesMap to SPARQL elements.
@@ -30,7 +31,7 @@ public class MappingCxt {
     protected QuadAcc quadAcc = new QuadAcc();
 
     // TODO Allow customization of variable allocation
-    protected VarAlloc varGen = new VarAlloc("v");
+    protected VarAlloc varGen;
 
     protected List<JoinDeclaration> joins = new ArrayList<>();
 
@@ -39,6 +40,17 @@ public class MappingCxt {
         this.parentCxt = parentCxt;
         this.triplesMap = triplesMap;
         this.triplesMapVar = triplesMapVar;
+
+        String baseExprVar = parentCxt == null ? "v" : triplesMapVar.getName() + "_";
+        this.varGen = new VarAlloc(baseExprVar);
+    }
+
+    public ElementBind getSubjectDefinition() {
+        MappingCxt cxt = this; // Make this a static util function?
+        TriplesMap tm = cxt.getTriplesMap();
+        Var subjectVar = cxt.getTermMapToVar().get(tm.getSubjectMap());
+        Expr expr = cxt.getVarToExpr().get(subjectVar);
+        return new ElementBind(subjectVar, expr);
     }
 
     public TriplesMap getTriplesMap() {

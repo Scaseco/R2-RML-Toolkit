@@ -20,7 +20,6 @@ import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.ext.com.google.common.collect.BiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
@@ -52,15 +51,6 @@ public class TriplesMapProcessorR2rml {
         this.triplesMap = triplesMap;
         this.baseIri = baseIri;
     }
-
-//    public TriplesMapProcessorR2rml(TriplesMap triplesMap, BiMap<Var, Expr> varToExpr, Map<TermMap, Var> termMapToVar, QuadAcc quadAcc) {
-//        super();
-//        this.triplesMap = triplesMap;
-//        this.varToExpr = varToExpr;
-//        this.termMapToVar = termMapToVar;
-//        this.quadAcc = quadAcc;
-//        this.varGen = varGen;
-//    }
 
     /**
      *
@@ -108,17 +98,8 @@ public class TriplesMapProcessorR2rml {
                             // RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
                             // So the output does not match exactly...
 
-    //						if (g.equals(RR.defaultGraph.asNode())) {
-    //							g = Quad.defaultGraphIRI;
-    //						}
-
-                            if (g.equals(RR.defaultGraph.asNode())) {
-                                Triple triple = Triple.create(s, p, o);
-                                childCxt.quadAcc.addTriple(triple);
-                            } else {
-                                Quad quad = Quad.create(g, s, p, o);
-                                childCxt.quadAcc.addQuad(quad);
-                            }
+                            Quad quad = createQuad(g, s, p, o);
+                            childCxt.quadAcc.addQuad(quad);
                         } else {
                             RefObjectMap rom = om.asRefObjectMap();
                             processRefObjectMap(g, s, p, rom);
@@ -197,7 +178,6 @@ public class TriplesMapProcessorR2rml {
         // In the following derive the effective term type based on the term map's attributes
         Node effectiveTermType = null;
 
-
         // If a datatype has been specified then get its node
         // and validate that its an IRI
         String template = tm.getTemplate();
@@ -267,7 +247,6 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-
     protected void processRefObjectMap(Node g, Node s, Node p, RefObjectMap rom) {
         //JoinDeclaration join = new JoinDeclaration(triplesMap, sm, rom);
 
@@ -291,9 +270,17 @@ public class TriplesMapProcessorR2rml {
             constraints.add(constraint);
         }
 
-        Quad quad = Quad.create(g, s, p, o);
-        JoinDeclaration join = new JoinDeclaration(childCxt.triplesMap, childVar, null, rom, parentVar, quad, constraints);
+        Quad quad = createQuad(g, s, p, o);
+        JoinDeclaration join = new JoinDeclaration(parentCxt, null, rom, quad, constraints);
         childCxt.joins.add(join);
+    }
+
+    protected Quad createQuad(Node g, Node s, Node p, Node o) {
+        Node finalG = RR.defaultGraph.asNode().equals(g)
+                ? Quad.defaultGraphNodeGenerated
+                : g;
+
+        return Quad.create(finalG, s, p, o);
     }
 
     /**

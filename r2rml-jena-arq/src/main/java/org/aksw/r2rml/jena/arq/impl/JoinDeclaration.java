@@ -6,36 +6,58 @@ import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.syntax.ElementBind;
 
 public class JoinDeclaration {
-    protected TriplesMap childTriplesMap;
-    protected TermMap predicateMap;
-    protected RefObjectMap refObjectMap;
+    protected MappingCxt parentCxt; // Owns a reference to the child cxt
+    // protected TriplesMap childTriplesMap;
+    protected TermMap predicateMap; // Remove?
+    protected RefObjectMap refObjectMap; // The child's refObjectMap
 
-    protected Var parentVar;
-    protected Var childVar;
     protected Quad quad;
     protected ExprList conditionExprs;
 
-    public JoinDeclaration(TriplesMap childTriplesMap, Var childVar, TermMap predicateMap, RefObjectMap refObjectMap,
-            Var parentVar, Quad quad, ExprList conditionExprs) {
+    public JoinDeclaration(MappingCxt parentCxt, TermMap predicateMap, RefObjectMap refObjectMap, Quad quad, ExprList conditionExprs) {
         super();
-        this.childTriplesMap = childTriplesMap;
-        this.childVar = childVar;
+        this.parentCxt = parentCxt;
         this.predicateMap = predicateMap;
         this.refObjectMap = refObjectMap;
-        this.parentVar = parentVar;
         this.quad = quad;
         this.conditionExprs = conditionExprs;
     }
 
-    /** Convenience shortcut */
+    /* Convenience shortcuts */
+
+    public MappingCxt getParentCxt() {
+        return parentCxt;
+    }
+
     public TriplesMap getParentTriplesMap() {
-        return refObjectMap.getParentTriplesMap();
+        return getParentCxt().getTriplesMap(); // same as refObjectMap.getParentTriplesMap();
+    }
+
+    public ElementBind getParentSubjectDefinition() {
+        return getParentCxt().getSubjectDefinition();
+    }
+
+    public Var getParentVar() {
+        return getParentCxt().getTriplesMapVar();
+    }
+
+    public MappingCxt getChildCxt() {
+        return getParentCxt().getParentCxt();
+    }
+
+    public Var getChildVar() {
+        return getChildCxt().getTriplesMapVar();
+    }
+
+    public ElementBind getChildSubjectDefinition() {
+        return getChildCxt().getSubjectDefinition();
     }
 
     public TriplesMap getChildTriplesMap() {
-        return childTriplesMap;
+        return getChildCxt().getTriplesMap();
     }
 
     public TermMap getPredicateMap() {
@@ -44,14 +66,6 @@ public class JoinDeclaration {
 
     public RefObjectMap getRefObjectMap() {
         return refObjectMap;
-    }
-
-    public Var getParentVar() {
-        return parentVar;
-    }
-
-    public Var getChildVar() {
-        return childVar;
     }
 
     public Quad getQuad() {
