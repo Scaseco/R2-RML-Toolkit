@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
-import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
@@ -20,14 +19,14 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-
-@Command(name = "to-sparql", description = "Convert RML/CSV mappings to Tarql/SPARQL queries")
-public class CmdRmlToSparql
+@Command(name = "to-tarql", description = "Convert join-less RML/CSV mappings to Tarql/SPARQL queries")
+public class CmdRmlToTarql
 //     extends CmdCommonBase
     implements Callable<Integer>
 {
     @Option(names = { "--fnml" }, description = "Function Mapping Language models")
     public List<String> fnmlFiles = new ArrayList<>();
+
 
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
@@ -42,21 +41,22 @@ public class CmdRmlToSparql
 
         for (String inputFile : inputFiles) {
             Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.read(model, fnmlModel);
-            // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+
+            // Note: R2RML joins
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.read(model, null);
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 System.out.println("# " + tmId);
-                Query query = RmlQueryGenerator.createQuery(item, null);
+                Query query = item.getAsQuery(true);
                 QueryUtils.optimizePrefixes(query);
                 System.out.println(query);
 
-                for (JoinDeclaration join : item.getJoins()) {
-                    System.out.println("# " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode()));
-                    Query joinQuery = RmlQueryGenerator.createQuery(join, null);
-                    QueryUtils.optimizePrefixes(joinQuery);
-                    System.out.println(joinQuery);
-                }
+//                for (JoinDeclaration join : item.getJoins()) {
+//                    System.out.println("# " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode()));
+//                    Query joinQuery = RmlQueryGenerator.createQuery(join, null);
+//                    QueryUtils.optimizePrefixes(joinQuery);
+//                    System.out.println(joinQuery);
+//                }
             }
         }
         return 0;

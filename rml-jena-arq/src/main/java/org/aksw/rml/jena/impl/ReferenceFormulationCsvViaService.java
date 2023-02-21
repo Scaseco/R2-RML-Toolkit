@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import org.aksw.fno.model.Fno;
 import org.aksw.rml.model.LogicalSource;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
@@ -22,10 +24,18 @@ public class ReferenceFormulationCsvViaService
     @Override
     public Element source(LogicalSource logicalSource, Var sourceVar) {
         BasicPattern bgp = new BasicPattern();
-        // Only add the immediatly triples
-        logicalSource.listProperties().mapWith(stmt -> stmt.asTriple()).forEach(bgp::add);
+
+        // Replace the logical source with a constant in order to make
+        // equality checks easier
+        Node s = NodeFactory.createURI(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI);
+
+        // Only add the immediate triples
+        logicalSource.listProperties()
+            .mapWith(stmt -> stmt.asTriple())
+            .mapWith(t -> Triple.create(s, t.getPredicate(), t.getObject()))
+            .forEach(bgp::add);
         // GraphUtil.findAll(logicalSource.getModel().getGraph()).forEach(bgp::add);
-        bgp.add(Triple.create(logicalSource.asNode(), Fno.returns.asNode(), sourceVar));
+        bgp.add(Triple.create(s, Fno.returns.asNode(), sourceVar));
         ElementService result = new ElementService(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
         return result;
     }
