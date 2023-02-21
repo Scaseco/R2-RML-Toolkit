@@ -1,0 +1,12 @@
+#!/bin/sh
+
+#WORK_DIR=`dirname "$0"`
+
+LIB_DIR="/usr/share/rml-toolkit-cli/"
+MAIN_CLASS="org.aksw.rml.cli.main.MainCliRml"
+
+JAVA=${JAVA_HOME:+$JAVA_HOME/bin/}java
+
+# EXTRA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
+$JAVA $EXTRA_OPTS $JAVA_OPTS -cp "$LIB_DIR:$LIB_DIR/lib/*:$EXTRA_CP" "$MAIN_CLASS" "$@"
+
