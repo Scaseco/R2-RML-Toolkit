@@ -34,8 +34,8 @@ public class TriplesMapProcessorRml
     protected ReferenceFormulation referenceFormulation;
 
 
-    public TriplesMapProcessorRml(TriplesMap triplesMap, String baseIri, Model fnmlModel) {
-        this(triplesMap, baseIri, fnmlModel, null);
+    public TriplesMapProcessorRml(TriplesMap triplesMap,  Model fnmlModel) {
+        this(triplesMap, null, fnmlModel, null);
     }
 
     public TriplesMapProcessorRml(TriplesMap triplesMap, String baseIri, Model fnmlModel, ReferenceFormulationRegistry registry) {

@@ -25,6 +25,8 @@
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
 		<module>rml-jena-arq</module>
+		<module>rml-cli</module>
+		<module>rml-pkg-parent</module>
 	</modules>
 	<issueManagement>
 		<url>https://github.com/SmartDataAnalytics/RdfProcessingToolkit/issues</url>
@@ -134,6 +136,16 @@
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>r2rmlx-jena-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-jena-arq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-cli</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

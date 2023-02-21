@@ -5,7 +5,7 @@ import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import org.aksw.rml.jena.impl.RmlImporter;
+import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
 import org.apache.jena.rdf.model.Model;
@@ -52,7 +52,7 @@ public class TestFno {
         Model fnmlModel = RDFDataMgr.loadModel("functions_moin.ttl");
 
         // TriplesMapProcessorRml importer = new TriplesMapProcessorRml(fnmlModel);
-        TriplesMapToSparqlMapping mapping = RmlImporter.read(map, null, fnmlModel);
+        TriplesMapToSparqlMapping mapping = RmlImporterLib.read(map, fnmlModel);
         System.out.println(mapping.getAsQuery());
 
         System.out.println(RmlQueryGenerator.createQuery(mapping, null));

@@ -33,6 +33,6 @@ public class ReferenceFormulationCsvViaService
     @Override
     public Expr reference(Var itemVar, String expr) {
         String jsonPath = "http://jsa.aksw.org/fn/json/path";
-        return new E_Function(jsonPath, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString("$." + expr))));
+        return new E_Function(jsonPath, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString("$['" + expr.replaceAll("'", "\\'") + "']"))));
     }
 }

@@ -81,7 +81,7 @@ public class RmlLib {
         // Add a dummy subject in order to allow for passing it throw the standard R2RML machinery
         fnMap.setSubjectIri("urn:x-r2rml:dummy-subject");
 
-        TriplesMapToSparqlMapping mapping = RmlImporter.read(fnMap, null, fnmlModel);
+        TriplesMapToSparqlMapping mapping = RmlImporterLib.read(fnMap, fnmlModel);
         Map<TermSpec, Var> tmToVar = mapping.getTermMapToVar();
         VarExprList varToExpr = mapping.getVarToExpr();
 
