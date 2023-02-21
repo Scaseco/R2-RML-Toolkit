@@ -14,7 +14,7 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.syntax.Element;
 
-public class ReferenceFormulationCsv
+public class ReferenceFormulationCsvViaCsvParse
     implements ReferenceFormulation
 {
     @Override

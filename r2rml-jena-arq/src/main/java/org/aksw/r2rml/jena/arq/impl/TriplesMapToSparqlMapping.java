@@ -52,6 +52,8 @@ public class TriplesMapToSparqlMapping {
     // The triples map from which this mapping was created
     protected TriplesMap triplesMap;
 
+    protected MappingCxt mappingCxt;
+
     // The triples / quads constructed from the triples map
     protected Template template;
 
@@ -64,10 +66,11 @@ public class TriplesMapToSparqlMapping {
 
     protected List<JoinDeclaration> joins;
 
-    public TriplesMapToSparqlMapping(TriplesMap triplesMap, Template template, Map<TermSpec, Var> termMapToVar,
+    public TriplesMapToSparqlMapping(TriplesMap triplesMap, MappingCxt mappingCxt, Template template, Map<TermSpec, Var> termMapToVar,
             VarExprList varToExpr, List<JoinDeclaration> joins) {
         super();
         this.triplesMap = triplesMap;
+        this.mappingCxt = mappingCxt;
         this.template = template;
         this.termMapToVar = termMapToVar;
         this.varToExpr = varToExpr;
@@ -76,6 +79,10 @@ public class TriplesMapToSparqlMapping {
 
     public TriplesMap getTriplesMap() {
         return triplesMap;
+    }
+
+    public MappingCxt getMappingCxt() {
+        return mappingCxt;
     }
 
     public Template getTemplate() {

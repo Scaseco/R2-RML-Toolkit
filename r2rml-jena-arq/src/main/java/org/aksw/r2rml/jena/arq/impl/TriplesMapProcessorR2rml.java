@@ -114,7 +114,7 @@ public class TriplesMapProcessorR2rml {
 
         Template template = new Template(childCxt.quadAcc);
         TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
-            triplesMap, template, childCxt.termMapToVar, vel, childCxt.joins);
+            triplesMap, childCxt, template, childCxt.termMapToVar, vel, childCxt.joins);
 
         return result;
     }

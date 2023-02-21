@@ -55,6 +55,8 @@ public class TestFno {
         TriplesMapToSparqlMapping mapping = RmlImporter.read(map, null, fnmlModel);
         System.out.println(mapping.getAsQuery());
 
+        System.out.println(RmlQueryGenerator.createQuery(mapping, null));
+
         for (JoinDeclaration join : mapping.getJoins()) {
             System.out.println(RmlQueryGenerator.createQuery(join, null));
         }

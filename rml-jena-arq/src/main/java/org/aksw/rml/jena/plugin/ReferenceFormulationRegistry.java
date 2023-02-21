@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.aksw.rml.jena.impl.ReferenceFormulation;
-import org.aksw.rml.jena.impl.ReferenceFormulationCsv;
+import org.aksw.rml.jena.impl.ReferenceFormulationCsvViaService;
 import org.aksw.rml.jena.impl.ReferenceFormulationJson;
 import org.aksw.rml.model.QlTerms;
 import org.apache.jena.query.ARQ;
@@ -36,7 +36,7 @@ public class ReferenceFormulationRegistry {
     }
 
     public static void registryDefaults(ReferenceFormulationRegistry registry) {
-        registry.put(QlTerms.CSV, new ReferenceFormulationCsv());
+        registry.put(QlTerms.CSV, new ReferenceFormulationCsvViaService());
         registry.put(QlTerms.JSONPath, new ReferenceFormulationJson());
         // registry.put(QlTerms.XPath, new ReferenceFormulatio());
     }

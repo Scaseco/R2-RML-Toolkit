@@ -1,24 +1,54 @@
 package org.aksw.rml.jena.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
+import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.query.Query;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
 
 public class RmlQueryGenerator {
-    // protected ReferenceFormulationRegistry registry;
+    /** Produces a query from all non-joining elements */
+    public static Query createQuery(TriplesMapToSparqlMapping mapping, ReferenceFormulationRegistry registry) {
+        if (registry == null) {
+            registry = ReferenceFormulationRegistry.get();
+        }
+
+        LogicalSource childSource = mapping.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
+        String childRfIri = childSource.getReferenceFormulationIri();
+        ReferenceFormulation childRf = registry.getOrThrow(childRfIri);
+        Element childElt = childRf.source(childSource, mapping.getMappingCxt().getTriplesMapVar());
+        // ElementBind childSubjectElt = join.getChildSubjectDefinition();
+
+        ElementGroup elt = new ElementGroup();
+        elt.addElement(childElt);
+
+        VarExprList varToExpr = mapping.getVarToExpr();
+        varToExpr.forEachVarExpr((v, e) ->  {
+//            Expr ee = !safeVars
+//                    ? e
+//                    : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
+            elt.addElement(new ElementBind(v, e));
+        });
+
+
+        Query result = new Query();
+        result.setQueryConstructType();
+        result.setConstructTemplate(mapping.getTemplate());
+        result.setQueryPattern(elt);
+
+        return result;
+    }
 
     public static Query createQuery(JoinDeclaration join, ReferenceFormulationRegistry registry) {
         if (registry == null) {
@@ -40,18 +70,16 @@ public class RmlQueryGenerator {
         ElementBind childSubjectElt = join.getChildSubjectDefinition();
         ElementBind parentSubjectElt = join.getParentSubjectDefinition();
 
-        List<Element> elts = new ArrayList<>();
-        elts.add(childElt);
-        elts.add(parentElt);
+        ElementGroup elt = new ElementGroup();
+        elt.addElement(childElt);
+        elt.addElement(parentElt);
 
         for (Expr expr : join.getConditionExprs()) {
-            elts.add(new ElementFilter(expr));
+            elt.addElementFilter(new ElementFilter(expr));
         }
 
-        elts.add(childSubjectElt);
-        elts.add(parentSubjectElt);
-
-        Element elt = ElementUtils.groupIfNeeded(elts);
+        elt.addElement(childSubjectElt);
+        elt.addElement(parentSubjectElt);
 
         Query result = new Query();
         result.setQueryConstructType();
