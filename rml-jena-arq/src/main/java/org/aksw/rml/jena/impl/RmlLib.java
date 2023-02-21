@@ -16,7 +16,7 @@ import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
+import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.Rml;
@@ -78,11 +78,11 @@ public class RmlLib {
         Model union = ModelFactory.createUnion(rawFnMap.getModel(), extra);
 
         TriplesMap fnMap = rawFnMap.inModel(union).as(TriplesMap.class);
+        // Add a dummy subject in order to allow for passing it throw the standard R2RML machinery
         fnMap.setSubjectIri("urn:x-r2rml:dummy-subject");
 
-
         TriplesMapToSparqlMapping mapping = RmlImporter.read(fnMap, null, fnmlModel);
-        Map<TermMap, Var> tmToVar = mapping.getTermMapToVar();
+        Map<TermSpec, Var> tmToVar = mapping.getTermMapToVar();
         VarExprList varToExpr = mapping.getVarToExpr();
 
         Map<String, ObjectMapType> args = new HashMap<>();

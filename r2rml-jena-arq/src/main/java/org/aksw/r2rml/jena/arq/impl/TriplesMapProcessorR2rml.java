@@ -1,8 +1,6 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -10,15 +8,16 @@ import java.util.Set;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
+import org.aksw.r2rml.jena.domain.api.JoinCondition;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateMap;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
+import org.aksw.r2rml.jena.domain.api.RefObjectMap;
 import org.aksw.r2rml.jena.domain.api.SubjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.ext.com.google.common.collect.BiMap;
-import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -28,13 +27,14 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.core.VarExprList;
+import org.apache.jena.sparql.expr.E_Equals;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprTransformCopy;
 import org.apache.jena.sparql.expr.ExprTransformer;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.vocabulary.XSD;
 
@@ -42,14 +42,10 @@ public class TriplesMapProcessorR2rml {
     protected TriplesMap triplesMap;
     protected String baseIri;
 
-    protected BiMap<Var, Expr> varToExpr = HashBiMap.create();
-    protected Map<TermMap, Var> termMapToVar = new HashMap<>();
+    protected VarAlloc sourceVarGen = new VarAlloc("s");
 
-    // Accumulator for generated quads
-    protected QuadAcc quadAcc = new QuadAcc();
-
-    // TODO Allow customization of variable allocation
-    protected VarAlloc varGen = new VarAlloc("v");
+    /** The context for *this* triple maps. Parent contexts are created when there are joins. */
+    protected MappingCxt childCxt;
 
     public TriplesMapProcessorR2rml(TriplesMap triplesMap, String baseIri) {
         // this(tm, new VarAlloc("v"), HashBiMap.create(), new HashMap<>(), new QuadAcc());
@@ -66,10 +62,21 @@ public class TriplesMapProcessorR2rml {
 //        this.varGen = varGen;
 //    }
 
+    /**
+     *
+     * @param processPoms Whether to process predicate object maps. If false then only the subject map will be processed which is useful to process the parent side of a join.
+     * @return
+     */
     public TriplesMapToSparqlMapping call() {
+        // TODO shortcut expansion should already have happened
         R2rmlLib.expandShortcuts(triplesMap);
 
+        Var triplesMapVar = sourceVarGen.allocVar();
+
+        this.childCxt = new MappingCxt(null, triplesMap, triplesMapVar);
+
         SubjectMap sm = triplesMap.getSubjectMap();
+        Node s = allocateVarTracked(childCxt, sm, RR.IRI);
         Objects.requireNonNull(sm, "SubjectMap was null on " + triplesMap);
 
         Set<GraphMap> sgms = sm.getGraphMaps();
@@ -80,6 +87,8 @@ public class TriplesMapProcessorR2rml {
             // egms = effective graph maps
             Set<GraphMap> egms = Sets.union(sgms, pogms);
 
+
+            // A single graph without a name
             if(egms.isEmpty()) {
                 egms = Collections.singleton(null);
             }
@@ -87,14 +96,13 @@ public class TriplesMapProcessorR2rml {
             Set<PredicateMap> pms = pom.getPredicateMaps();
             Set<ObjectMapType> oms = pom.getObjectMaps();
 
-            Node s = allocateVarTracked(sm, RR.IRI);
             for(GraphMap gm : egms) {
-                Node g = gm == null ? RR.defaultGraph.asNode() : allocateVarTracked(gm, RR.IRI);
+                Node g = gm == null ? RR.defaultGraph.asNode() : allocateVarTracked(childCxt, gm, RR.IRI);
                 for(PredicateMap pm : pms) {
-                    Node p = allocateVarTracked(pm, RR.IRI);
+                    Node p = allocateVarTracked(childCxt, pm, RR.IRI);
                     for(ObjectMapType om : oms) {
                         if (!om.qualifiesAsRefObjectMap()) {
-                            Node o = allocateVarTracked(om.asTermMap(), RR.Literal);
+                            Node o = allocateVarTracked(childCxt, om.asTermMap(), RR.Literal);
 
                             // Template: creates triples using Quad.defaultGraphNodeGenerated
                             // RDFDataMgr.loadDataset: loads default graph tripls with Quad.defaultGraphIRI
@@ -106,11 +114,14 @@ public class TriplesMapProcessorR2rml {
 
                             if (g.equals(RR.defaultGraph.asNode())) {
                                 Triple triple = Triple.create(s, p, o);
-                                quadAcc.addTriple(triple);
+                                childCxt.quadAcc.addTriple(triple);
                             } else {
                                 Quad quad = Quad.create(g, s, p, o);
-                                quadAcc.addQuad(quad);
+                                childCxt.quadAcc.addQuad(quad);
                             }
+                        } else {
+                            RefObjectMap rom = om.asRefObjectMap();
+                            processRefObjectMap(g, s, p, rom);
                         }
                     }
                 }
@@ -118,22 +129,23 @@ public class TriplesMapProcessorR2rml {
         }
 
         VarExprList vel = new VarExprList();
-        varToExpr.forEach(vel::add);
+        childCxt.varToExpr.forEach(vel::add);
 
-        Template template = new Template(quadAcc);
+        Template template = new Template(childCxt.quadAcc);
         TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
-            triplesMap, template, termMapToVar, vel);
+            triplesMap, template, childCxt.termMapToVar, vel, childCxt.joins);
 
         return result;
     }
 
     /** Calls {@link #allocateVar(TermMap, Resource) and tracks the result in the #termMapToVar */
     protected Node allocateVarTracked(
+            MappingCxt cxt,
             TermMap tm,
             Resource fallbackTermType) {
-        Node result = allocateVar(tm, fallbackTermType);
+        Node result = allocateVar(cxt, tm, fallbackTermType);
         if (result.isVariable()) {
-            termMapToVar.put(tm, (Var)result);
+            cxt.termMapToVar.put(tm, (Var)result);
         }
         return result;
     }
@@ -149,12 +161,13 @@ public class TriplesMapProcessorR2rml {
      * @return
      */
     protected Node allocateVar(
+            MappingCxt cxt,
             TermMap tm,
             Resource fallbackTermType) {
         Node result;
-        BiMap<Expr, Var> exprToNode = varToExpr.inverse();
+        BiMap<Expr, Var> exprToNode = cxt.varToExpr.inverse();
 
-        Expr expr = termMapToExpr(tm, fallbackTermType);
+        Expr expr = termMapToExpr(cxt, tm, fallbackTermType);
         result = exprToNode.get(expr);
 
         if(result == null) {
@@ -163,8 +176,8 @@ public class TriplesMapProcessorR2rml {
                 result = expr.getConstant().asNode();
             } else {
                 // Allocate a new variable
-                Var v = varGen.allocVar();
-                varToExpr.put(v, expr);
+                Var v = cxt.varGen.allocVar();
+                cxt.varToExpr.put(v, expr);
                 result = v;
             }
         }
@@ -178,7 +191,7 @@ public class TriplesMapProcessorR2rml {
      * @param tm
      * @return
      */
-    protected Expr termMapToExpr(TermMap tm, Resource fallbackTermType) {
+    protected Expr termMapToExpr(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
         Expr result;
 
         // In the following derive the effective term type based on the term map's attributes
@@ -217,6 +230,8 @@ public class TriplesMapProcessorR2rml {
             effectiveTermType = fallbackTermType.asNode();
         }
 
+        // FIXME Add extension point for FunctionMap-like constructs where the term type
+        // yet needs to be applied
 
         if((template = tm.getTemplate()) != null) {
             Expr arg = R2rmlTemplateLib.parse(template);
@@ -244,7 +259,7 @@ public class TriplesMapProcessorR2rml {
             @Override
             public Expr transform(ExprVar exprVar) {
                 String varName = exprVar.getVarName();
-                Expr r = referenceToExpr(varName);
+                Expr r = referenceToExpr(cxt, varName);
                 return r;
             }
         }, result);
@@ -252,8 +267,44 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    /** Extension point for resolving RML references */
-    protected Expr referenceToExpr(String colName) {
+
+    protected void processRefObjectMap(Node g, Node s, Node p, RefObjectMap rom) {
+        //JoinDeclaration join = new JoinDeclaration(triplesMap, sm, rom);
+
+        TriplesMap parentTm = rom.getParentTriplesMap();
+        SubjectMap parentSm = parentTm.getSubjectMap();
+
+        Var parentVar = sourceVarGen.allocVar();
+        Var childVar = childCxt.triplesMapVar;
+        MappingCxt parentCxt = new MappingCxt(childCxt, parentTm, parentVar);
+
+        Node o = allocateVarTracked(parentCxt, parentSm, RR.IRI);
+
+        Set<JoinCondition> joinConditions = rom.getJoinConditions();
+        ExprList constraints = new ExprList();
+        for (JoinCondition jc : joinConditions) {
+            String parentStr = jc.getParent();
+            String childStr = jc.getChild();
+            Expr parentExpr = referenceToExpr(childCxt, parentStr);
+            Expr childExpr = referenceToExpr(parentCxt, childStr);
+            E_Equals constraint = new E_Equals(childExpr, parentExpr);
+            constraints.add(constraint);
+        }
+
+        Quad quad = Quad.create(g, s, p, o);
+        JoinDeclaration join = new JoinDeclaration(childCxt.triplesMap, childVar, null, rom, parentVar, quad, constraints);
+        childCxt.joins.add(join);
+    }
+
+    /**
+     * Extension point for resolving RML references.
+     * The R2RML processor ignores the source.
+     *
+     * @param source A variable that is bound to the source records and thus represents the source.
+     * @param colName A column name or more generally a reference expression string.
+     * @return
+     */
+    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
         ExprVar column = new ExprVar(colName);
         return column;
     }

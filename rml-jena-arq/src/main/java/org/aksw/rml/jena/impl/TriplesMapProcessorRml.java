@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.aksw.fnml.model.FunctionMap;
 import org.aksw.jenax.arq.util.var.Vars;
+import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TermMap;
@@ -62,7 +63,7 @@ public class TriplesMapProcessorRml
     }
 
     @Override
-    protected Expr termMapToExpr(TermMap tm, Resource fallbackTermType) {
+    protected Expr termMapToExpr(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
         Expr result;
 
         // TODO We need access to (1) the item var and (2) the reference formulation
@@ -72,7 +73,7 @@ public class TriplesMapProcessorRml
         RmlTermMap tm2 = tm.as(RmlTermMap.class);
         String ref = tm2.getReference();
         if (ref != null) {
-            result = referenceToExpr(ref);
+            result = referenceToExpr(cxt, ref);
         } else {
             // Check for function call
             FunctionMap fm = tm.as(FunctionMap.class);
@@ -82,14 +83,15 @@ public class TriplesMapProcessorRml
                 // FIXME The resulting expression needs to be post-processed by
                 // the R2RML layer, because e.g. rr:termType rr:IRI may need to be applied
             } else {
-                result = super.termMapToExpr(tm, fallbackTermType);
+                result = super.termMapToExpr(cxt, tm, fallbackTermType);
             }
         }
         return result;
     }
 
-    protected Expr referenceToExpr(String colName) {
-        Expr result = referenceFormulation.reference(itemVar, colName);
+    @Override
+    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
+        Expr result = referenceFormulation.reference(cxt.getTriplesMapVar(), colName);
         return result;
     }
 }

@@ -2,10 +2,12 @@ package org.aksw.rml.jena;
 
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
+import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.impl.RmlImporter;
 import org.aksw.rml.jena.impl.RmlLib;
+import org.aksw.rml.jena.impl.RmlQueryGenerator;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -43,12 +45,18 @@ public class TestFno {
         Model rmlModel = RDFDataMgr.loadModel("gtfsde-rml.ttl");
         RmlLib.normalizeNamespace(rmlModel);
         // RmlLib.renameRmlToR2rml(rmlModel);
-        TriplesMap map = rmlModel.getResource("http://data.gtfs.org/stopTimeMapping").as(TriplesMap.class);
+        String id = "http://data.gtfs.org/stopsMapping";
+        // String id = "http://data.gtfs.org/stopTimeMapping";
+        TriplesMap map = rmlModel.getResource(id).as(TriplesMap.class);
 
         Model fnmlModel = RDFDataMgr.loadModel("functions_moin.ttl");
 
         // TriplesMapProcessorRml importer = new TriplesMapProcessorRml(fnmlModel);
         TriplesMapToSparqlMapping mapping = RmlImporter.read(map, null, fnmlModel);
         System.out.println(mapping.getAsQuery());
+
+        for (JoinDeclaration join : mapping.getJoins()) {
+            System.out.println(RmlQueryGenerator.createQuery(join, null));
+        }
     }
 }

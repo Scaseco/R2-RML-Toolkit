@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.TermMap;
+import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
 import org.apache.jena.ext.com.google.common.collect.Streams;
@@ -56,19 +56,22 @@ public class TriplesMapToSparqlMapping {
     protected Template template;
 
     // The mapping of variables to the term maps from which they were derived
-    protected Map<TermMap, Var> termMapToVar;
+    protected Map<TermSpec, Var> termMapToVar;
 
     // The mapping for term maps' variables to the corresponding sparql expression
     // E.g. a rr:template "foo{bar}" becomes IRI(CONCAT("foo", STR(?var)))
     protected VarExprList varToExpr;
 
-    public TriplesMapToSparqlMapping(TriplesMap triplesMap, Template template, Map<TermMap, Var> termMapToVar,
-            VarExprList varToExpr) {
+    protected List<JoinDeclaration> joins;
+
+    public TriplesMapToSparqlMapping(TriplesMap triplesMap, Template template, Map<TermSpec, Var> termMapToVar,
+            VarExprList varToExpr, List<JoinDeclaration> joins) {
         super();
         this.triplesMap = triplesMap;
         this.template = template;
         this.termMapToVar = termMapToVar;
         this.varToExpr = varToExpr;
+        this.joins = joins;
     }
 
     public TriplesMap getTriplesMap() {
@@ -79,12 +82,16 @@ public class TriplesMapToSparqlMapping {
         return template;
     }
 
-    public Map<TermMap, Var> getTermMapToVar() {
+    public Map<TermSpec, Var> getTermMapToVar() {
         return termMapToVar;
     }
 
     public VarExprList getVarToExpr() {
         return varToExpr;
+    }
+
+    public List<JoinDeclaration> getJoins() {
+        return joins;
     }
 
     public Stream<Quad> evalQuads(Binding effectiveBinding) {
