@@ -192,7 +192,6 @@ public class InitRmlService {
                 .createDefault(true)
                 .configure(csvConf);
 
-
         QueryIterator result;
 
         boolean jsonMode = finalHeaderVars == null;
