@@ -254,7 +254,6 @@ public class TriplesMapProcessorR2rml {
         SubjectMap parentSm = parentTm.getSubjectMap();
 
         Var parentVar = sourceVarGen.allocVar();
-        Var childVar = childCxt.triplesMapVar;
         MappingCxt parentCxt = new MappingCxt(childCxt, parentTm, parentVar);
 
         Node o = allocateVarTracked(parentCxt, parentSm, RR.IRI);
@@ -264,8 +263,8 @@ public class TriplesMapProcessorR2rml {
         for (JoinCondition jc : joinConditions) {
             String parentStr = jc.getParent();
             String childStr = jc.getChild();
-            Expr parentExpr = referenceToExpr(childCxt, parentStr);
-            Expr childExpr = referenceToExpr(parentCxt, childStr);
+            Expr parentExpr = referenceToExpr(parentCxt, parentStr);
+            Expr childExpr = referenceToExpr(childCxt, childStr);
             E_Equals constraint = new E_Equals(parentExpr, childExpr);
             constraints.add(constraint);
         }
