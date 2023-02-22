@@ -1,15 +1,24 @@
 package org.aksw.rml.jena.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.aksw.commons.collections.IterableUtils;
+import org.aksw.commons.collections.SetUtils;
+import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.fno.model.FnoTerms;
 import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.triple.GraphVarImpl;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
@@ -20,6 +29,7 @@ import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.Rml;
+import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
@@ -34,7 +44,17 @@ import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementBind;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementService;
+import org.apache.jena.sparql.syntax.PatternVars;
+import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 
 public class RmlLib {
@@ -118,5 +138,75 @@ public class RmlLib {
 
         Expr result = new E_Function(javaFunctionIri, el);
         return result;
+    }
+
+    public static void optimizeRmlWorkloadInPlace(List<Query> stmts) {
+        // Cluster queries which have the same single source
+        ListMultimap<ElementService, Query> sourceToQueries = ArrayListMultimap.create();
+        Iterator<Query> it = stmts.iterator();
+        while (it.hasNext()) {
+            Query query = it.next();
+
+            ElementGroup grp = ObjectUtils.castAsOrNull(ElementGroup.class, query.getQueryPattern());
+            if (grp != null && !grp.isEmpty()) {
+                ElementService svc = ObjectUtils.castAsOrNull(ElementService.class, grp.get(0));
+                if (svc != null) {
+                    List<Element> elts = grp.getElements();
+                    // Only optimize if ALL elements except for the first are BINDs
+                    boolean allBind = elts.subList(1, elts.size()).stream().allMatch(e -> e instanceof ElementBind);
+
+                    if (allBind) {
+
+                        elts.remove(0); // Changes query!
+                        sourceToQueries.put(svc, query);
+                        it.remove();
+                    }
+                }
+            }
+        }
+
+        for (Entry<ElementService, Collection<Query>> e : sourceToQueries.asMap().entrySet()) {
+            ElementService sourceElt = e.getKey();
+
+            QuadAcc newQuads = new QuadAcc();
+            //List<Element> lateralUnionMembers = new ArrayList<>();
+            List<Element> binds = new ArrayList<>();
+
+            // The variable(s) mentioned in the source must not be renamed
+            Set<Var> staticVars = SetUtils.asSet(PatternVars.vars(sourceElt));
+
+            int memberId = 0;
+            for (Query query : e.getValue()) {
+                Element memberElt = query.getQueryPattern();
+                Set<Var> mentionedVars = SetUtils.asSet(PatternVars.vars(memberElt));
+                Set<Var> toRename = Sets.difference(mentionedVars, staticVars);
+                int finalMemberId = memberId;
+                Map<Var, Var> remap = toRename.stream()
+                        .collect(Collectors.toMap(v -> v, v -> Var.alloc("m" + finalMemberId + "_" + v.getVarName())));
+                Query mergeQuery = QueryUtils.applyNodeTransform(query, new NodeTransformSubst(remap));
+                //Query mergeQuery = QueryTransformOps.transform(query, remap);
+
+                mergeQuery.getConstructTemplate().getQuads().forEach(newQuads::addQuad);
+                // lateralUnionMembers.add(mergeQuery.getQueryPattern());
+
+                // We know that the query pattern only contains bind statements
+                ElementGroup grp = (ElementGroup)mergeQuery.getQueryPattern();
+                binds.addAll(grp.getElements());
+
+                ++memberId;
+            }
+
+            // Element union = ElementUtils.unionIfNeeded(lateralUnionMembers);
+
+            Query q = new Query();
+            q.setQueryConstructType();
+            q.setConstructTemplate(new Template(newQuads));
+            ElementGroup elt = new ElementGroup();
+            elt.addElement(sourceElt);
+            // elt.addElement(new ElementLateral(union));
+            binds.forEach(elt::addElement);
+            q.setQueryPattern(elt);
+            stmts.add(q);
+        }
     }
 }
