@@ -74,6 +74,7 @@ public class CmdRmlToSparql
             List<Query> queries = labeledQueries.stream().map(Entry::getKey).collect(Collectors.toList());
             RmlLib.optimizeRmlWorkloadInPlace(queries);
             for (Query query : queries) {
+                RmlLib.wrapServiceWithSubQueryInPlace(query);
                 System.out.println(query);
             }
         } else {

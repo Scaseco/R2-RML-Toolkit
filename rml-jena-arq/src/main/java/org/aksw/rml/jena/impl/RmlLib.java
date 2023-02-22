@@ -49,8 +49,13 @@ import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementService;
+import org.apache.jena.sparql.syntax.ElementSubQuery;
+import org.apache.jena.sparql.syntax.ElementVisitorBase;
+import org.apache.jena.sparql.syntax.ElementWalker;
 import org.apache.jena.sparql.syntax.PatternVars;
 import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformCopyBase;
+import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformer;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -138,6 +143,93 @@ public class RmlLib {
 
         Expr result = new E_Function(javaFunctionIri, el);
         return result;
+    }
+
+
+    /** Count the number of RML service blocks in a query */
+    public static class RmlServiceGroupCounter
+        extends ElementVisitorBase {
+        protected int counter = 0;
+
+        public int getCounter() {
+            return counter;
+        }
+
+        @Override
+        public void visit(ElementGroup el) {
+            if (isRmlServiceGroup(el)) {
+                ++counter;
+            }
+            super.visit(el);
+        }
+
+//        @Override
+//        public void visit(ElementService el) {
+//            if (isRmlServiceNode(el.getServiceNode())) {
+//                ++counter;
+//            }
+//            super.visit(el);
+//        }
+    }
+
+    public static boolean isRmlServiceGroup(Element elt) {
+        boolean result = false;
+        ElementGroup grp = ObjectUtils.castAsOrNull(ElementGroup.class, elt);
+        if (grp != null && !grp.isEmpty()) {
+            ElementService svc = ObjectUtils.castAsOrNull(ElementService.class, grp.getElements().get(0));
+            result = svc != null && isRmlServiceNode(svc.getServiceNode());
+        }
+        return result;
+    }
+
+    public static boolean isRmlServiceNode(Node node) {
+        boolean result = node != null && node.isURI() && SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
+        return result;
+    }
+
+    private static Query wrapAsQuery(Element elt) {
+        Query result = new Query();
+        result.setQuerySelectType();
+        result.setQueryResultStar(true);
+        result.setQueryPattern(elt);
+        result.setLimit(Long.MAX_VALUE);
+        return result;
+    }
+
+    /**
+     * Add a sub-query to enforce a hash join
+     * SELECT * { SERVICE <rml.source> { } } becomes SELECT * { { SELECT * { SERVICE <rml.source> { } } LIMIT LONG.MAX_VALUE } }
+     **/
+    public static void wrapServiceWithSubQueryInPlace(Query query) {
+        Element elt = query.getQueryPattern();
+
+        RmlServiceGroupCounter counter = new RmlServiceGroupCounter();
+        ElementWalker.walk(elt, counter);
+        int count = counter.getCounter();
+        if (count> 1) {
+            Element newElt = ElementTransformer.transform(query.getQueryPattern(), new ElementTransformCopyBase() {
+                @Override
+                public Element transform(ElementGroup el, java.util.List<Element> elts) {
+                    Element result;
+                    if (isRmlServiceGroup(el)) {
+                        ElementGroup tmp = new ElementGroup();
+                        elts.forEach(tmp::addElement);
+                        result = new ElementSubQuery(wrapAsQuery(tmp));
+                    } else {
+                        result = super.transform(el, elts);
+                    }
+                    return result;
+                };
+            });
+            query.setQueryPattern(newElt);
+//                @Override
+//                public Element transform(ElementService el, Node service, Element elt1) {
+//                    Element result = isRmlServiceNode(service)
+//                            ? new ElementSubQuery(wrapAsQuery(new ElementService(service, elt1, el.getSilent())))
+//                            : super.transform(el, service, elt1);
+//                    return result;
+//                }
+        }
     }
 
     public static void optimizeRmlWorkloadInPlace(List<Query> stmts) {
