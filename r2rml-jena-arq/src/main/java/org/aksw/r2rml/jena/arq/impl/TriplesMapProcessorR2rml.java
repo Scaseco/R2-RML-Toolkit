@@ -310,8 +310,8 @@ public class TriplesMapProcessorR2rml {
                 Set<Var> remainingChildSubjectVars = replacedChildExpr.getVarsMentioned();
                 Set<Var> remainingParentSubjectVars = replacedParentExpr.getVarsMentioned();
 
-                System.out.println(replacedChildExpr);
-                System.out.println(replacedParentExpr);
+//                System.out.println(replacedChildExpr);
+//                System.out.println(replacedParentExpr);
 
                 if (remainingChildSubjectVars.isEmpty()) {
                     isEliminated = true;
