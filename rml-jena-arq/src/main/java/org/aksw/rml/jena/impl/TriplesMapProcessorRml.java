@@ -1,6 +1,7 @@
 package org.aksw.rml.jena.impl;
 
 import org.aksw.fnml.model.FunctionMap;
+import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
@@ -13,6 +14,7 @@ import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.syntax.Element;
 
 /**
  * The RML processor adds a bit of funcionality over the R2RML processor:
@@ -84,6 +86,12 @@ public class TriplesMapProcessorRml
                 result = super.termMapToExpr(cxt, tm, fallbackTermType);
             }
         }
+        return result;
+    }
+
+    @Override
+    protected Object getSourceIdentity(TriplesMap tm) {
+        Element result = referenceFormulation.source(tm.as(RmlTriplesMap.class).getLogicalSource(), Vars.x);
         return result;
     }
 

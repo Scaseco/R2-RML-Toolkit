@@ -4,8 +4,11 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.aksw.commons.util.obj.ObjectUtils;
+import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.JoinCondition;
@@ -34,6 +37,7 @@ import org.apache.jena.sparql.expr.ExprTransformCopy;
 import org.apache.jena.sparql.expr.ExprTransformer;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.graph.NodeTransform;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.vocabulary.XSD;
 
@@ -145,11 +149,14 @@ public class TriplesMapProcessorR2rml {
             MappingCxt cxt,
             TermMap tm,
             Resource fallbackTermType) {
-        Node result;
-        BiMap<Expr, Var> exprToNode = cxt.varToExpr.inverse();
-
         Expr expr = termMapToExpr(cxt, tm, fallbackTermType);
-        result = exprToNode.get(expr);
+        Node result = allocateVarForExpr(cxt, expr);
+        return result;
+    }
+
+    protected Node allocateVarForExpr(MappingCxt cxt, Expr expr) {
+        BiMap<Expr, Var> exprToNode = cxt.varToExpr.inverse();
+        Node result = exprToNode.get(expr);
 
         if(result == null) {
             // If the expr is a constant, just use its node as the result; no need to track this in the map
@@ -248,8 +255,6 @@ public class TriplesMapProcessorR2rml {
     }
 
     protected void processRefObjectMap(Node g, Node s, Node p, RefObjectMap rom) {
-        //JoinDeclaration join = new JoinDeclaration(triplesMap, sm, rom);
-
         TriplesMap parentTm = rom.getParentTriplesMap();
         SubjectMap parentSm = parentTm.getSubjectMap();
 
@@ -260,6 +265,7 @@ public class TriplesMapProcessorR2rml {
 
         Set<JoinCondition> joinConditions = rom.getJoinConditions();
         ExprList constraints = new ExprList();
+
         for (JoinCondition jc : joinConditions) {
             String parentStr = jc.getParent();
             String childStr = jc.getChild();
@@ -269,9 +275,81 @@ public class TriplesMapProcessorR2rml {
             constraints.add(constraint);
         }
 
-        Quad quad = createQuad(g, s, p, o);
-        JoinDeclaration join = new JoinDeclaration(parentCxt, null, rom, quad, constraints);
-        childCxt.joins.add(join);
+        // Eliminate self join: (Ideally this would be handled on the algebra level)
+        // Applicable if:
+        // - parent and child use the same logical source
+        // - there is a join on the same columns (e.g. id = id)
+        // - either childVars or parentVars references no columns besides the join columns
+        Object parentId = getSourceIdentity(parentTm);
+        Object childId = getSourceIdentity(triplesMap);
+
+        boolean isEliminated = false;
+
+        if (parentId != null && parentId.equals(childId)) {
+            // Check whether all constraints are identical when substituting the source variable
+            NodeTransform parentToChildSrcVar = n -> parentCxt.getTriplesMapVar().equals(n) ? childCxt.getTriplesMapVar() : n;
+            ExprList toCheck = constraints.applyNodeTransform(parentToChildSrcVar);
+            boolean isIdentity = toCheck.getList().stream().map(e -> (E_Equals)e).allMatch(e -> Objects.equals(e.getArg1(), e.getArg2()));
+
+            if (isIdentity) {
+                Set<Expr> joinExprs = toCheck.getList().stream().map(e -> (E_Equals)e).map(e -> e.getArg1()).collect(Collectors.toSet());
+
+                // Check if by substitution of all join expressions no further expressions making use of the child/parent source variable remain
+                // ExprTransform et = new ExprTransformBase()
+
+                Expr childSubjectExpr = childCxt.getSubjectDefinition().getExpr();
+                Expr parentSubjectExpr = parentCxt.getSubjectDefinition().getExpr();
+                Expr newParentSubjectExpr = parentSubjectExpr.applyNodeTransform(parentToChildSrcVar);
+
+                Expr placeholder = NodeValue.makeString("placeholder");
+                Function<Expr, Expr> exprTransform =  e -> joinExprs.contains(e) ? placeholder : e;
+
+                Expr replacedChildExpr = ExprUtils.replace(childSubjectExpr, exprTransform);
+                Expr replacedParentExpr = ExprUtils.replace(newParentSubjectExpr, exprTransform);
+
+                Set<Var> remainingChildSubjectVars = replacedChildExpr.getVarsMentioned();
+                Set<Var> remainingParentSubjectVars = replacedParentExpr.getVarsMentioned();
+
+                System.out.println(replacedChildExpr);
+                System.out.println(replacedParentExpr);
+
+                if (remainingChildSubjectVars.isEmpty()) {
+                    isEliminated = true;
+                    Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
+                    if (newParentVar.isVariable()) {
+                        childCxt.termMapToVar.put(rom, newParentVar);
+                        childCxt.varToExpr.put(newParentVar, replacedParentExpr);
+                    }
+                    childCxt.getQuadAcc().addQuad(createQuad(g, s, p, newParentVar));
+                } else if (remainingParentSubjectVars.isEmpty()) {
+                    isEliminated = true;
+                    // Expr newParentExpr = newParentSubjectExpr.applyNodeTransform(parentToChildSrcVar);
+                    Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
+                    if (newParentVar.isVariable()) {
+                        childCxt.termMapToVar.put(rom, newParentVar);
+                        childCxt.varToExpr.put(newParentVar, replacedParentExpr);
+                    }
+                    childCxt.getQuadAcc().addQuad(createQuad(g, newParentVar, p, s));
+                }
+            }
+        }
+
+        if (!isEliminated) {
+            Quad quad = createQuad(g, s, p, o);
+            JoinDeclaration join = new JoinDeclaration(parentCxt, null, rom, quad, constraints);
+            childCxt.joins.add(join);
+        }
+    }
+
+    /**
+     * Return an object that represents the identity of a triplesmaps' source.
+     * Used for self-join elimination.
+     *
+     * By default the triples map is returned as representing it's source.
+     * This way however misses optimization oppor, two triples maps with the same logical source will
+     */
+    protected Object getSourceIdentity(TriplesMap tm) {
+        return tm;
     }
 
     protected Quad createQuad(Node g, Node s, Node p, Node o) {
