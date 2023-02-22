@@ -266,7 +266,7 @@ public class TriplesMapProcessorR2rml {
             String childStr = jc.getChild();
             Expr parentExpr = referenceToExpr(childCxt, parentStr);
             Expr childExpr = referenceToExpr(parentCxt, childStr);
-            E_Equals constraint = new E_Equals(childExpr, parentExpr);
+            E_Equals constraint = new E_Equals(parentExpr, childExpr);
             constraints.add(constraint);
         }
 

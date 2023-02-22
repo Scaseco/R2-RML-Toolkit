@@ -60,7 +60,6 @@ import com.univocity.parsers.common.record.RecordMetaData;
 
 public class InitRmlService {
 
-
     public static void registerServiceRmlSource(ServiceExecutorRegistry registry) {
         registry.addSingleLink((opExecute, opOriginal, binding, execCxt, chain) -> {
             QueryIterator r;
@@ -193,6 +192,8 @@ public class InitRmlService {
                 .configure(csvConf);
 
         QueryIterator result;
+
+        // FIXME If the output var is bound to a constant then filter the source to that value
 
         boolean jsonMode = finalHeaderVars == null;
         if (jsonMode) {

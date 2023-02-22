@@ -10,12 +10,15 @@ import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
+import org.apache.jena.sparql.expr.E_Bound;
 import org.apache.jena.sparql.expr.E_Equals;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
+import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
 
@@ -88,7 +91,10 @@ public class RmlQueryGenerator {
         for (int i = 0; i < joinExprs.size(); ++i) {
             Expr expr = joinExprs.get(i);
             E_Equals eq = (E_Equals)expr;
-            childGrp.addElement(new ElementBind(Var.alloc("jc" + i), eq.getArg2()));
+            Var jcVar = Var.alloc("jc" + i);
+            childGrp.addElement(new ElementBind(jcVar, eq.getArg2()));
+            // It is important to filter out non-bound variables - sparql's natural hash join would otherwise result in an outer join but we want an inner one
+            childGrp.addElementFilter(new ElementFilter(new E_Bound(new ExprVar(jcVar))));
         }
 
         // Parent group
@@ -97,7 +103,9 @@ public class RmlQueryGenerator {
         for (int i = 0; i < joinExprs.size(); ++i) {
             Expr expr = joinExprs.get(i);
             E_Equals eq = (E_Equals)expr;
-            parentGrp.addElement(new ElementBind(Var.alloc("jc" + i), eq.getArg1()));
+            Var jcVar = Var.alloc("jc" + i);
+            parentGrp.addElement(new ElementBind(jcVar, eq.getArg1()));
+            parentGrp.addElementFilter(new ElementFilter(new E_Bound(new ExprVar(jcVar))));
         }
 
         elt.addElement(childGrp);

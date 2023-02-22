@@ -55,8 +55,12 @@ public class CmdRmlToSparql
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 Query query = RmlQueryGenerator.createQuery(item, null);
-                QueryUtils.optimizePrefixes(query);
-                labeledQueries.add(Map.entry(query, "# " + tmId));
+
+                // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)
+                if (!query.getConstructTemplate().getQuads().isEmpty()) {
+                    QueryUtils.optimizePrefixes(query);
+                    labeledQueries.add(Map.entry(query, "# " + tmId));
+                }
 
                 for (JoinDeclaration join : item.getJoins()) {
                     Query joinQuery = RmlQueryGenerator.createQuery(join, null);
