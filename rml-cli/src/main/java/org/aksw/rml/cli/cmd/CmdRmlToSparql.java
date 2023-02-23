@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
@@ -19,6 +20,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.out.NodeFmtLib;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -35,6 +38,9 @@ public class CmdRmlToSparql
 
     @Option(names = { "--no-optimize" }, description = "Disables merging of queries originating from multiple triples maps", defaultValue = "false")
     public boolean noOptimize = false;
+
+    @Option(names = { "--distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
+    public boolean distinct = false;
 
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
@@ -70,11 +76,17 @@ public class CmdRmlToSparql
             }
         }
 
+        // TODO Ensure the variables aren't mentioned/visible in the query
+        Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+
         if (!noOptimize) { // If optimize ...
             List<Query> queries = labeledQueries.stream().map(Entry::getKey).collect(Collectors.toList());
             RmlLib.optimizeRmlWorkloadInPlace(queries);
             for (Query query : queries) {
                 RmlLib.wrapServiceWithSubQueryInPlace(query);
+                if (distinct) {
+                    query = QueryGenerationUtils.constructToLateral(query, quadVars, distinct);
+                }
                 System.out.println(query);
             }
         } else {

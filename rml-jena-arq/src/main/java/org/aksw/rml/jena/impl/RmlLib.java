@@ -1,6 +1,7 @@
 package org.aksw.rml.jena.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,10 +18,13 @@ import org.aksw.fno.model.FnoTerms;
 import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
+import org.aksw.jenax.arq.util.quad.Quads;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
+import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.triple.GraphVarImpl;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
+import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -39,15 +43,18 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.op.OpService;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprLib;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementLateral;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
 import org.apache.jena.sparql.syntax.ElementVisitorBase;
@@ -58,6 +65,7 @@ import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformCopyBase;
 import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformer;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
