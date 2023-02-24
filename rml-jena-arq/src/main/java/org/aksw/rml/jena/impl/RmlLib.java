@@ -1,9 +1,9 @@
 package org.aksw.rml.jena.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +18,11 @@ import org.aksw.fno.model.FnoTerms;
 import org.aksw.fno.model.Param;
 import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
-import org.aksw.jenax.arq.util.quad.Quads;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
-import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.triple.GraphVarImpl;
+import org.aksw.jenax.arq.util.tuple.adapter.TupleBridgeQuad;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
@@ -31,9 +31,12 @@ import org.aksw.r2rml.jena.domain.api.ObjectMapType;
 import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
 import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.Rml;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.jena.atlas.lib.tuple.Tuple2;
+import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
@@ -48,13 +51,12 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprLib;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.graph.NodeTransformLib;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementLateral;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
 import org.apache.jena.sparql.syntax.ElementVisitorBase;
@@ -65,7 +67,6 @@ import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformCopyBase;
 import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformer;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
@@ -239,6 +240,52 @@ public class RmlLib {
 //                }
         }
     }
+
+
+    /**
+     * Cluster construct queries that produce quads with the same (graph, predicate) values in
+     * order to derive now queries that apply distinct.
+     *
+     * Experimental - practical relevance not yet known
+     */
+    public static Clusters<Quad, Query> groupConstructQueriesByGP(List<Query> queries) {
+        // Map each gp tuple to the id of the query
+        Clusters<Quad, Query> clusters = new Clusters<>();
+
+        for (Query query : queries) {
+            List<Quad> quads = query.getConstructTemplate().getQuads();
+            Set<Integer> affectedClusterIds = new HashSet<>();
+            Set<Quad> quadKeys = new HashSet<>();
+            for (Quad quad : quads) {
+                Quad quadKey = NodeTransformLib.transform(n -> n.isVariable() ? Node.ANY : n, quad);
+                quadKeys.add(quadKey);
+                for (Entry<Integer, Cluster<Quad, Query>> cluster : clusters.entrySet()) {
+                    Set<Quad> clusterKeys = cluster.getValue().getKeys();
+                    boolean isSubsumedOrSubsumes = clusterKeys.stream().anyMatch(
+                            q -> QuadUtils.matches(q, quadKey) || QuadUtils.matches(quadKey, q));
+                    if (isSubsumedOrSubsumes) {
+                        affectedClusterIds.add(cluster.getKey());
+                    }
+                }
+            }
+            if (quadKeys.isEmpty()) {
+                System.err.println("Skipping query due to empty construct template: " + query);
+            }
+
+            Cluster<Quad, Query> tgt;
+            int targetClusterId;
+            if (affectedClusterIds.size() == 1) {
+                targetClusterId = affectedClusterIds.iterator().next();
+                tgt = clusters.get(targetClusterId);
+            } else {
+                tgt = clusters.newClusterFromMergeOf(affectedClusterIds);
+            }
+            quadKeys.forEach(tgt.getKeys()::add);
+            tgt.getValues().add(query);
+        }
+        return clusters;
+    }
+
 
     public static void optimizeRmlWorkloadInPlace(List<Query> stmts) {
         // Cluster queries which have the same single source

@@ -25,8 +25,6 @@ import org.apache.jena.sparql.core.Var;
  * <pre>
  * [] oso:outputs (?firstName ?lastName)
  * </pre>
- *
- *
  */
 public interface SourceOutput
     extends Resource
@@ -36,11 +34,12 @@ public interface SourceOutput
     Resource getOutput();
 
     default Var getOutputVar() {
+        Var result = null;
         Resource r = getOutput();
-        Node node = r.asNode();
-        Var result = node != null && node.isVariable()
-            ? (Var)node
-            : null;
+        if (r != null) {
+            Node node = r.asNode();
+            result = node.isVariable() ? (Var)node : null;
+        }
         return result;
     }
 

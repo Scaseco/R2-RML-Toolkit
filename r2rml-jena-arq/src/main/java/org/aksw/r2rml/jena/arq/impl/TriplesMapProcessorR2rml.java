@@ -1,6 +1,7 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -150,7 +151,20 @@ public class TriplesMapProcessorR2rml {
             TermMap tm,
             Resource fallbackTermType) {
         Expr expr = termMapToExpr(cxt, tm, fallbackTermType);
+        expr = postProcessExpr(cxt, expr);
         Node result = allocateVarForExpr(cxt, expr);
+        return result;
+    }
+
+    /**
+     * Experimental extension point for applying common sub-expression elimination (CSE) early.
+     * However, CSE should be performed anyway when optimizing over multiple queries.
+     * So it is likely that here is a bad place for it.
+     */
+    protected Expr postProcessExpr(MappingCxt cxt, Expr expr) {
+        // TODO The method is not invoked from the right places; adding factorization produces wrong results
+        Expr result = expr;
+        // Expr result = ExprUtils.factorize(expr, cxt.varToExpr, cxt.varGen);
         return result;
     }
 
@@ -162,6 +176,8 @@ public class TriplesMapProcessorR2rml {
             // If the expr is a constant, just use its node as the result; no need to track this in the map
             if(expr.isConstant()) {
                 result = expr.getConstant().asNode();
+            } else if (expr.isVariable()) {
+                result = expr.asVar();
             } else {
                 // Allocate a new variable
                 Var v = cxt.varGen.allocVar();
@@ -192,7 +208,6 @@ public class TriplesMapProcessorR2rml {
         Node datatypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getDatatype());
         Node termTypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getTermType());
 
-        String colName = tm.getColumn();
         String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
 
         // Infer the effective term type
@@ -221,36 +236,47 @@ public class TriplesMapProcessorR2rml {
         // yet needs to be applied
 
         if((template = tm.getTemplate()) != null) {
-            Expr arg = R2rmlTemplateLib.parse(template);
+            Expr rawArg = R2rmlTemplateLib.parse(template);
+
+            // Resolve all variable names. This gives e.g. an RML processor the chance
+            // to resolve all variable names (=references) against the reference formulation.
+            Expr arg = ExprTransformer.transform(new ExprTransformCopy() {
+                @Override
+                public Expr transform(ExprVar exprVar) {
+                    String varName = exprVar.getVarName();
+                    Expr r = referenceToExpr(cxt, varName);
+                    return r;
+                }
+            }, rawArg);
+
             result = R2rmlImporterLib.applyTermType(arg, effectiveTermType, XSD.xstring.asNode());
         } else if((constant = tm.getConstant()) != null) {
             result = NodeValue.makeNode(constant.asNode());
         } else {
-            if(colName != null) {
-                Expr column = new ExprVar(colName);
-
+            Expr columnLikeExpr = resolveColumnLikeTermMap(cxt, tm, fallbackTermType);
+            if(columnLikeExpr != null) {
                 if (langValue != null) {
-                    result = new E_StrLang(column, NodeValue.makeString(langValue));
+                    result = new E_StrLang(columnLikeExpr, NodeValue.makeString(langValue));
                 } else {
-                    result = R2rmlImporterLib.applyTermType(column, effectiveTermType, datatypeNode);
+                    result = R2rmlImporterLib.applyTermType(columnLikeExpr, effectiveTermType, datatypeNode);
                 }
             } else {
                 throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
             }
-
         }
 
-        // Resolve all variable names. This gives e.g. an RML processor the chance
-        // to resolve all variable names (=references) against the reference formulation.
-        result = ExprTransformer.transform(new ExprTransformCopy() {
-            @Override
-            public Expr transform(ExprVar exprVar) {
-                String varName = exprVar.getVarName();
-                Expr r = referenceToExpr(cxt, varName);
-                return r;
-            }
-        }, result);
+        result = postProcessExpr(cxt, result);
 
+        return result;
+    }
+
+    /** Override this method for RML termMap and references */
+    protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
+        Expr result = null;
+        String colName = tm.getColumn();
+        if(colName != null) {
+            result = new ExprVar(colName);
+        }
         return result;
     }
 
@@ -275,7 +301,7 @@ public class TriplesMapProcessorR2rml {
             constraints.add(constraint);
         }
 
-        // Eliminate self join: (Ideally this would be handled on the algebra level)
+        // Eliminate self join: (Ideally this would be handled on the SPARQL algebra level)
         // Applicable if:
         // - parent and child use the same logical source
         // - there is a join on the same columns (e.g. id = id)

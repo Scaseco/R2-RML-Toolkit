@@ -63,7 +63,7 @@ public class TriplesMapProcessorRml
     }
 
     @Override
-    protected Expr termMapToExpr(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
+    protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
         Expr result;
 
         // TODO We need access to (1) the item var and (2) the reference formulation
