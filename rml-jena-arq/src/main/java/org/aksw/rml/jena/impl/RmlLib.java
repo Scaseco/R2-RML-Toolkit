@@ -243,8 +243,8 @@ public class RmlLib {
 
 
     /**
-     * Cluster construct queries that produce quads with the same (graph, predicate) values in
-     * order to derive now queries that apply distinct.
+     * Compute connected components for a set of construct queries:
+     * Queries are connected if they may produce overlapping quads.
      *
      * Experimental - practical relevance not yet known
      */
