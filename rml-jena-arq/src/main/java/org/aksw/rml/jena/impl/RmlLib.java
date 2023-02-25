@@ -22,9 +22,7 @@ import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.triple.GraphVarImpl;
-import org.aksw.jenax.arq.util.tuple.adapter.TupleBridgeQuad;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
-import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.ObjectMap;
 import org.aksw.r2rml.jena.domain.api.ObjectMapType;
@@ -35,8 +33,6 @@ import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.Rml;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
-import org.apache.jena.atlas.lib.tuple.Tuple2;
-import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
@@ -52,6 +48,7 @@ import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.function.library.e;
 import org.apache.jena.sparql.graph.NodeTransformLib;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
@@ -69,6 +66,7 @@ import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 
 public class RmlLib {
@@ -94,12 +92,12 @@ public class RmlLib {
         Element elt = query.getQueryPattern();
         Graph graph = ElementUtils.toGraph(elt, new GraphVarImpl());
         Model model = ModelFactory.createModelForGraph(graph);
-        LogicalSource result = RmlLib.getLogicalSource(model);
+        LogicalSource result = RmlLib.getOnlyLogicalSource(model);
         return result;
     }
 
     /** Extract the only logical source from a given model. Null if none found; exception if more than one. */
-    public static LogicalSource getLogicalSource(Model model) {
+    public static LogicalSource getOnlyLogicalSource(Model model) {
         List<LogicalSource> matches = model.listResourcesWithProperty(Rml.source)
                 .mapWith(r -> r.as(LogicalSource.class))
                 .toList();
@@ -241,6 +239,71 @@ public class RmlLib {
         }
     }
 
+    /**
+     * Given a set of quad patterns return a new one where no pair of quads is in a subsumption relation.
+     * O(n^2) implementation - most likely it can be done a lot better.
+     * @param quads
+     * @return
+     */
+    public static Set<Quad> getNonSubsumedQuads(Set<Quad> quads) {
+        // Copy all quads - then remove all that are subsumed
+        Set<Quad> result = new HashSet<>(quads);
+        for (Quad x : quads) {
+            Iterator<Quad> it = result.iterator();
+            while (it.hasNext()) {
+                Quad y = it.next();
+                if (!x.equals(y) && QuadUtils.matches(x, y)) {
+                    it.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    class DistinctSchedule {
+        Set<Quad> quadsForDistinct;
+
+        // Inner nodes have only children set, leaf nodes only queries
+        List<DistinctSchedule> children;
+        List<Query> queries;
+    }
+
+
+    // TODO Finish implementation
+    /** A greedy algorithm that computes conditional distinct first on the quad patterns that
+     * subsume most other quads in the queries.
+     */
+    public static DistinctSchedule optimizeForDistinct(Cluster<Quad, Query> cluster) {
+        // Assumption: no quad in patterns subsumes any other!
+        Set<Quad> patterns = cluster.getKeys();
+        List<Query> queries = cluster.getValues();
+
+        Multimap<Quad, Query> usages = ArrayListMultimap.create();
+        for (Quad pattern : patterns) {
+            for (Query query : queries) {
+                for (Quad q : query.getConstructTemplate().getQuads()) {
+                    if (QuadUtils.matches(pattern, q)) {
+                        usages.put(pattern, query);
+                    }
+                }
+            }
+        }
+
+        // Get the list of most used quads
+        int max = usages.asMap().values().stream().mapToInt(Collection::size).max().orElse(0);
+        Set<Quad> maxUsedQuads = usages.asMap().entrySet().stream()
+                .filter(e -> e.getValue().size() == max)
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
+
+        // Tie break: Pick the cand quad that closes the most other quads
+        // If there is still a tie then pick any
+        // A quad is closed if there exists no query outside of cand's cluster which it subsumes
+        for (Quad cand : maxUsedQuads) {
+        }
+
+        return null;
+    }
 
     /**
      * Compute connected components for a set of construct queries:
@@ -249,7 +312,7 @@ public class RmlLib {
      * a single distinct operation at the top of the algebra expression, there can be a union
      * of distinct operations that operate on fewer data.
      */
-    public static Clusters<Quad, Query> groupConstructQueriesByGP(List<Query> queries) {
+    public static Clusters<Quad, Query> groupConstructQueriesByTemplate(List<Query> queries) {
         // Map each gp tuple to the id of the query
         Clusters<Quad, Query> clusters = new Clusters<>();
 
@@ -279,11 +342,20 @@ public class RmlLib {
                 targetClusterId = affectedClusterIds.iterator().next();
                 tgt = clusters.get(targetClusterId);
             } else {
+                // TODO: The cluster key should not contain any subsumed quads
                 tgt = clusters.newClusterFromMergeOf(affectedClusterIds);
             }
             quadKeys.forEach(tgt.getKeys()::add);
             tgt.getValues().add(query);
         }
+
+        // Post process cluster keys to remove subsumed quads
+        for (Cluster<Quad, Query> cluster : clusters.getMap().values()) {
+            Set<Quad> cleanKeys = getNonSubsumedQuads(cluster.getKeys());
+            cluster.getKeys().clear();
+            cluster.getKeys().addAll(cleanKeys);
+        }
+
         return clusters;
     }
 

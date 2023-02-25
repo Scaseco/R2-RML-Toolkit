@@ -73,7 +73,7 @@ public class InitRmlService {
                 ElementUtils.toGraph(elt, graph);
                 Model model = ModelFactory.createModelForGraph(graph);
                 // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
-                LogicalSource logicalSource = RmlLib.getLogicalSource(model);
+                LogicalSource logicalSource = RmlLib.getOnlyLogicalSource(model);
                 r = processSource(logicalSource, binding, execCxt);
             } else {
                 return chain.createExecution(opExecute, opOriginal, binding, execCxt);

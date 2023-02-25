@@ -53,7 +53,11 @@ public class CmdRmlOptimizeWorkload
             // Convert to construct to lateral union
             Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
-            Clusters<Quad, Query> clusters = RmlLib.groupConstructQueriesByGP(queries);
+            Clusters<Quad, Query> clusters = RmlLib.groupConstructQueriesByTemplate(queries);
+
+
+
+
             List<Query> newQueries = new ArrayList<>();
             for (Entry<Integer, Cluster<Quad, Query>> e : clusters.entrySet()) {
                 System.err.println("Cluster " + e.getKey() + ": " + e.getValue().getValues().size() + " entries");
