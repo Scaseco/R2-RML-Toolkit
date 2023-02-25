@@ -19,6 +19,7 @@ import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
@@ -111,7 +112,7 @@ public class CmdRmlToSparql
             for (Query query : queries) {
                 RmlLib.wrapServiceWithSubQueryInPlace(query);
                 if (distinct) {
-                    query = QueryGenerationUtils.constructToLateral(query, quadVars, distinct);
+                    query = QueryGenerationUtils.constructToLateral(query, quadVars, QueryType.CONSTRUCT, distinct, false);
                 }
                 System.out.println(query);
             }

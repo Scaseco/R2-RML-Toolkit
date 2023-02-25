@@ -2,28 +2,26 @@ package org.aksw.rml.cli.cmd;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import org.aksw.commons.util.algebra.GenericDag;
-import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
-import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
+import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.rml.jena.impl.Clusters;
 import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.jena.impl.RmlLib;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Query;
-import org.apache.jena.sparql.algebra.Algebra;
-import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.op.OpDisjunction;
-import org.apache.jena.sparql.algebra.op.OpService;
+import org.apache.jena.query.QueryType;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.core.VarAlloc;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementSubQuery;
+import org.apache.jena.sparql.syntax.ElementUnion;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -46,18 +44,47 @@ public class CmdRmlOptimizeWorkload
         RmlLib.optimizeRmlWorkloadInPlace(queries);
 
 
-
+        // boolean intraDistinct;
+        boolean distinct = true;
         // Adding ?s ?p ?o should collapse all clusters into a single one
         // queries.add(QueryFactory.create("CONSTRUCT WHERE { ?s ?p ?o }"));
-        if (false) {
+        if (distinct) {
             // TODO Clustering has yet to be handled
+            // Convert to construct to lateral union
+            Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+
             Clusters<Quad, Query> clusters = RmlLib.groupConstructQueriesByGP(queries);
+            List<Query> newQueries = new ArrayList<>();
             for (Entry<Integer, Cluster<Quad, Query>> e : clusters.entrySet()) {
                 System.err.println("Cluster " + e.getKey() + ": " + e.getValue().getValues().size() + " entries");
-                for (Query q : e.getValue().getValues()) {
-                    // System.err.println(q);
+
+                // If cluster has only one query then just add distinct to the projection
+                // Otherwise create a union with distinct
+                Collection<Query> members = e.getValue().getValues();
+                if (members.size() == 1) {
+                    Query member = members.iterator().next();
+                    Query newQuery = QueryGenerationUtils.constructToLateral(member, quadVars, QueryType.SELECT, true, true);
+                    newQueries.add(newQuery);
+                } else {
+                    List<Element> tmp = members.stream()
+                            .map(member -> QueryGenerationUtils.constructToLateral(member, quadVars, QueryType.SELECT, false, true))
+                            .map(ElementSubQuery::new)
+                            .collect(Collectors.toList());
+
+                    Query newQuery = createUnionQuery(tmp, quadVars, true);
+                    newQueries.add(newQuery);
                 }
             }
+
+
+            Query finalQuery;
+            if (newQueries.size() == 1) {
+                finalQuery = newQueries.iterator().next();
+            } else {
+                List<Element> ms = newQueries.stream().map(ElementSubQuery::new).collect(Collectors.toList());
+                finalQuery = createUnionQuery(ms, quadVars, false);
+            }
+            queries = Collections.singletonList(finalQuery);
         }
 
         for (Query query : queries) {
@@ -65,4 +92,18 @@ public class CmdRmlOptimizeWorkload
         }
         return 0;
     }
+
+    public static Query createUnionQuery(List<Element> members, Quad quadVars, boolean distinct) {
+        Query result = new Query();
+        result.setQuerySelectType();
+        result.setDistinct(distinct);
+        QuadUtils.streamNodes(quadVars).forEach(v -> result.getProject().add((Var)v));
+        ElementUnion unionElt = new ElementUnion();
+        for (Element member : members) {
+            unionElt.addElement(member);
+        }
+        result.setQueryPattern(unionElt);
+        return result;
+    }
+
 }

@@ -245,8 +245,9 @@ public class RmlLib {
     /**
      * Compute connected components for a set of construct queries:
      * Queries are connected if they may produce overlapping quads.
-     *
-     * Experimental - practical relevance not yet known
+     * This can be used to optimize distinct operations: Instead of having
+     * a single distinct operation at the top of the algebra expression, there can be a union
+     * of distinct operations that operate on fewer data.
      */
     public static Clusters<Quad, Query> groupConstructQueriesByGP(List<Query> queries) {
         // Map each gp tuple to the id of the query
