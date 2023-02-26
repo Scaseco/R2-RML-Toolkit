@@ -207,7 +207,7 @@ public class InitRmlService {
                 }
                 return r;
             });
-            result = QueryExecUtils.fromStream(stream, jsonVar, parentBinding, execCxt, RDFDatatypeJson::jsonToNode);
+            result = QueryExecUtils.fromStream(stream, jsonVar, parentBinding, execCxt, JenaJsonUtils::createLiteralByValue);
         } else {
             Stream<Binding> stream = UnivocityUtils.readCsvElements(inSupp, parserFactory, parser -> {
                 String[] row = parser.parseNext();

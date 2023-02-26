@@ -376,7 +376,6 @@ public class RmlLib {
                     boolean allBind = elts.subList(1, elts.size()).stream().allMatch(e -> e instanceof ElementBind);
 
                     if (allBind) {
-
                         elts.remove(0); // Changes query!
                         sourceToQueries.put(svc, query);
                         it.remove();
