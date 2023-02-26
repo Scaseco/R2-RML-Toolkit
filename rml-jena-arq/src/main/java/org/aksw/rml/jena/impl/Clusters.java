@@ -1,7 +1,6 @@
 package org.aksw.rml.jena.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,7 +40,7 @@ public class Clusters<K, V> {
     }
 
     public NavigableMap<Integer, Clusters.Cluster<K, V>> getMap() {
-        return getMap();
+        return map;
     }
 
     public Set<Entry<Integer, Clusters.Cluster<K, V>>> entrySet() {
