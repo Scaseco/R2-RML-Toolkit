@@ -31,10 +31,8 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -76,9 +74,10 @@ public class R2rmlTestSuiteProcessorH2 {
                 String testCaseId = testCase.getIdentifier();
 
                 boolean isOnSkipList = Arrays.asList(
-                        // Skipped due to rounding errors in double-typed literals:
-                        "R2RMLTC0012e",
+                        // Skipped due non-deterministic failures due to rounding errors in double-typed literals:
+                        // Isomorphism by value still not always matches terms represented as 3.0E1 vs "20.0"^^xsd:double
                         "R2RMLTC0012a",
+                        "R2RMLTC0012e",
                         "R2RMLTC0005b"
 
                         // Below skip list is deprecated

@@ -27,15 +27,16 @@ import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
+import org.apache.jena.sparql.expr.ExprFunction;
 import org.apache.jena.sparql.expr.ExprTransformer;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.VariableNotBoundException;
 import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.graph.NodeTransformExpr;
 import org.apache.jena.sparql.modify.TemplateLib;
+import org.apache.jena.sparql.sse.Tags;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
@@ -174,11 +175,12 @@ public class TriplesMapToSparqlMapping {
 
             Node node;
 
-            if (expr instanceof E_BNode) {
+            // if (expr instanceof E_BNode) { // No longer works
+            if (expr.isFunction() &&  Tags.tagBNode.equals(expr.getFunction().getFunctionSymbol().getSymbol())) {
                 // Special handling of bnodes
                 // For each variable that maps to a bnode definition keep a mapping from the argument value
                 // to the generated bnode
-                E_BNode ebnode = (E_BNode)expr;
+                ExprFunction ebnode = (ExprFunction)expr;
                 // Expr bexpr = ebnode.getExpr();
                 List<Expr> args = ebnode.getArgs();
                 Object argObj;

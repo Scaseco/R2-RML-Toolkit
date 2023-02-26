@@ -1,7 +1,6 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -176,8 +175,8 @@ public class TriplesMapProcessorR2rml {
             // If the expr is a constant, just use its node as the result; no need to track this in the map
             if(expr.isConstant()) {
                 result = expr.getConstant().asNode();
-            } else if (expr.isVariable()) {
-                result = expr.asVar();
+            // } else if (expr.isVariable()) {
+            //    result = expr.asVar();
             } else {
                 // Allocate a new variable
                 Var v = cxt.varGen.allocVar();
@@ -240,14 +239,7 @@ public class TriplesMapProcessorR2rml {
 
             // Resolve all variable names. This gives e.g. an RML processor the chance
             // to resolve all variable names (=references) against the reference formulation.
-            Expr arg = ExprTransformer.transform(new ExprTransformCopy() {
-                @Override
-                public Expr transform(ExprVar exprVar) {
-                    String varName = exprVar.getVarName();
-                    Expr r = referenceToExpr(cxt, varName);
-                    return r;
-                }
-            }, rawArg);
+            Expr arg = resolveColumnReferences(cxt, rawArg);
 
             result = R2rmlImporterLib.applyTermType(arg, effectiveTermType, XSD.xstring.asNode());
         } else if((constant = tm.getConstant()) != null) {
@@ -270,12 +262,29 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
+    /** Transform references from rr:template or rr:column */
+    protected Expr resolveColumnReferences(MappingCxt cxt, Expr columnExpr) {
+
+        // Resolve all variable names. This gives e.g. an RML processor the chance
+        // to resolve all variable names (=references) against the reference formulation.
+        Expr result = ExprTransformer.transform(new ExprTransformCopy() {
+            @Override
+            public Expr transform(ExprVar exprVar) {
+                String varName = exprVar.getVarName();
+                Expr r = referenceToExpr(cxt, varName);
+                return r;
+            }
+        }, columnExpr);
+        return result;
+    }
+
     /** Override this method for RML termMap and references */
     protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
         Expr result = null;
         String colName = tm.getColumn();
         if(colName != null) {
-            result = new ExprVar(colName);
+            Expr rawArg = new ExprVar(colName);
+            result = resolveColumnReferences(cxt, rawArg);
         }
         return result;
     }

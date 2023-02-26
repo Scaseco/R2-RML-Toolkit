@@ -32,8 +32,10 @@ import org.apache.jena.sparql.expr.E_BNode;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_IRI;
 import org.apache.jena.sparql.expr.E_Str;
+import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.apache.jena.vocabulary.XSD;
 
@@ -422,21 +424,35 @@ public class R2rmlImporterLib {
     }
     */
 
+
+    /**
+     * Note on datatypes:
+     * R2RML test suite includes
+     * GTFS bench produces invalid RDF terms with type xsd:duration with incorrect lexical form - still output is expected.
+     *
+     * @param column An expression that creates a literal
+     * @param termType The term type which to apply to the expression
+     * @param knownDatatype The datatype specified via rr:datatype (null if it has not been specified)
+     * @return
+     */
     public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
         String termTypeIri = termType.getURI();
 
         Expr result;
         result = termTypeIri.equals(R2rmlTerms.IRI)
-                    // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
-                    ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
-                    : termTypeIri.equals(R2rmlTerms.BlankNode)
-                        ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
-                        : termTypeIri.equals(R2rmlTerms.Literal)
-                            ? knownDatatype == null
-                                ? column
-                                // : new E_StrDatatype(column, NodeValue.makeNode(knownDatatype))
-                                : new E_Function(knownDatatype.getURI(), new ExprList(column))
-                            : null;
+                // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
+                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                : termTypeIri.equals(R2rmlTerms.BlankNode)
+                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                    : termTypeIri.equals(R2rmlTerms.Literal)
+                        ? knownDatatype == null
+                            ? column
+                            // So far only strdt(str(?column), dt) suceeds on R2RML and RML test cases
+                            : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            // Not every datatype has a function and term maps may create terms with incorrect lexical space - e.g. xsd:duration("abc")
+                            // : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            // : new E_Function(knownDatatype.getURI(), new ExprList(column))
+                        : null;
 
 //		if (result == column) {
 //			System.out.println("unknown term type - assuming literal");
