@@ -19,9 +19,11 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
 import org.apache.jena.sparql.syntax.ElementUnion;
+import org.apache.jena.sparql.syntax.Template;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -81,13 +83,19 @@ public class CmdRmlOptimizeWorkload
             }
 
 
-            Query finalQuery;
+            Query innerQuery;
             if (newQueries.size() == 1) {
-                finalQuery = newQueries.iterator().next();
+                innerQuery = newQueries.iterator().next();
             } else {
                 List<Element> ms = newQueries.stream().map(ElementSubQuery::new).collect(Collectors.toList());
-                finalQuery = createUnionQuery(ms, quadVars, false);
+                innerQuery = createUnionQuery(ms, quadVars, false);
             }
+
+            Query finalQuery = new Query();
+            finalQuery.setQueryConstructType();
+            finalQuery.setConstructTemplate(new Template(new QuadAcc(Collections.singletonList(quadVars))));
+            finalQuery.setQueryPattern(new ElementSubQuery(innerQuery));
+
             queries = Collections.singletonList(finalQuery);
         }
 
