@@ -26,6 +26,7 @@ import org.apache.jena.sparql.syntax.ElementUnion;
 import org.apache.jena.sparql.syntax.Template;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "workload", description = "Optimize a workload of sparql queries by merging queries having the same RML source")
@@ -34,6 +35,12 @@ public class CmdRmlOptimizeWorkload
 {
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
+
+//    @Option(names = { "--no-distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
+//    public boolean distinct = false;
+
+    @Option(names = { "--no-order" }, description = "Do not sort the result", defaultValue = "false")
+    public boolean noOrder = false;
 
     @Override
     public Integer call() throws Exception {
@@ -95,6 +102,10 @@ public class CmdRmlOptimizeWorkload
             finalQuery.setQueryConstructType();
             finalQuery.setConstructTemplate(new Template(new QuadAcc(Collections.singletonList(quadVars))));
             finalQuery.setQueryPattern(new ElementSubQuery(innerQuery));
+
+            if (!noOrder) {
+                QuadUtils.streamNodes(quadVars).forEach(n -> finalQuery.addOrderBy(n, Query.ORDER_ASCENDING));
+            }
 
             queries = Collections.singletonList(finalQuery);
         }
