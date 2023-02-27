@@ -115,7 +115,7 @@ public class RmlLib {
 
         TriplesMapToSparqlMapping mapping = RmlImporterLib.read(fnMap, fnmlModel);
         Map<TermSpec, Var> tmToVar = mapping.getTermMapToVar();
-        VarExprList varToExpr = mapping.getVarToExpr();
+        VarExprList varToExpr = mapping.getExpandedVarExprList(); //getVarToExpr();
 
         Map<String, ObjectMapType> args = new HashMap<>();
         for (PredicateObjectMap pom : fnMap.getPredicateObjectMaps()) {

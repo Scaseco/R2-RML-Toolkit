@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
@@ -26,6 +27,8 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -35,6 +38,7 @@ import org.apache.jena.sparql.expr.ExprVars;
 import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
+import org.apache.jena.util.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,19 +93,21 @@ public class R2rmlProcessorJdbc {
 
         for (TriplesMap tm : tms) {
 
-            //							Model closureModel = ResourceUtils.reachableClosure(tm);
-            //							RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
+            Model closureModel = ResourceUtils.reachableClosure(tm);
+            // RDFDataMgr.write(System.out, closureModel, RDFFormat.TURTLE_PRETTY);
 
             LogicalTable lt = tm.getLogicalTable();
             TriplesMapToSparqlMapping mapping = R2rmlImporterLib.read(tm, baseIri);
 
             //								RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(tm), RDFFormat.TURTLE_PRETTY);
 
-            logger.debug("Generated Mapping: " + mapping);
+            // logger.debug("Generated Mapping: " + mapping);
             // System.out.println(mapping);
 
-            Set<Var> usedVars = new HashSet<>();
-            mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
+            // TODO This needs to be the set of undefined vars
+            // Set<Var> usedVars = new HashSet<>();
+            Set<Var> usedVars = GenericDag.getUndefinedVars(mapping.getExprDag());
+            // mapping.getVarToExpr().getExprs().values().stream().forEach(e -> ExprVars.varsMentioned(usedVars, e));
             Map<Var, String> usedVarToColumnName = usedVars.stream()
                     .collect(Collectors.toMap(
                             v -> v,

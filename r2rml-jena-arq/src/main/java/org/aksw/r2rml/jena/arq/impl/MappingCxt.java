@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.apache.jena.ext.com.google.common.collect.BiMap;
@@ -16,15 +18,18 @@ import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.ElementBind;
 
 /**
- * This class captures the state for mapping TriplesMap to SPARQL elements.
+ * This class captures the state for mapping a TriplesMap to SPARQL elements.
  */
 public class MappingCxt {
+    /** Reference to the triples map that acts as the _child_ of rr:joins */
     protected MappingCxt parentCxt;
 
     protected TriplesMap triplesMap;
     protected Var triplesMapVar;
 
-    protected BiMap<Var, Expr> varToExpr = HashBiMap.create();
+    /** Data structure to factor out common subexpressions eagerly */
+    protected GenericDag<Expr, Var> exprDag;
+    // protected BiMap<Var, Expr> varToExpr = HashBiMap.create();
     protected Map<TermSpec, Var> termMapToVar = new HashMap<>();
 
     // Accumulator for generated quads
@@ -41,15 +46,22 @@ public class MappingCxt {
         this.triplesMap = triplesMap;
         this.triplesMapVar = triplesMapVar;
 
-        String baseExprVar = parentCxt == null ? "v" : triplesMapVar.getName() + "_";
+        String baseExprVar = parentCxt == null ? "v" : triplesMapVar.getName() + "_v";
         this.varGen = new VarAlloc(baseExprVar);
+        this.exprDag = new GenericDag<>(ExprUtils.getExprOps(), varGen::allocVar, null);
+    }
+
+    public Var getSubjectVar() {
+        MappingCxt cxt = this; // Make this a static util function?
+        TriplesMap tm = cxt.getTriplesMap();
+        Var result = cxt.getTermMapToVar().get(tm.getSubjectMap());
+        return result;
     }
 
     public ElementBind getSubjectDefinition() {
         MappingCxt cxt = this; // Make this a static util function?
-        TriplesMap tm = cxt.getTriplesMap();
-        Var subjectVar = cxt.getTermMapToVar().get(tm.getSubjectMap());
-        Expr expr = cxt.getVarToExpr().get(subjectVar);
+        Var subjectVar = getSubjectVar();
+        Expr expr = cxt.getExprDag().getExpr(subjectVar);
         return new ElementBind(subjectVar, expr);
     }
 
@@ -65,9 +77,13 @@ public class MappingCxt {
         return triplesMapVar;
     }
 
-    public BiMap<Var, Expr> getVarToExpr() {
-        return varToExpr;
+    public GenericDag<Expr, Var> getExprDag() {
+        return exprDag;
     }
+
+//    public BiMap<Var, Expr> getVarToExpr() {
+//        return exprDag.getVarToExpr();
+//    }
 
     public Map<TermSpec, Var> getTermMapToVar() {
         return termMapToVar;

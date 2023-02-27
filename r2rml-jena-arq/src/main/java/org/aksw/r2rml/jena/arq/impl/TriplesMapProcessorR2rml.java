@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
@@ -20,7 +21,6 @@ import org.aksw.r2rml.jena.domain.api.SubjectMap;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
-import org.apache.jena.ext.com.google.common.collect.BiMap;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.RDFNode;
@@ -28,7 +28,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
-import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Equals;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
@@ -45,6 +44,7 @@ public class TriplesMapProcessorR2rml {
     protected TriplesMap triplesMap;
     protected String baseIri;
 
+    /** VarAlloc for generating variables that represent the set of records of a logical source */
     protected VarAlloc sourceVarGen = new VarAlloc("s");
 
     /** The context for *this* triple maps. Parent contexts are created when there are joins. */
@@ -113,17 +113,21 @@ public class TriplesMapProcessorR2rml {
             }
         }
 
-        VarExprList vel = new VarExprList();
-        childCxt.varToExpr.forEach(vel::add);
+//        VarExprList vel = new VarExprList();
+//        childCxt.getExprDag().getVarToExpr().forEach(vel::add);
+        childCxt.getExprDag().collapse();
 
         Template template = new Template(childCxt.quadAcc);
         TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
-            triplesMap, childCxt, template, childCxt.termMapToVar, vel, childCxt.joins);
+            triplesMap, childCxt, template, childCxt.termMapToVar, childCxt.getExprDag(), childCxt.joins);
 
         return result;
     }
 
-    /** Calls {@link #allocateVar(TermMap, Resource) and tracks the result in the #termMapToVar */
+    /**
+     * Calls {@link #allocateVar(TermMap, Resource) and tracks the result in the #termMapToVar
+     * If a variable maps to a constant expression then no entry is made to nodeToExpr.
+     */
     protected Node allocateVarTracked(
             MappingCxt cxt,
             TermMap tm,
@@ -135,52 +139,28 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    /**
-     * Allocates a variable for a given term map and maps it to the term map's corresponding
-     * SPARQL expression.
-     * If a variable maps to a constant expression then no entry is made to nodeToExpr.
-     *
-     * @param tm
-     * @param nodeToExpr
-     * @param varGen
-     * @return
-     */
+    /** Allocates a variable for a given term map. */
     protected Node allocateVar(
             MappingCxt cxt,
             TermMap tm,
             Resource fallbackTermType) {
         Expr expr = termMapToExpr(cxt, tm, fallbackTermType);
-        expr = postProcessExpr(cxt, expr);
+        // expr = postProcessExpr(cxt, expr);
         Node result = allocateVarForExpr(cxt, expr);
         return result;
     }
 
-    /**
-     * Experimental extension point for applying common sub-expression elimination (CSE) early.
-     * However, CSE should be performed anyway when optimizing over multiple queries.
-     * So it is likely that here is a bad place for it.
-     */
-    protected Expr postProcessExpr(MappingCxt cxt, Expr expr) {
-        // TODO The method is not invoked from the right places; adding factorization produces wrong results
-        Expr result = expr;
-        // Expr result = ExprUtils.factorize(expr, cxt.varToExpr, cxt.varGen);
-        return result;
-    }
-
     protected Node allocateVarForExpr(MappingCxt cxt, Expr expr) {
-        BiMap<Expr, Var> exprToNode = cxt.varToExpr.inverse();
-        Node result = exprToNode.get(expr);
-
+        Node result = cxt.getExprDag().getVar(expr);
         if(result == null) {
             // If the expr is a constant, just use its node as the result; no need to track this in the map
             if(expr.isConstant()) {
                 result = expr.getConstant().asNode();
-            // } else if (expr.isVariable()) {
-            //    result = expr.asVar();
             } else {
                 // Allocate a new variable
-                Var v = cxt.varGen.allocVar();
-                cxt.varToExpr.put(v, expr);
+                Expr newRoot = cxt.getExprDag().addRoot(expr);
+                Var v = ExprUtils.getExprOps().asVar(newRoot);
+                // Preconditions.checkState(v != null, "Get null as the variable for a just added expression");
                 result = v;
             }
         }
@@ -256,9 +236,7 @@ public class TriplesMapProcessorR2rml {
                 throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
             }
         }
-
-        result = postProcessExpr(cxt, result);
-
+        // result = postProcessExpr(cxt, result);
         return result;
     }
 
@@ -332,8 +310,10 @@ public class TriplesMapProcessorR2rml {
                 // Check if by substitution of all join expressions no further expressions making use of the child/parent source variable remain
                 // ExprTransform et = new ExprTransformBase()
 
-                Expr childSubjectExpr = childCxt.getSubjectDefinition().getExpr();
-                Expr parentSubjectExpr = parentCxt.getSubjectDefinition().getExpr();
+                // This is a bit of ugly back and forth: We decompose expressions into the dag
+                // but here we need to check whether their expanded forms are equal
+                Expr childSubjectExpr = GenericDag.expand(childCxt.getExprDag(), childCxt.getSubjectDefinition().getExpr());
+                Expr parentSubjectExpr = GenericDag.expand(parentCxt.getExprDag(), parentCxt.getSubjectDefinition().getExpr());
                 Expr newParentSubjectExpr = parentSubjectExpr.applyNodeTransform(parentToChildSrcVar);
 
                 Expr placeholder = NodeValue.makeString("placeholder");
@@ -353,7 +333,7 @@ public class TriplesMapProcessorR2rml {
                     Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
                     if (newParentVar.isVariable()) {
                         childCxt.termMapToVar.put(rom, newParentVar);
-                        childCxt.varToExpr.put(newParentVar, replacedParentExpr);
+                        childCxt.getExprDag().getVarToExpr().put(newParentVar, replacedParentExpr);
                     }
                     childCxt.getQuadAcc().addQuad(createQuad(g, s, p, newParentVar));
                 } else if (remainingParentSubjectVars.isEmpty()) {
@@ -362,7 +342,7 @@ public class TriplesMapProcessorR2rml {
                     Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
                     if (newParentVar.isVariable()) {
                         childCxt.termMapToVar.put(rom, newParentVar);
-                        childCxt.varToExpr.put(newParentVar, replacedParentExpr);
+                        childCxt.getExprDag().getVarToExpr().put(newParentVar, replacedParentExpr);
                     }
                     childCxt.getQuadAcc().addQuad(createQuad(g, newParentVar, p, s));
                 }
@@ -371,6 +351,7 @@ public class TriplesMapProcessorR2rml {
 
         if (!isEliminated) {
             Quad quad = createQuad(g, s, p, o);
+            parentCxt.getExprDag().collapse();
             JoinDeclaration join = new JoinDeclaration(parentCxt, null, rom, quad, constraints);
             childCxt.joins.add(join);
         }

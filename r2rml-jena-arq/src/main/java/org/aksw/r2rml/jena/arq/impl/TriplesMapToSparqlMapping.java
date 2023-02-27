@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TermSpec;
@@ -63,19 +65,37 @@ public class TriplesMapToSparqlMapping {
 
     // The mapping for term maps' variables to the corresponding sparql expression
     // E.g. a rr:template "foo{bar}" becomes IRI(CONCAT("foo", STR(?var)))
-    protected VarExprList varToExpr;
+    // protected VarExprList varToExpr;
+    protected GenericDag<Expr, Var> exprDag;
 
     protected List<JoinDeclaration> joins;
 
     public TriplesMapToSparqlMapping(TriplesMap triplesMap, MappingCxt mappingCxt, Template template, Map<TermSpec, Var> termMapToVar,
-            VarExprList varToExpr, List<JoinDeclaration> joins) {
+            GenericDag<Expr, Var> exprDag, List<JoinDeclaration> joins) {
         super();
         this.triplesMap = triplesMap;
         this.mappingCxt = mappingCxt;
         this.template = template;
         this.termMapToVar = termMapToVar;
-        this.varToExpr = varToExpr;
+        this.exprDag = exprDag;
         this.joins = joins;
+    }
+
+    /**
+     * Creates a var expr list where every variable root node maps to the full expansion of its definition -
+     * the expansion includes only variables that are undefined.
+     * If there were common sub-expressions then they will be evaluated repeatedly.
+     */
+    public VarExprList getExpandedVarExprList() {
+        VarExprList result = new VarExprList();
+        for (Expr root : exprDag.getRoots()) {
+            if (root.isVariable()) {
+                Var var = root.asVar();
+                Expr expansion = GenericDag.expand(exprDag, root);
+                result.add(var, expansion);
+            }
+        }
+        return result;
     }
 
     public TriplesMap getTriplesMap() {
@@ -94,8 +114,8 @@ public class TriplesMapToSparqlMapping {
         return termMapToVar;
     }
 
-    public VarExprList getVarToExpr() {
-        return varToExpr;
+    public GenericDag<Expr, Var> getExprDag() {
+        return exprDag;
     }
 
     public List<JoinDeclaration> getJoins() {
@@ -119,7 +139,9 @@ public class TriplesMapToSparqlMapping {
     }
 
     public Binding evalVars(Binding binding, FunctionEnv env, boolean strictIriValidation) {
-        return evalVars(varToExpr, binding, env, strictIriValidation);
+        // TODO Update the code to evaluate on the dag
+        VarExprList vel = getExpandedVarExprList();
+        return evalVars(vel, binding, env, strictIriValidation);
     }
 
 
@@ -175,6 +197,7 @@ public class TriplesMapToSparqlMapping {
 
             Node node;
 
+            // TODO Probably this code should be updated to simply rely on the custom function F_BnodeAsGiven
             // if (expr instanceof E_BNode) { // No longer works
             if (expr.isFunction() &&  Tags.tagBNode.equals(expr.getFunction().getFunctionSymbol().getSymbol())) {
                 // Special handling of bnodes
@@ -262,7 +285,7 @@ public class TriplesMapToSparqlMapping {
     }
 
     public Query getAsQuery() {
-        return getAsQuery(true);
+        return getAsQuery(false);
     }
 
     public Query getAsQuery(boolean safeVars) {
@@ -271,12 +294,17 @@ public class TriplesMapToSparqlMapping {
         result.setConstructTemplate(template);
 
         ElementGroup elt = new ElementGroup();
+
+        VarExprList varToExpr = getExpandedVarExprList();
+
         // for (Entry<Var, Expr> e : varToExpr.entrySet()) {
         varToExpr.forEachVarExpr((v, e) ->  {
-            Expr ee = !safeVars
-                    ? e
-                    : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
-            elt.addElement(new ElementBind(v, ee));
+            if (e != null) {
+                Expr ee = !safeVars
+                        ? e
+                        : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
+                elt.addElement(new ElementBind(v, ee));
+            }
         });
         result.setQueryPattern(elt);
 
