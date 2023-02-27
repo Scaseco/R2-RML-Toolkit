@@ -46,13 +46,20 @@ public class RmlQueryGenerator {
         ElementGroup elt = new ElementGroup();
         elt.addElement(childElt);
 
-        VarExprList varToExpr = mapping.getExpandedVarExprList();
-        varToExpr.forEachVarExpr((v, e) ->  {
-//            Expr ee = !safeVars
-//                    ? e
-//                    : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
-            elt.addElement(new ElementBind(v, e));
-        });
+//        VarExprList varToExpr = mapping.getExpandedVarExprList();
+//        varToExpr.forEachVarExpr((v, e) ->  {
+////            Expr ee = !safeVars
+////                    ? e
+////                    : ExprTransformer.transform(new NodeTransformExpr(n -> n.isVariable() ? VarUtils.safeVar(n.getName()) : n), e);
+//            elt.addElement(new ElementBind(v, e));
+//        });
+        Map<Var, Expr> defs = GenericDag.getSortedDependencies(mapping.getExprDag());
+        for (Entry<Var, Expr> e : defs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
+            Expr x = e.getValue();
+            if ( x != null) {
+                elt.addElement(new ElementBind(e.getKey(), x));
+            }
+        }
 
 
         Query result = new Query();

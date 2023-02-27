@@ -14,6 +14,7 @@ import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
+import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
@@ -49,8 +50,12 @@ public class CmdRmlToSparql
     @Option(names = { "--distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
     public boolean distinct = false;
 
+    @Option(names = { "--tm" }, description = "Only convert specific triple maps")
+    public List<String> triplesMapIds = new ArrayList<>();
+
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
+
 
     @Override
     public Integer call() throws Exception {
@@ -80,7 +85,8 @@ public class CmdRmlToSparql
             Model model = ModelFactory.createModelForGraph(graph);
 
             // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.read(model, fnmlModel);
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(model, fnmlModel, triplesMapIds);
+
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());

@@ -163,6 +163,9 @@ public class TriplesMapProcessorR2rml {
                 // Preconditions.checkState(v != null, "Get null as the variable for a just added expression");
                 result = v;
             }
+        } else {
+            // Even if the expression already existed it may have not yet been marked as a root
+            cxt.getExprDag().getRoots().add(new ExprVar((Var)result));
         }
 
         return result;
@@ -373,7 +376,8 @@ public class TriplesMapProcessorR2rml {
                 ? Quad.defaultGraphNodeGenerated
                 : g;
 
-        return Quad.create(finalG, s, p, o);
+        Quad result = Quad.create(finalG, s, p, o);
+        return result;
     }
 
     /**
