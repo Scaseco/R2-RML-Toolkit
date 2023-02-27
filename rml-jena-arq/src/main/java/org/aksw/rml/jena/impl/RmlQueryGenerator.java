@@ -94,7 +94,7 @@ public class RmlQueryGenerator {
         LogicalSource source = cxt.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
         String rfIri = source.getReferenceFormulationIri();
         ReferenceFormulation rf = registry.getOrThrow(rfIri);
-        Element sourceElt = rf.source(source, join.getChildVar());
+        Element sourceElt = rf.source(source, cxt.getTriplesMapVar());
         Var subjectVar = cxt.getSubjectVar();
         ExprVar subjectEv = new ExprVar(cxt.getSubjectVar());
 
