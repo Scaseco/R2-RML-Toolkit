@@ -383,6 +383,7 @@ public class TriplesMapProcessorR2rml {
     /**
      * Extension point for resolving RML references.
      * The R2RML processor ignores the source.
+     * <b>Important:<b> The returned expression should not be factorized against the cxt's dag. The processor will take care of that.
      *
      * @param source A variable that is bound to the source records and thus represents the source.
      * @param colName A column name or more generally a reference expression string.

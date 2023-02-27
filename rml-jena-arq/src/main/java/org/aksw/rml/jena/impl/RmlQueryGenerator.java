@@ -74,59 +74,9 @@ public class RmlQueryGenerator {
         if (registry == null) {
             registry = ReferenceFormulationRegistry.get();
         }
-//
-//        LogicalSource childSource = join.getChildTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
-//        LogicalSource parentSource = join.getParentTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
-//
-//        String childRfIri = childSource.getReferenceFormulationIri();
-//        ReferenceFormulation childRf = registry.getOrThrow(childRfIri);
-//
-//        String parentRfIri = parentSource.getReferenceFormulationIri();
-//        ReferenceFormulation parentRf = registry.getOrThrow(parentRfIri);
-//
-//        Element childSourceElt = childRf.source(childSource, join.getChildVar());
-//        Element parentSourceElt = parentRf.source(parentSource, join.getParentVar());
-//
-//        join.getChildSubjectDefinition()
-////        ElementBind childSubjectElt = join.getChildSubjectDefinition();
-////        ElementBind parentSubjectElt = join.getParentSubjectDefinition();
-//
-//        ElementGroup elt = new ElementGroup();
-
-        // Build the syntax such that it enforces a hash join:
-        // SELECT * WHERE {
-        //   { SERVICE <childSource> { } BIND(childJoinConditionExpr As ?jc) }
-        //   { SERVICE <parentSource> { } BIND(parentJoinConditionExpr As ?jc) }
-        // }
-
-        // Child group
-//        ElementGroup childGrp = new ElementGroup();
-//        childGrp.addElement(childSourceElt);
-//        Map<Var, Expr> childDefs = GenericDag.getSortedDependencies(join.getChildCxt().getExprDag());
-//        for (Entry<Var, Expr> e : childDefs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
-//            Expr x = e.getValue();
-//            if ( x != null) {
-//                childGrp.addElement(new ElementBind(e.getKey(), x));
-//            }
-//        }
-//        for (int i = 0; i < joinExprs.size(); ++i) {
-//            Expr expr = joinExprs.get(i);
-//            E_Equals eq = (E_Equals)expr;
-//            Var jcVar = Var.alloc("jc" + i);
-//            childGrp.addElement(new ElementBind(jcVar, eq.getArg2()));
-//            // It is important to filter out non-bound variables - sparql's natural hash join would otherwise result in an outer join but we want an inner one
-//            childGrp.addElementFilter(new ElementFilter(new E_Bound(new ExprVar(jcVar))));
-//        }
 
         Element childGrp = createJoinGroup(registry, join, join.getChildCxt(), E_Equals::getArg2);
         Element parentGrp = createJoinGroup(registry, join, join.getParentCxt(), E_Equals::getArg1);
-
-        // elt.addElement(childGrp);
-        // elt.addElement(parentGrp);
-
-//        for (Expr expr : join.getConditionExprs()) {
-//            elt.addElementFilter(new ElementFilter(expr));
-//        }
 
         ElementGroup elt = new ElementGroup();
         elt.addElement(childGrp);
@@ -140,27 +90,21 @@ public class RmlQueryGenerator {
         return result;
     }
 
-
     public static Element createJoinGroup(ReferenceFormulationRegistry registry, JoinDeclaration join, MappingCxt cxt, Function<E_Equals, Expr> getConditions) {
         LogicalSource source = cxt.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
         String rfIri = source.getReferenceFormulationIri();
         ReferenceFormulation rf = registry.getOrThrow(rfIri);
         Element sourceElt = rf.source(source, join.getChildVar());
-        ExprVar subjectRoot = new ExprVar(cxt.getSubjectVar());
+        Var subjectVar = cxt.getSubjectVar();
+        ExprVar subjectEv = new ExprVar(cxt.getSubjectVar());
 
-        // Parent group
         ElementGroup pattern = new ElementGroup();
         pattern.addElement(sourceElt);
-//        for (Entry<Var, Expr> e : join.getParentCxt().getExprDag().getVarToExpr().entrySet()) {
-//            parentGrp.addElement(new ElementBind(e.getKey(), e.getValue()));
-//        }
-        Map<Var, Expr> defs = GenericDag.getSortedDependencies(cxt.getExprDag(), Arrays.asList(subjectRoot));
-        for (Entry<Var, Expr> e : defs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
-            Expr x = e.getValue();
-            if ( x != null) {
-                pattern.addElement(new ElementBind(e.getKey(), x));
-            }
-        }
+
+        // TODO Collapse the expressions for the subject and the join condition to micro-optimize further
+        // TODO Right now we assume that the join condition is expended (no lookup in the dag needed)
+        //  Right now we emit all intermediate expressions
+
         ExprList joinExprs = join.getConditionExprs();
         List<Var> joinVars = new ArrayList<>(joinExprs.size());
         for (int i = 0; i < joinExprs.size(); ++i) {
@@ -174,10 +118,18 @@ public class RmlQueryGenerator {
             joinVars.add(jcVar);
         }
 
+        Map<Var, Expr> defs = GenericDag.getSortedDependencies(cxt.getExprDag(), Arrays.asList(subjectEv));
+        for (Entry<Var, Expr> e : defs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
+            Expr x = e.getValue();
+            if ( x != null) {
+                pattern.addElement(new ElementBind(e.getKey(), x));
+            }
+        }
+
         Query query = new Query();
         query.setQuerySelectType();
         query.addProjectVars(joinVars);
-        query.addProjectVars(defs.keySet());
+        query.getProject().add(subjectVar);
         query.setQueryPattern(pattern);
 
         return new ElementSubQuery(query);
