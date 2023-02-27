@@ -1,6 +1,7 @@
 package org.aksw.r2rml.jena.arq.impl;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -308,44 +309,33 @@ public class TriplesMapProcessorR2rml {
             boolean isIdentity = toCheck.getList().stream().map(e -> (E_Equals)e).allMatch(e -> Objects.equals(e.getArg1(), e.getArg2()));
 
             if (isIdentity) {
+                // Project on side of the join conditions - at this point the other side has the same expression
                 Set<Expr> joinExprs = toCheck.getList().stream().map(e -> (E_Equals)e).map(e -> e.getArg1()).collect(Collectors.toSet());
 
                 // Check if by substitution of all join expressions no further expressions making use of the child/parent source variable remain
                 // ExprTransform et = new ExprTransformBase()
-
-                // This is a bit of ugly back and forth: We decompose expressions into the dag
-                // but here we need to check whether their expanded forms are equal
-                Expr childSubjectExpr = GenericDag.expand(childCxt.getExprDag(), childCxt.getSubjectDefinition().getExpr());
                 Expr parentSubjectExpr = GenericDag.expand(parentCxt.getExprDag(), parentCxt.getSubjectDefinition().getExpr());
                 Expr newParentSubjectExpr = parentSubjectExpr.applyNodeTransform(parentToChildSrcVar);
 
-                Expr placeholder = NodeValue.makeString("placeholder");
-                Function<Expr, Expr> exprTransform =  e -> joinExprs.contains(e) ? placeholder : e;
+                Set<Expr> joinCoreDefs = GenericDag.getCoreDefinitions(childCxt.exprDag, joinExprs);
+                Set<Expr> childCoreDefs = GenericDag.getCoreDefinitions(childCxt.exprDag);
+                Set<Expr> parentCoreDefs = GenericDag.getCoreDefinitions(parentCxt.exprDag).stream()
+                        .map(e -> e.applyNodeTransform(parentToChildSrcVar)).collect(Collectors.toCollection(LinkedHashSet::new));
 
-                Expr replacedChildExpr = ExprUtils.replace(childSubjectExpr, exprTransform);
-                Expr replacedParentExpr = ExprUtils.replace(newParentSubjectExpr, exprTransform);
-
-                Set<Var> remainingChildSubjectVars = replacedChildExpr.getVarsMentioned();
-                Set<Var> remainingParentSubjectVars = replacedParentExpr.getVarsMentioned();
-
-//                System.out.println(replacedChildExpr);
-//                System.out.println(replacedParentExpr);
-
-                if (remainingChildSubjectVars.isEmpty()) {
+                // Check whether the child subject or parent subject only makes use of definitions that are based on the join definition
+                // FIXME Wouldn't we also have to handle the case of a variable predicate?!
+                if (joinCoreDefs.containsAll(childCoreDefs)) {
                     isEliminated = true;
-                    Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
+                    Var newParentVar = (Var)allocateVarForExpr(childCxt, newParentSubjectExpr);
                     if (newParentVar.isVariable()) {
                         childCxt.termMapToVar.put(rom, newParentVar);
-                        childCxt.getExprDag().getVarToExpr().put(newParentVar, replacedParentExpr);
                     }
                     childCxt.getQuadAcc().addQuad(createQuad(g, s, p, newParentVar));
-                } else if (remainingParentSubjectVars.isEmpty()) {
+                } else if (joinCoreDefs.containsAll(parentCoreDefs)) {
                     isEliminated = true;
-                    // Expr newParentExpr = newParentSubjectExpr.applyNodeTransform(parentToChildSrcVar);
-                    Var newParentVar = (Var)allocateVarForExpr(parentCxt, newParentSubjectExpr);
+                    Var newParentVar = (Var)allocateVarForExpr(childCxt, newParentSubjectExpr);
                     if (newParentVar.isVariable()) {
                         childCxt.termMapToVar.put(rom, newParentVar);
-                        childCxt.getExprDag().getVarToExpr().put(newParentVar, replacedParentExpr);
                     }
                     childCxt.getQuadAcc().addQuad(createQuad(g, newParentVar, p, s));
                 }
