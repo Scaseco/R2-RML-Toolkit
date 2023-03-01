@@ -81,22 +81,32 @@ public class TriplesMapToSparqlMapping {
         this.joins = joins;
     }
 
-    /**
-     * Creates a var expr list where every variable root node maps to the full expansion of its definition -
-     * the expansion includes only variables that are undefined.
-     * If there were common sub-expressions then they will be evaluated repeatedly.
-     */
     // XXX Tried to rename to getExpandedVarExprList
     // However this method is referenced by sparqlify - so for now we need to keep the name for legacy reasons
     public VarExprList getVarToExpr() {
+        return getVarToExpr(true);
+    }
+
+    /**
+     * Creates a var expr list where every variable root node maps to the full expansion of its definition -
+     * the expansion includes only variables that are undefined.
+     *
+     * If there were common sub-expressions then they will be evaluated repeatedly.
+     *
+     * @param includeIdentities Whether to include entries such as (?x, ?x).
+     *   If false then it is returned as (?x, null)
+     * @return
+     */
+    public VarExprList getVarToExpr(boolean includeIdentities) {
         VarExprList result = new VarExprList();
         for (Expr root : exprDag.getRoots()) {
             if (root.isVariable()) {
                 Var var = root.asVar();
                 Expr expansion = GenericDag.expand(exprDag, root);
 
-                // Omit entries such as BIND(?Name AS ?Name)
-                if (!(expansion.isVariable() && var.equals(expansion.asVar()))) {
+                if (expansion.isVariable() && var.equals(expansion.asVar()) && !includeIdentities) {
+                    result.add(var);
+                } else {
                     result.add(var, expansion);
                 }
             }
