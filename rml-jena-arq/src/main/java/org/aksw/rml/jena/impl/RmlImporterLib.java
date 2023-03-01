@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.Rml;
+import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
@@ -17,12 +19,12 @@ public class RmlImporterLib {
      * Otherwise only process those with the given ids.
      * Mainly useful for CLI tooling.
      */
-    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(Model model, Model fnmlModel, Collection<String> triplesMapIds) {
+    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(Model model, Model fnmlModel, Collection<String> triplesMapIds, ReferenceFormulationRegistry registry) {
         Collection<TriplesMapToSparqlMapping> result;
         if (triplesMapIds != null && !triplesMapIds.isEmpty()) {
             result = triplesMapIds.stream()
                 .map(id -> model.createResource(id).as(TriplesMap.class))
-                .map(tm -> RmlImporterLib.read(tm, fnmlModel))
+                .map(tm -> RmlImporterLib.read(tm, fnmlModel, registry))
                 .collect(Collectors.toList());
         } else {
             result = RmlImporterLib.read(model, fnmlModel);
@@ -30,9 +32,23 @@ public class RmlImporterLib {
         return result;
     }
 
-    public static TriplesMapToSparqlMapping read(TriplesMap tm, Model fnmlModel) {
-        TriplesMapToSparqlMapping result = new TriplesMapProcessorRml(tm, fnmlModel).call();
+    public static TriplesMapToSparqlMapping read(TriplesMap tm, Model fnmlModel, ReferenceFormulationRegistry registry) {
+        TriplesMapToSparqlMapping result = new TriplesMapProcessorRml(tm, null, fnmlModel, registry).call();
         return result;
+    }
+
+    public static TriplesMapToSparqlMapping read(TriplesMap tm, Model fnmlModel) {
+        return read(tm, fnmlModel, null);
+    }
+
+    /** List all resources that have a rml:logicalSource property */
+    public static List<RmlTriplesMap> listAllTriplesMaps(Model model) {
+        List<RmlTriplesMap> result = model
+                .listSubjectsWithProperty(Rml.logicalSource)
+                .mapWith(r -> r.as(RmlTriplesMap.class))
+                .toList();
+        return result;
+
     }
 
     public static Collection<TriplesMapToSparqlMapping> read(Model rawModel, Model fnmlModel) {
@@ -40,10 +56,7 @@ public class RmlImporterLib {
         Model model = ModelFactory.createDefaultModel();
         model.add(rawModel);
 
-        List<TriplesMap> triplesMaps = model
-                .listSubjectsWithProperty(Rml.logicalSource)
-                .mapWith(r -> r.as(TriplesMap.class))
-                .toList();
+        List<RmlTriplesMap> triplesMaps = listAllTriplesMaps(model);
 
 //		for(TriplesMap tm : triplesMaps) {
             // TODO Integrate validation with shacl, as this gives us free reports of violations
@@ -55,5 +68,4 @@ public class RmlImporterLib {
 
         return result;
     }
-
 }

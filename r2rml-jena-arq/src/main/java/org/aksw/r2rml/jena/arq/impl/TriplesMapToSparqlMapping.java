@@ -86,13 +86,19 @@ public class TriplesMapToSparqlMapping {
      * the expansion includes only variables that are undefined.
      * If there were common sub-expressions then they will be evaluated repeatedly.
      */
-    public VarExprList getExpandedVarExprList() {
+    // XXX Tried to rename to getExpandedVarExprList
+    // However this method is referenced by sparqlify - so for now we need to keep the name for legacy reasons
+    public VarExprList getVarToExpr() {
         VarExprList result = new VarExprList();
         for (Expr root : exprDag.getRoots()) {
             if (root.isVariable()) {
                 Var var = root.asVar();
                 Expr expansion = GenericDag.expand(exprDag, root);
-                result.add(var, expansion);
+
+                // Omit entries such as BIND(?Name AS ?Name)
+                if (!(expansion.isVariable() && var.equals(expansion.asVar()))) {
+                    result.add(var, expansion);
+                }
             }
         }
         return result;
@@ -140,7 +146,7 @@ public class TriplesMapToSparqlMapping {
 
     public Binding evalVars(Binding binding, FunctionEnv env, boolean strictIriValidation) {
         // TODO Update the code to evaluate on the dag
-        VarExprList vel = getExpandedVarExprList();
+        VarExprList vel = getVarToExpr();
         return evalVars(vel, binding, env, strictIriValidation);
     }
 
@@ -295,7 +301,7 @@ public class TriplesMapToSparqlMapping {
 
         ElementGroup elt = new ElementGroup();
 
-        VarExprList varToExpr = getExpandedVarExprList();
+        VarExprList varToExpr = getVarToExpr();
 
         // for (Entry<Var, Expr> e : varToExpr.entrySet()) {
         varToExpr.forEachVarExpr((v, e) ->  {

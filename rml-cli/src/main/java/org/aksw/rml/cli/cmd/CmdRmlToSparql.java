@@ -85,7 +85,7 @@ public class CmdRmlToSparql
             Model model = ModelFactory.createModelForGraph(graph);
 
             // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(model, fnmlModel, triplesMapIds);
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(model, fnmlModel, triplesMapIds, null);
 
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {

@@ -7,8 +7,10 @@ import java.util.concurrent.Callable;
 
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.rml.jena.impl.RmlImporterLib;
-import org.aksw.rml.jena.impl.RmlQueryGenerator;
+import org.aksw.rml.jena.impl.ReferenceFormulationTarql;
+import org.aksw.rml.jena.impl.RmlImporter;
+import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.model.QlTerms;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -39,11 +41,18 @@ public class CmdRmlToTarql
             fnmlModel.add(model);
         }
 
+        // Create a registry that maps CSV to the tarql resolver
+        ReferenceFormulationRegistry tarqlRegistry = new ReferenceFormulationRegistry();
+        tarqlRegistry.put(QlTerms.CSV, new ReferenceFormulationTarql());
+
         for (String inputFile : inputFiles) {
             Model model = RDFDataMgr.loadModel(inputFile);
 
-            // Note: R2RML joins
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.read(model, null);
+            // For TARQL we need to configure the RML processor with a different reference resolver
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporter.from(model)
+                    .setReferenceFormulationRegistry(tarqlRegistry)
+                    .process();
+
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 System.out.println("# " + tmId);
