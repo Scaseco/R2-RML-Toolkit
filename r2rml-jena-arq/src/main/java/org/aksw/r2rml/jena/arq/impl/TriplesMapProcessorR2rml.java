@@ -5,12 +5,12 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
+import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.domain.api.GraphMap;
 import org.aksw.r2rml.jena.domain.api.JoinCondition;
@@ -24,8 +24,11 @@ import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
@@ -172,6 +175,13 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
+
+    public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
+
+    protected String getLanguageColumn(TermMap tm) {
+        return Optional.ofNullable(tm.getProperty(languageColumn)).map(Statement::getString).orElse(null);
+    }
+
     /**
      * Convert a term map into a corresponding SPARQL expression
      *
@@ -190,8 +200,10 @@ public class TriplesMapProcessorR2rml {
         RDFNode constant = tm.getConstant();
         Node datatypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getDatatype());
         Node termTypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getTermType());
-
         String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
+
+        // This is an extension of R2RML for a language column - it doesn't seem worth the effort of having this separate
+        String langColumn = getLanguageColumn(tm);
 
         // Infer the effective term type
 
@@ -203,7 +215,7 @@ public class TriplesMapProcessorR2rml {
             effectiveTermType = ObjectUtils.requireNullOrEqual(effectiveTermType, R2rmlImporterLib.classifyTermType(constant.asNode()).asNode());
         }
 
-        if (langValue != null) {
+        if (langValue != null || langColumn != null) {
             effectiveTermType = ObjectUtils.requireNullOrEqual(effectiveTermType, RR.Literal.asNode());
         }
 
@@ -214,9 +226,6 @@ public class TriplesMapProcessorR2rml {
         if (effectiveTermType == null) {
             effectiveTermType = fallbackTermType.asNode();
         }
-
-        // FIXME Add extension point for FunctionMap-like constructs where the term type
-        // yet needs to be applied
 
         if((template = tm.getTemplate()) != null) {
             Expr rawArg = R2rmlTemplateLib.parse(template);
@@ -233,6 +242,10 @@ public class TriplesMapProcessorR2rml {
             if(columnLikeExpr != null) {
                 if (langValue != null) {
                     result = new E_StrLang(columnLikeExpr, NodeValue.makeString(langValue));
+                } else if (langColumn != null) {
+                    ExprVar langColumnExprVar = new ExprVar(langColumn);
+                    Expr langColumnExpr = resolveColumnReferences(cxt, langColumnExprVar);
+                    result = new E_StrLang(columnLikeExpr, langColumnExpr);
                 } else {
                     result = R2rmlImporterLib.applyTermType(columnLikeExpr, effectiveTermType, datatypeNode);
                 }
@@ -244,7 +257,7 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    /** Transform references from rr:template or rr:column */
+    /** Transform references from rr:template or rr:column or rr:langColumn */
     protected Expr resolveColumnReferences(MappingCxt cxt, Expr columnExpr) {
 
         // Resolve all variable names. This gives e.g. an RML processor the chance
