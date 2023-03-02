@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.commons.util.algebra.GenericDag;
-import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
+import org.aksw.commons.util.obj.ObjectUtils;
+import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.domain.api.TermSpec;
@@ -29,9 +30,14 @@ import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.E_Str;
+import org.apache.jena.sparql.expr.E_StrConcat;
+import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
 import org.apache.jena.sparql.expr.ExprFunction;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.ExprTransformer;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.VariableNotBoundException;
@@ -84,7 +90,7 @@ public class TriplesMapToSparqlMapping {
     // XXX Tried to rename to getExpandedVarExprList
     // However this method is referenced by sparqlify - so for now we need to keep the name for legacy reasons
     public VarExprList getVarToExpr() {
-        return getVarToExpr(true);
+        return getVarToExpr(true, true);
     }
 
     /**
@@ -93,16 +99,41 @@ public class TriplesMapToSparqlMapping {
      *
      * If there were common sub-expressions then they will be evaluated repeatedly.
      *
-     * @param includeIdentities Whether to include entries such as (?x, ?x).
-     *   If false then it is returned as (?x, null)
+     * @param includeIdentities
+     *               Whether to include entries such as (?x, ?x).
+     *               If false then it is returned as (?x, null)
+     * @param legacy Changes the semantics as follows
+     *               (1) strdt to cast: strdt(X, Y) becomes Y(X)
+     *               (2) no str: str(X) becomes X
      * @return
      */
-    public VarExprList getVarToExpr(boolean includeIdentities) {
+    public VarExprList getVarToExpr(boolean includeIdentities, boolean legacy) {
         VarExprList result = new VarExprList();
         for (Expr root : exprDag.getRoots()) {
             if (root.isVariable()) {
                 Var var = root.asVar();
                 Expr expansion = GenericDag.expand(exprDag, root);
+
+                if (legacy) {
+                    expansion = ExprUtils.replace(expansion, e -> {
+                        Expr r = e;
+                        E_Str str = ObjectUtils.castAsOrNull(E_Str.class, e);
+                        E_StrDatatype strdt = null; //ObjectUtils.castAsOrNull(E_StrDatatype.class, e);
+                        if (str != null) {
+                            r = str.getArg();
+                        } else if (strdt != null && strdt.getArg2().isConstant()) {
+                            r = new E_Function(strdt.getArg2().getConstant().asNode().getURI(), new ExprList(strdt.getArg1()));
+                        }
+//                        E_StrConcat concat = ObjectUtils.castAsOrNull(E_StrConcat.class, e);
+//                        else if (concat != null) {
+//                            List<Expr> newArgs = concat.getArgs().stream()
+//                                    .map(arg -> arg instanceof E_Str ? ((E_Str)arg).getArg() : arg)
+//                                    .collect(Collectors.toList());
+//                            r = new E_StrConcat(new ExprList(newArgs));
+//                        }
+                        return r;
+                    });
+                }
 
                 if (expansion.isVariable() && var.equals(expansion.asVar()) && !includeIdentities) {
                     result.add(var);
@@ -156,7 +187,7 @@ public class TriplesMapToSparqlMapping {
 
     public Binding evalVars(Binding binding, FunctionEnv env, boolean strictIriValidation) {
         // TODO Update the code to evaluate on the dag
-        VarExprList vel = getVarToExpr();
+        VarExprList vel = getVarToExpr(true, false);
         return evalVars(vel, binding, env, strictIriValidation);
     }
 
@@ -304,6 +335,14 @@ public class TriplesMapToSparqlMapping {
         return getAsQuery(false);
     }
 
+    /**
+     * Express this mapping as a tarql-like query. Does not include joins.
+     *
+     * @param safeVars If true then the result is tarql compatible.
+     * Characters that are illegal in SPARQL variable names are replaced with underscore.
+     *
+     * @return
+     */
     public Query getAsQuery(boolean safeVars) {
         Query result = new Query();
         result.setQueryConstructType();
@@ -311,7 +350,7 @@ public class TriplesMapToSparqlMapping {
 
         ElementGroup elt = new ElementGroup();
 
-        VarExprList varToExpr = getVarToExpr();
+        VarExprList varToExpr = getVarToExpr(false, false);
 
         // for (Entry<Var, Expr> e : varToExpr.entrySet()) {
         varToExpr.forEachVarExpr((v, e) ->  {
