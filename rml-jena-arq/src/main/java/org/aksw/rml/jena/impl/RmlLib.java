@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.collections.SetUtils;
@@ -48,7 +49,6 @@ import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.function.library.e;
 import org.apache.jena.sparql.graph.NodeTransformLib;
 import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Element;
@@ -163,31 +163,35 @@ public class RmlLib {
         }
 
         @Override
-        public void visit(ElementGroup el) {
-            if (isRmlServiceGroup(el)) {
-                ++counter;
-            }
-            super.visit(el);
+        public void visit(ElementSubQuery el) {
+            ElementWalker.walk(el.getQuery().getQueryPattern(), this);
         }
-
 //        @Override
-//        public void visit(ElementService el) {
-//            if (isRmlServiceNode(el.getServiceNode())) {
+//        public void visit(ElementGroup el) {
+//            if (isRmlServiceGroup(el)) {
 //                ++counter;
 //            }
 //            super.visit(el);
 //        }
+
+        @Override
+        public void visit(ElementService el) {
+            if (isRmlServiceNode(el.getServiceNode())) {
+                ++counter;
+            }
+            super.visit(el);
+        }
     }
 
-    public static boolean isRmlServiceGroup(Element elt) {
-        boolean result = false;
-        ElementGroup grp = ObjectUtils.castAsOrNull(ElementGroup.class, elt);
-        if (grp != null && !grp.isEmpty()) {
-            ElementService svc = ObjectUtils.castAsOrNull(ElementService.class, grp.getElements().get(0));
-            result = svc != null && isRmlServiceNode(svc.getServiceNode());
-        }
-        return result;
-    }
+//    public static boolean isRmlServiceGroup(Element elt) {
+//        boolean result = false;
+//        ElementGroup grp = ObjectUtils.castAsOrNull(ElementGroup.class, elt);
+//        if (grp != null && !grp.isEmpty()) {
+//            ElementService svc = ObjectUtils.castAsOrNull(ElementService.class, grp.getElements().get(0));
+//            result = svc != null && isRmlServiceNode(svc.getServiceNode());
+//        }
+//        return result;
+//    }
 
     public static boolean isRmlServiceNode(Node node) {
         boolean result = node != null && node.isURI() && SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
@@ -208,34 +212,41 @@ public class RmlLib {
      * SELECT * { SERVICE <rml.source> { } } becomes SELECT * { { SELECT * { SERVICE <rml.source> { } } LIMIT LONG.MAX_VALUE } }
      **/
     public static void wrapServiceWithSubQueryInPlace(Query query) {
-        Element elt = query.getQueryPattern();
+        Element queryPattern = query.getQueryPattern();
 
-        RmlServiceGroupCounter counter = new RmlServiceGroupCounter();
-        ElementWalker.walk(elt, counter);
-        int count = counter.getCounter();
-        if (count> 1) {
-            Element newElt = ElementTransformer.transform(query.getQueryPattern(), new ElementTransformCopyBase() {
-                @Override
-                public Element transform(ElementGroup el, java.util.List<Element> elts) {
-                    Element result;
-                    if (isRmlServiceGroup(el)) {
-                        ElementGroup tmp = new ElementGroup();
-                        elts.forEach(tmp::addElement);
-                        result = new ElementSubQuery(wrapAsQuery(tmp));
-                    } else {
-                        result = super.transform(el, elts);
+        if (queryPattern instanceof ElementGroup) {
+            ElementGroup grp = (ElementGroup)queryPattern;
+            List<Element> elts = grp.getElements();
+            List<Integer> rmlServiceEltIdxs = IntStream.range(0, elts.size()).mapToObj(i -> {
+                Element elt = elts.get(i);
+                RmlServiceGroupCounter counter = new RmlServiceGroupCounter();
+                ElementWalker.walk(elt, counter);
+                int count = counter.getCounter();
+                return count > 0 ? i : -1;
+            })
+            .filter(x -> x >= 0)
+            .collect(Collectors.toList());
+
+            if (rmlServiceEltIdxs.size() > 1) {
+                for (int eltIdx : rmlServiceEltIdxs) {
+                    Element oldElt = elts.get(eltIdx);
+                    Query subQuery = null;
+
+                    if (oldElt instanceof ElementSubQuery) {
+                        subQuery = ((ElementSubQuery)oldElt).getQuery();
+                        if (!subQuery.hasLimit()) {
+                            subQuery.setLimit(Long.MAX_VALUE);
+                        }
                     }
-                    return result;
-                };
-            });
-            query.setQueryPattern(newElt);
-//                @Override
-//                public Element transform(ElementService el, Node service, Element elt1) {
-//                    Element result = isRmlServiceNode(service)
-//                            ? new ElementSubQuery(wrapAsQuery(new ElementService(service, elt1, el.getSilent())))
-//                            : super.transform(el, service, elt1);
-//                    return result;
-//                }
+
+                    if (subQuery == null) {
+                        subQuery = wrapAsQuery(oldElt);
+                    }
+
+                    Element newElt = new ElementSubQuery(subQuery);
+                    elts.set(eltIdx, newElt);
+                }
+            }
         }
     }
 

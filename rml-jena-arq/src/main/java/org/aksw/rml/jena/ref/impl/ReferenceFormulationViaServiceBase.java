@@ -1,7 +1,9 @@
-package org.aksw.rml.jena.impl;
+package org.aksw.rml.jena.ref.impl;
+
 
 import org.aksw.fno.model.Fno;
-import org.aksw.jenax.arq.util.var.VarUtils;
+import org.aksw.rml.jena.impl.ReferenceFormulation;
+import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -9,15 +11,11 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 
-/**
- *
- */
-public class ReferenceFormulationTarql
+public abstract class ReferenceFormulationViaServiceBase
     implements ReferenceFormulation
 {
     @Override
@@ -40,8 +38,5 @@ public class ReferenceFormulationTarql
     }
 
     @Override
-    public Expr reference(Var itemVar, String expr) {
-        Var var = VarUtils.safeVar(expr);
-        return new ExprVar(var);
-    }
+    public abstract Expr reference(Var itemVar, String expr);
 }

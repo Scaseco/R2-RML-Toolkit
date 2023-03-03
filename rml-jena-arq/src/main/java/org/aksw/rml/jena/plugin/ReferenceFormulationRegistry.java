@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.aksw.rml.jena.impl.ReferenceFormulation;
-import org.aksw.rml.jena.impl.ReferenceFormulationCsvViaService;
-import org.aksw.rml.jena.impl.ReferenceFormulationJson;
+import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonViaService;
+import org.aksw.rml.jena.ref.impl.ReferenceFormulationXmlViaService;
 import org.aksw.rml.model.QlTerms;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.SystemARQ;
@@ -36,9 +36,10 @@ public class ReferenceFormulationRegistry {
     }
 
     public static void registryDefaults(ReferenceFormulationRegistry registry) {
-        registry.put(QlTerms.CSV, new ReferenceFormulationCsvViaService());
-        registry.put(QlTerms.JSONPath, new ReferenceFormulationJson());
-        // registry.put(QlTerms.XPath, new ReferenceFormulatio());
+        // Json works also for CSV because CSV rows are represented as JSON rows
+        registry.put(QlTerms.CSV, new ReferenceFormulationJsonViaService());
+        registry.put(QlTerms.JSONPath, new ReferenceFormulationJsonViaService());
+        registry.put(QlTerms.XPath, new ReferenceFormulationXmlViaService());
     }
 
 //    public static ReferenceFormulationRegistry getOrDefault(Context cxt) {

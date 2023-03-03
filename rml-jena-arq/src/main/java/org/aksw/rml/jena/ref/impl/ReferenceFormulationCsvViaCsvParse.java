@@ -1,8 +1,9 @@
-package org.aksw.rml.jena.impl;
+package org.aksw.rml.jena.ref.impl;
 
 import java.util.Arrays;
 
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
+import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

@@ -7,9 +7,9 @@ import java.util.concurrent.Callable;
 
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.rml.jena.impl.ReferenceFormulationTarql;
 import org.aksw.rml.jena.impl.RmlImporter;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.ref.impl.ReferenceFormulationTarql;
 import org.aksw.rml.model.QlTerms;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
