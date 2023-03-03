@@ -25,6 +25,7 @@
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
 		<module>rml-jena-arq</module>
+		<module>rml-picocli-cmds</module>
 		<module>rml-cli</module>
 		<module>rml-pkg-parent</module>
 	</modules>
@@ -141,6 +142,11 @@
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>rml-jena-arq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-picocli-cmds</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

@@ -8,16 +8,16 @@
 		<artifactId>r2rml-api-parent</artifactId>
 		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
-	<artifactId>rml-cli</artifactId>
+	<artifactId>rml-picocli-cmds</artifactId>
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-picocli</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
-			<artifactId>rml-picocli-cmds</artifactId>
+			<artifactId>rml-jena-arq</artifactId>
 		</dependency>
 	</dependencies>
 </project>

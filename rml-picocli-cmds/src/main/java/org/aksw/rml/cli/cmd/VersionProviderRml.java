@@ -1,4 +1,4 @@
-package org.aksw.rml.cli.main;
+package org.aksw.rml.cli.cmd;
 
 import java.util.Arrays;
 import java.util.Collection;
