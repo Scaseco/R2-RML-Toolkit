@@ -2,6 +2,7 @@ package org.aksw.rml.jena.ref.impl;
 
 import java.util.Arrays;
 
+import org.aksw.jena_sparql_api.sparql.ext.xml.SparqlExtXmlTerms;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
@@ -15,7 +16,9 @@ public class ReferenceFormulationXmlViaService
 {
     @Override
     public Expr reference(Var itemVar, String expr) {
-        String jsonPath = "http://jsa.aksw.org/fn/xml/path";
-        return new E_Function(jsonPath, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
+        Expr result = new E_Function(SparqlExtXmlTerms.text, new ExprList(
+                new E_Function(SparqlExtXmlTerms.path, ExprList.create(Arrays.asList(
+                        new ExprVar(itemVar), NodeValue.makeString(expr))))));
+        return result;
     }
 }
