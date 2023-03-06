@@ -1,4 +1,4 @@
-## A Jena-based R2RML API
+## A Jena-based (R2)RML API
 
 A modular R2RML suite built on Apache Jena. Featuring a complete domain API built on Jena's polymorphism system, SHACL validation, an R2RML processor with 100% standard conformance based an Jena's ARQ plus common tooling every R2RML project needs. 
 
