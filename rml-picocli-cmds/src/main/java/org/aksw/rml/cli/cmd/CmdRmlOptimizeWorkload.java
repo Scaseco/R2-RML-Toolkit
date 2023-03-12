@@ -56,8 +56,12 @@ public class CmdRmlOptimizeWorkload
     @Option(names = { "--no-order" }, description = "Do not sort the result", defaultValue = "false")
     public boolean noOrder = false;
 
+    @Option(names = { "--no-group" }, description = "Do not group queries that have the same source", defaultValue = "false")
+    public boolean noGroup = false;
 
-    /** Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first */
+
+
+    /** TODO This method fits better in the to-sparql command */
     @Option(names = { "--pre-distinct" }, description = "Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first", defaultValue = "false")
     public boolean preDistinct = false;
 
@@ -72,7 +76,7 @@ public class CmdRmlOptimizeWorkload
         List<Query> queries = stmts.stream().map(SparqlStmt::getQuery).collect(Collectors.toList());
 
         Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
-        Quad sortVars = Quad.create(quadVars.getSubject(), quadVars.getPredicate(), quadVars.getObject(), quadVars.getGraph());
+        Quad sortVars = noOrder ? null : Quad.create(quadVars.getSubject(), quadVars.getPredicate(), quadVars.getObject(), quadVars.getGraph());
 
         if (!clusterByPredicate) {
             // TODO Clustering has yet to be handled
@@ -97,12 +101,18 @@ public class CmdRmlOptimizeWorkload
                 List<Integer> queryIdxs = node.streamAllValuesPreOrder().collect(Collectors.toList());
                 List<Query> qs = queryIdxs.stream().map(queries::get).collect(Collectors.toList());
 
+                if (!noGroup) {
+                    RmlLib.optimizeRmlWorkloadInPlace(qs);
+                }
+
                 Query clusterQuery = mergeConstructQueriesIntoUnion(quadVars, qs, sortVars, preDistinct);
                 newQueries.add(clusterQuery);
             }
 
-            Query finalQuery = finalizeQuery(quadVars, newQueries, null);
-            queries = List.of(finalQuery);
+
+            // Query finalQuery = finalizeQuery(quadVars, newQueries, null);
+            // queries = List.of(finalQuery);
+            queries = newQueries.stream().map(q -> finalizeQuery(quadVars, List.of(q), null)).collect(Collectors.toList());
 
 //            System.out.println(tree);
 //
@@ -125,7 +135,7 @@ public class CmdRmlOptimizeWorkload
 
                 Clusters<Quad, Query> clusters = RmlLib.groupConstructQueriesByTemplate(queries);
                 List<Query> newQueries = combine(quadVars, clusters, preDistinct);
-                Query finalQuery = finalizeQuery(quadVars, newQueries, noOrder ? null : sortVars);
+                Query finalQuery = finalizeQuery(quadVars, newQueries, sortVars);
 
                 queries = Collections.singletonList(finalQuery);
             }

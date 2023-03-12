@@ -58,7 +58,7 @@ public class TestFno {
         System.out.println(RmlQueryGenerator.createQuery(mapping, null));
 
         for (JoinDeclaration join : mapping.getJoins()) {
-            System.out.println(RmlQueryGenerator.createQuery(join, null));
+            System.out.println(RmlQueryGenerator.createQuery(join, false, null));
         }
     }
 }

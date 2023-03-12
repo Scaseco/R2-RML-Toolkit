@@ -12,7 +12,9 @@ import org.apache.jena.sparql.SystemARQ;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.Symbol;
 
-public class ReferenceFormulationRegistry {
+public class ReferenceFormulationRegistry
+    implements ReferenceFormulationService
+{
     public static final Symbol symRegistry = SystemARQ.allocSymbol("referenceFormulationRegistry");
 
     public static void set(Context cxt, ReferenceFormulationRegistry registry) {
@@ -53,16 +55,9 @@ public class ReferenceFormulationRegistry {
         registry.put(key, ref);
     }
 
+    @Override
     public ReferenceFormulation get(String iri) {
         return registry.get(iri);
-    }
-
-    public ReferenceFormulation getOrThrow(String iri) {
-        ReferenceFormulation result = get(iri);
-        if (result == null) {
-            throw new IllegalArgumentException("No reference formulation found for " + iri);
-        }
-        return result;
     }
 
     public Map<String, ReferenceFormulation> getMap() {

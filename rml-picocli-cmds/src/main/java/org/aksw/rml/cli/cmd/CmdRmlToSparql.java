@@ -14,9 +14,14 @@ import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
+import org.aksw.rml.jena.impl.ReferenceFormulation;
+import org.aksw.rml.jena.impl.ReferenceFormulationWrapper;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
+import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
+import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
@@ -29,6 +34,9 @@ import org.apache.jena.riot.system.EltStreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.graph.GraphFactory;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementService;
+import org.apache.jena.sparql.syntax.ElementSubQuery;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -49,8 +57,14 @@ public class CmdRmlToSparql
     @Option(names = { "--no-optimize" }, description = "Disables merging of queries originating from multiple triples maps", defaultValue = "false")
     public boolean noOptimize = false;
 
+    @Option(names = { "--cache" }, description = "Add cache operators around all sources", defaultValue = "false")
+    public boolean cache = false;
+
     @Option(names = { "--distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
     public boolean distinct = false;
+
+    @Option(names = { "--pre-distinct" }, description = "Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first", defaultValue = "false")
+    public boolean preDistinct = false;
 
     @Option(names = { "--tm" }, description = "Only convert specific triple maps")
     public List<String> triplesMapIds = new ArrayList<>();
@@ -61,6 +75,29 @@ public class CmdRmlToSparql
 
     @Override
     public Integer call() throws Exception {
+        ReferenceFormulationService registry = ReferenceFormulationRegistry.get();
+
+        if (cache) {
+            // XXX We may eventually want to add a generic SPARQL transformer to inject cache operations
+            ReferenceFormulationService tmp = registry;
+            registry = iri -> {
+                ReferenceFormulation rf = tmp.getOrThrow(iri);
+                return new ReferenceFormulationWrapper(rf) {
+                    @Override
+                    public Element source(LogicalSource source, Var sourceVar) {
+                        Element baseElt = delegate.source(source, sourceVar);
+                        Query q = new Query();
+                        q.setQuerySelectType();
+                        q.getProject().add(sourceVar);
+                        q.setQueryPattern(baseElt);
+                        Element r = new ElementService("cache:", new ElementSubQuery(q));
+                        return r;
+                    }
+                };
+            };
+        }
+
+
         Model fnmlModel = ModelFactory.createDefaultModel();
         for (String fnmlFile : fnmlFiles) {
             Model model = RDFDataMgr.loadModel(fnmlFile);
@@ -95,9 +132,9 @@ public class CmdRmlToSparql
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 List<Query> queries;
                 if (canonical) {
-                    queries = RmlQueryGenerator.createCanonicalQueries(item, null);
+                    queries = RmlQueryGenerator.createCanonicalQueries(item, registry);
                 } else {
-                    queries = List.of(RmlQueryGenerator.createQuery(item, null));
+                    queries = List.of(RmlQueryGenerator.createQuery(item, registry));
                 }
 
                 // Query query = RmlQueryGenerator.createQuery(item, null);
@@ -114,7 +151,7 @@ public class CmdRmlToSparql
                     }
                 }
                 for (JoinDeclaration join : item.getJoins()) {
-                    Query joinQuery = RmlQueryGenerator.createQuery(join, null);
+                    Query joinQuery = RmlQueryGenerator.createQuery(join, preDistinct, registry);
                     QueryUtils.optimizePrefixes(joinQuery);
                     labeledQueries.add(Map.entry(joinQuery, "# " + (globalQueryId++) + ": " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode())));
                 }
@@ -137,6 +174,8 @@ public class CmdRmlToSparql
         } else {
             // Without optimization we can output a comment about the origin of a query
             for (Entry<Query, String> entry : labeledQueries) {
+                RmlLib.wrapServiceWithSubQueryInPlace(entry.getKey());
+
                 System.out.println(entry.getValue());
                 System.out.println(entry.getKey());
             }

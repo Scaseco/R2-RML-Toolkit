@@ -14,6 +14,7 @@ import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.query.Query;
@@ -35,7 +36,7 @@ import org.apache.jena.sparql.syntax.Template;
 
 public class RmlQueryGenerator {
     /** For every non-joining object map create an individual query */
-    public static List<Query> createCanonicalQueries(TriplesMapToSparqlMapping mapping, ReferenceFormulationRegistry registry) {
+    public static List<Query> createCanonicalQueries(TriplesMapToSparqlMapping mapping, ReferenceFormulationService registry) {
         if (registry == null) {
             registry = ReferenceFormulationRegistry.get();
         }
@@ -64,6 +65,7 @@ public class RmlQueryGenerator {
             Query query = new Query();
             query.setQueryConstructType();
             query.setConstructTemplate(new Template(new QuadAcc(List.of(quad))));
+            // query.setDistinct(preDistinct);
             query.setQueryPattern(elt);
 
             result.add(query);
@@ -83,7 +85,7 @@ public class RmlQueryGenerator {
     }
 
     /** Produces a query from all non-joining elements */
-    public static Query createQuery(TriplesMapToSparqlMapping mapping, ReferenceFormulationRegistry registry) {
+    public static Query createQuery(TriplesMapToSparqlMapping mapping, ReferenceFormulationService registry) {
         if (registry == null) {
             registry = ReferenceFormulationRegistry.get();
         }
@@ -121,13 +123,20 @@ public class RmlQueryGenerator {
         return result;
     }
 
-    public static Query createQuery(JoinDeclaration join, ReferenceFormulationRegistry registry) {
+    /**
+     *
+     * @param join
+     * @param preDistinct Perform a distinct operation on both sides of the join
+     * @param registry
+     * @return
+     */
+    public static Query createQuery(JoinDeclaration join, boolean preDistinct, ReferenceFormulationService registry) {
         if (registry == null) {
             registry = ReferenceFormulationRegistry.get();
         }
 
-        Element childGrp = createJoinGroup(registry, join, join.getChildCxt(), E_Equals::getArg2);
-        Element parentGrp = createJoinGroup(registry, join, join.getParentCxt(), E_Equals::getArg1);
+        Element childGrp = createJoinGroup(registry, join, preDistinct, join.getChildCxt(), E_Equals::getArg2);
+        Element parentGrp = createJoinGroup(registry, join, preDistinct, join.getParentCxt(), E_Equals::getArg1);
 
         ElementGroup elt = new ElementGroup();
         elt.addElement(childGrp);
@@ -141,7 +150,7 @@ public class RmlQueryGenerator {
         return result;
     }
 
-    public static Element createJoinGroup(ReferenceFormulationRegistry registry, JoinDeclaration join, MappingCxt cxt, Function<E_Equals, Expr> getConditions) {
+    public static Element createJoinGroup(ReferenceFormulationService registry, JoinDeclaration join, boolean preDistinct, MappingCxt cxt, Function<E_Equals, Expr> getConditions) {
         LogicalSource source = cxt.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
         String rfIri = source.getReferenceFormulationIri();
         ReferenceFormulation rf = registry.getOrThrow(rfIri);
@@ -182,6 +191,10 @@ public class RmlQueryGenerator {
         query.addProjectVars(joinVars);
         query.getProject().add(subjectVar);
         query.setQueryPattern(pattern);
+
+        if (preDistinct) {
+            query.setDistinct(true);
+        }
 
         return new ElementSubQuery(query);
     }

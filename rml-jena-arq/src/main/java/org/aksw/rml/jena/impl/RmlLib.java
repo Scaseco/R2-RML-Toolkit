@@ -36,6 +36,7 @@ import org.aksw.rml.model.Rml;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -60,8 +61,6 @@ import org.apache.jena.sparql.syntax.ElementVisitorBase;
 import org.apache.jena.sparql.syntax.ElementWalker;
 import org.apache.jena.sparql.syntax.PatternVars;
 import org.apache.jena.sparql.syntax.Template;
-import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformCopyBase;
-import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformer;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -178,6 +177,8 @@ public class RmlLib {
         public void visit(ElementService el) {
             if (isRmlServiceNode(el.getServiceNode())) {
                 ++counter;
+            } else if (NodeFactory.createURI("cache:").equals(el.getServiceNode())) {
+                ElementWalker.walk(el.getElement(), this);
             }
             super.visit(el);
         }
@@ -209,7 +210,9 @@ public class RmlLib {
 
     /**
      * Add a sub-query to enforce a hash join
-     * SELECT * { SERVICE <rml.source> { } } becomes SELECT * { { SELECT * { SERVICE <rml.source> { } } LIMIT LONG.MAX_VALUE } }
+     * SELECT * { SERVICE <rml.source> { } }
+     * becomes
+     * SELECT * { { SELECT * { SERVICE <rml.source> { } } LIMIT LONG.MAX_VALUE } }
      **/
     public static void wrapServiceWithSubQueryInPlace(Query query) {
         Element queryPattern = query.getQueryPattern();
