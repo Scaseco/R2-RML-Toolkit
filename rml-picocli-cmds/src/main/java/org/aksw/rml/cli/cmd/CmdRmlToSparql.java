@@ -14,7 +14,6 @@ import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
@@ -44,6 +43,9 @@ public class CmdRmlToSparql
     @Option(names = { "--fnml" }, description = "Function Mapping Language models")
     public List<String> fnmlFiles = new ArrayList<>();
 
+    @Option(names = { "--canonical" }, description = "Have each generated query produce only one tuple pattern", defaultValue = "false")
+    public boolean canonical = false;
+
     @Option(names = { "--no-optimize" }, description = "Disables merging of queries originating from multiple triples maps", defaultValue = "false")
     public boolean noOptimize = false;
 
@@ -65,6 +67,7 @@ public class CmdRmlToSparql
             fnmlModel.add(model);
         }
 
+        int globalQueryId = 0;
         List<Entry<Query, String>> labeledQueries = new ArrayList<>();
         for (String inputFile : inputFiles) {
 
@@ -90,21 +93,30 @@ public class CmdRmlToSparql
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
-                Query query = RmlQueryGenerator.createQuery(item, null);
-                if (base != null) {
-                    query.setBaseURI(base);
+                List<Query> queries;
+                if (canonical) {
+                    queries = RmlQueryGenerator.createCanonicalQueries(item, null);
+                } else {
+                    queries = List.of(RmlQueryGenerator.createQuery(item, null));
                 }
 
-                // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)
-                if (!query.getConstructTemplate().getQuads().isEmpty()) {
-                    QueryUtils.optimizePrefixes(query);
-                    labeledQueries.add(Map.entry(query, "# " + tmId));
-                }
+                // Query query = RmlQueryGenerator.createQuery(item, null);
+                int queryIdInTriplesMap = 1;
+                for (Query query : queries) {
+                    if (base != null) {
+                        query.setBaseURI(base);
+                    }
 
+                    // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)
+                    if (!query.getConstructTemplate().getQuads().isEmpty()) {
+                        QueryUtils.optimizePrefixes(query);
+                        labeledQueries.add(Map.entry(query, "# " + (globalQueryId++) + ": " + tmId + " (" + (queryIdInTriplesMap++) + "/" + queries.size() + ")"));
+                    }
+                }
                 for (JoinDeclaration join : item.getJoins()) {
                     Query joinQuery = RmlQueryGenerator.createQuery(join, null);
                     QueryUtils.optimizePrefixes(joinQuery);
-                    labeledQueries.add(Map.entry(joinQuery, "# " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode())));
+                    labeledQueries.add(Map.entry(joinQuery, "# " + (globalQueryId++) + ": " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode())));
                 }
             }
         }
