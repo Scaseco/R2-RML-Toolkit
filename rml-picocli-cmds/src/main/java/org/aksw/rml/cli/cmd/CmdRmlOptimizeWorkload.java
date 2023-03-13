@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.algebra.allen.AllenRelations;
 import org.aksw.commons.util.range.Cmp;
 import org.aksw.commons.util.range.RangeTreeNode;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
@@ -23,7 +24,6 @@ import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.UnsortedUtils;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.atlas.lib.tuple.Tuple4;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.sparql.core.Quad;
@@ -66,6 +66,53 @@ public class CmdRmlOptimizeWorkload
     public boolean preDistinct = false;
 
 
+    /** Returns 0 when ranges overlap */
+    public static <T extends Comparable<T>> int compareRanges(Range<T> x, Range<T> y) {
+        int result = AllenRelations.isBefore(x, y)
+                ? -1
+                : AllenRelations.isAfter(x, y)
+                    ? 1
+                    : 0;
+        return result;
+    }
+
+
+
+
+    public static <K extends Comparable<K>, V> List<List<Entry<Tuple<Range<K>>, V>>> clusterRangeTuplesByComponent(List<Entry<Tuple<Range<K>>, V>> items, int[] order) {
+        List<List<Entry<Tuple<Range<K>>, V>>> clusters = List.of(items);
+        for (int i = 0; i < order.length; ++i) {
+            int componentIdx = order[i];
+            List<List<Entry<Tuple<Range<K>>, V>>> nextClusters = new ArrayList<>();
+            for (Collection<Entry<Tuple<Range<K>>, V>> cluster : clusters) {
+                List<List<Entry<Tuple<Range<K>>, V>>> contrib = clusterRangeTuplesByComponent(cluster, componentIdx);
+                nextClusters.addAll(contrib);
+            }
+            clusters = nextClusters;
+        }
+        return clusters;
+    }
+
+
+
+    public static <K extends Comparable<K>, V> List<List<Entry<Tuple<Range<K>>, V>>> clusterRangeTuplesByComponent(Collection<Entry<Tuple<Range<K>>, V>> items, int componentIdx) {
+        RangeTreeNode<K, Entry<Tuple<Range<K>>, V>> tree = RangeTreeNode.newRoot();
+        for (Entry<Tuple<Range<K>>, V> item : items) {
+            Tuple<Range<K>> tuple = item.getKey();
+            Range<K> range = tuple.get(componentIdx);
+            tree.put(range, item);
+        }
+
+        // Each child of the root forms a cluster
+        List<List<Entry<Tuple<Range<K>>, V>>> clusters = new ArrayList<>(tree.getChildNodes().size());
+        for (RangeTreeNode<K, Entry<Tuple<Range<K>>, V>> node : tree.getChildNodes()) {
+            List<Entry<Tuple<Range<K>>, V>> cluster = node.streamAllValuesPreOrder().collect(Collectors.toList());
+            clusters.add(cluster);
+        }
+        return clusters;
+    }
+
+
     @Override
     public Integer call() throws Exception {
         SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(null, null);
@@ -82,38 +129,64 @@ public class CmdRmlOptimizeWorkload
             // TODO Clustering has yet to be handled
             // Convert to construct to lateral union
 
-            // Tuple4<Var> quadVars =
+            if (noOrder) {
+                int order[] = {1, 2, 3, 0};
 
-            RangeTreeNode<Cmp<Entry<?, Cmp<ComparableNodeValue>>>, Integer> tree = RangeTreeNode.newRoot();
-            int i = 0;
-            for (Query query : queries) {
-                Map<Quad, Tuple<VSpace>> cquads = UnsortedUtils.analyzeQuads(query);
-                for(Tuple<VSpace> t : cquads.values()) {
-                    Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>> range = VSpaceImpl.span(t.get(1));
-                    tree.put(range, i);
+//                // Note: the multimap actually violates the collection contract
+                List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>> init = new ArrayList<>();
+                int i = 0;
+                for (Query query : queries) {
+                    indexQuery(init, i, query);
+                    ++i;
                 }
-                ++i;
-            }
+                List<List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>>> clusters = clusterRangeTuplesByComponent(init, order);
 
-            // Each child of the root forms a cluster
-            List<Query> newQueries = new ArrayList<>(tree.getChildNodes().size());
-            for (RangeTreeNode<Cmp<Entry<?, Cmp<ComparableNodeValue>>>, Integer> node : tree.getChildNodes()) {
-                List<Integer> queryIdxs = node.streamAllValuesPreOrder().collect(Collectors.toList());
-                List<Query> qs = queryIdxs.stream().map(queries::get).collect(Collectors.toList());
+                List<Query> newQueries = new ArrayList<>(clusters.size());
+                for (List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>> cluster : clusters) {
+                    Collection<Integer> queryIdxs = cluster.stream().map(Entry::getValue).collect(Collectors.toList());
+                    List<Query> qs = queryIdxs.stream().map(queries::get).collect(Collectors.toList());
 
-                if (!noGroup) {
-                    RmlLib.optimizeRmlWorkloadInPlace(qs);
+                    if (!noGroup) {
+                        RmlLib.optimizeRmlWorkloadInPlace(qs);
+                    }
+
+                    Query clusterQuery = mergeConstructQueriesIntoUnion(quadVars, qs, sortVars, preDistinct);
+                    newQueries.add(clusterQuery);
                 }
 
-                Query clusterQuery = mergeConstructQueriesIntoUnion(quadVars, qs, sortVars, preDistinct);
-                newQueries.add(clusterQuery);
+                queries = newQueries.stream().map(q -> finalizeQuery(quadVars, List.of(q), null)).collect(Collectors.toList());
+            } else {
+
+                RangeTreeNode<Cmp<Entry<?, Cmp<ComparableNodeValue>>>, Integer> tree = RangeTreeNode.newRoot();
+                int i = 0;
+                for (Query query : queries) {
+                    Map<Quad, Tuple<VSpace>> cquads = UnsortedUtils.analyzeQuads(query);
+                    for(Tuple<VSpace> t : cquads.values()) {
+                        Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>> range = VSpaceImpl.span(t.get(1));
+                        tree.put(range, i);
+                    }
+                    ++i;
+                }
+
+                // Each child of the root forms a cluster
+                List<Query> newQueries = new ArrayList<>(tree.getChildNodes().size());
+                for (RangeTreeNode<Cmp<Entry<?, Cmp<ComparableNodeValue>>>, Integer> node : tree.getChildNodes()) {
+                    List<Integer> queryIdxs = node.streamAllValuesPreOrder().collect(Collectors.toList());
+                    List<Query> qs = queryIdxs.stream().map(queries::get).collect(Collectors.toList());
+
+                    if (!noGroup) {
+                        RmlLib.optimizeRmlWorkloadInPlace(qs);
+                    }
+
+                    Query clusterQuery = mergeConstructQueriesIntoUnion(quadVars, qs, sortVars, preDistinct);
+                    newQueries.add(clusterQuery);
+                }
+
+
+                // Query finalQuery = finalizeQuery(quadVars, newQueries, null);
+                // queries = List.of(finalQuery);
+                queries = newQueries.stream().map(q -> finalizeQuery(quadVars, List.of(q), null)).collect(Collectors.toList());
             }
-
-
-            // Query finalQuery = finalizeQuery(quadVars, newQueries, null);
-            // queries = List.of(finalQuery);
-            queries = newQueries.stream().map(q -> finalizeQuery(quadVars, List.of(q), null)).collect(Collectors.toList());
-
 //            System.out.println(tree);
 //
 //            System.out.println(finalQuery);
@@ -145,6 +218,19 @@ public class CmdRmlOptimizeWorkload
             System.out.println(query);
         }
         return 0;
+    }
+
+
+
+    /** This method exists to ease debugging by allowing for "drop to frame" */
+    private void indexQuery(List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>> init, int i,
+            Query query) {
+        Map<Quad, Tuple<VSpace>> cquads = UnsortedUtils.analyzeQuads(query);
+        for(Tuple<VSpace> t : cquads.values()) {
+            Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>> rt = t.map(VSpaceImpl::span);
+            // clusters.put(rt, i);
+            init.add(Map.entry(rt, i));
+        }
     }
 
     public static Query finalizeQuery(Quad quadVars, List<Query> newQueries, Quad sortVars) {
