@@ -45,6 +45,11 @@ import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.vocabulary.XSD;
 
 public class TriplesMapProcessorR2rml {
+
+    /** Somewhat custom extension of R2RML which lacks the feature to use a column as a source for language tags.
+     *  This constant is not part of the standard R2RML terms but it is supported by this processor */
+    public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
+
     protected TriplesMap triplesMap;
     protected String baseIri;
 
@@ -119,7 +124,7 @@ public class TriplesMapProcessorR2rml {
 
 //        VarExprList vel = new VarExprList();
 //        childCxt.getExprDag().getVarToExpr().forEach(vel::add);
-        childCxt.getExprDag().collapse();
+        // childCxt.getExprDag().collapse();
 
         Template template = new Template(childCxt.quadAcc);
         TriplesMapToSparqlMapping result = new TriplesMapToSparqlMapping(
@@ -174,9 +179,6 @@ public class TriplesMapProcessorR2rml {
 
         return result;
     }
-
-
-    public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
 
     protected String getLanguageColumn(TermMap tm) {
         return Optional.ofNullable(tm.getProperty(languageColumn)).map(Statement::getString).orElse(null);
@@ -273,7 +275,10 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    /** Override this method for RML termMap and references */
+    /**
+     * Column like term maps include RML references and custom function invocations.
+     * Override this method for RML termMap and references
+     */
     protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
         Expr result = null;
         String colName = tm.getColumn();
@@ -357,7 +362,7 @@ public class TriplesMapProcessorR2rml {
 
         if (!isEliminated) {
             Quad quad = createQuad(g, s, p, o);
-            parentCxt.getExprDag().collapse();
+            // parentCxt.getExprDag().collapse();
             JoinDeclaration join = new JoinDeclaration(parentCxt, null, rom, quad, constraints);
             childCxt.joins.add(join);
         }

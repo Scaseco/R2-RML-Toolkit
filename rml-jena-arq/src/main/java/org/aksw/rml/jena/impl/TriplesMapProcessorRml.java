@@ -69,9 +69,9 @@ public class TriplesMapProcessorRml
         // TODO We need access to (1) the item var and (2) the reference formulation
         // We either need a context object or some form of worker
 
-        // Check for reference
-        RmlTermMap tm2 = tm.as(RmlTermMap.class);
-        String ref = tm2.getReference();
+        // Check for whether we dealing with an RML term reference
+        RmlTermMap rmlTm = tm.as(RmlTermMap.class);
+        String ref = rmlTm.getReference();
         if (ref != null) {
             result = referenceToExpr(cxt, ref);
         } else {

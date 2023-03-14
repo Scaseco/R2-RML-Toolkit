@@ -2,6 +2,8 @@ package org.aksw.rml.jena.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
+import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
@@ -36,7 +39,7 @@ import org.apache.jena.sparql.syntax.Template;
 
 public class RmlQueryGenerator {
     /** For every non-joining object map create an individual query */
-    public static List<Query> createCanonicalQueries(TriplesMapToSparqlMapping mapping, ReferenceFormulationService registry) {
+    public static List<Query> createCanonicalQueries(TriplesMapToSparqlMapping mapping, boolean pushDistinct, ReferenceFormulationService registry) {
         if (registry == null) {
             registry = ReferenceFormulationRegistry.get();
         }
@@ -51,12 +54,69 @@ public class RmlQueryGenerator {
         List<Query> result = new ArrayList<>(quads.size());
         for (Quad quad : quads) {
             ElementGroup elt = new ElementGroup();
-            elt.addElement(childElt);
 
             List<Expr> roots = QuadUtils.streamNodes(quad).map(ExprLib::nodeToExpr).collect(Collectors.toList());
-            Map<Var, Expr> defs = GenericDag.getSortedDependencies(mapping.getExprDag(), roots);
+
+            GenericDag<Expr, Var> baseExprDag = mapping.getExprDag();
+            GenericDag<Expr, Var> exprDag;
+
+            // XXX Push distinct is not optimal for XML because the core definitions typically lead to XML fragments
+            List<Expr> coreDefs;
+
+            // Push distinct sets up a DISTINCT sub-query in such a way that it may be a common expression to all mappings that make use of the same set of core expressions
+            // remaps variables of core definitions, such as ?v1 := json:path(?s0, "$.foo"), to variable names derived from the expression string
+            // So ?v1 becomes something like ?json_path_s0_foo.
+            if (pushDistinct) {
+                Query distinctQuery = new Query();
+                distinctQuery.setQuerySelectType();
+                distinctQuery.setDistinct(true);
+                ElementGroup coreGroup = new ElementGroup();
+                coreGroup.addElement(childElt);
+
+                GenericDag<Expr, Var> subDag = baseExprDag.subDag(roots);
+
+                coreDefs = new ArrayList<>(GenericDag.getCoreDefinitions(subDag, roots));
+
+                // Set up a remapping of the variable names
+                Map<Var, Var> remap = new HashMap<>();
+                for (Expr coreDef : coreDefs) {
+                    Var coreVar = subDag.getVar(coreDef);
+                    String baseName = subDag.getExprOps().toString(coreDef);
+                    Var safeVar = VarUtils.safeVar(baseName);
+                    remap.put(coreVar, safeVar);
+                }
+                exprDag = subDag.applyVarTransform(remap::get);
+
+                // Sort core definitions so they have the same order across multiple queries
+                Collections.sort(coreDefs, (x, y) -> exprDag.getExprOps().toString(x).compareTo(exprDag.getExprOps().toString(y)));
+
+                for (Expr coreDef : coreDefs) {
+                    Var coreVar = exprDag.getVar(coreDef);
+                    // if ( x != null) {
+                        coreGroup.addElement(new ElementBind(coreVar, coreDef));
+                    //}
+                    distinctQuery.getProject().add(coreVar);
+                }
+
+                distinctQuery.setQueryPattern(coreGroup);
+                elt.addElement(new ElementSubQuery(distinctQuery));
+
+                exprDag.getVarToExpr().keySet().removeAll(remap.values());
+                exprDag.collapse();
+            } else {
+                elt.addElement(childElt);
+                exprDag = baseExprDag.subDag(roots);
+                exprDag.collapse();
+                coreDefs = List.of();
+            }
+
+            Map<Var, Expr> defs = GenericDag.getSortedDependencies(exprDag, roots);
             for (Entry<Var, Expr> e : defs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
                 Expr x = e.getValue();
+                if (coreDefs.contains(x)) {
+                    continue;
+                }
+
                 if ( x != null) {
                     elt.addElement(new ElementBind(e.getKey(), x));
                 }
@@ -178,7 +238,10 @@ public class RmlQueryGenerator {
             joinVars.add(jcVar);
         }
 
-        Map<Var, Expr> defs = GenericDag.getSortedDependencies(cxt.getExprDag(), Arrays.asList(subjectEv));
+        GenericDag<Expr, Var> exprDag = cxt.getExprDag().cloneObject();
+        exprDag.collapse();
+
+        Map<Var, Expr> defs = GenericDag.getSortedDependencies(exprDag, Arrays.asList(subjectEv));
         for (Entry<Var, Expr> e : defs.entrySet()) { // join.getChildCxt().getExprDag().getVarToExpr().entrySet()) {
             Expr x = e.getValue();
             if ( x != null) {

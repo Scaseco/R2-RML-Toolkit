@@ -127,12 +127,15 @@ public class CmdRmlToSparql
             // Model model = RDFDataMgr.loadModel(inputFile);
             Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(model, fnmlModel, triplesMapIds, null);
 
+
+            boolean pushDistinct = false;
+
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 List<Query> queries;
                 if (canonical) {
-                    queries = RmlQueryGenerator.createCanonicalQueries(item, registry);
+                    queries = RmlQueryGenerator.createCanonicalQueries(item, pushDistinct, registry);
                 } else {
                     queries = List.of(RmlQueryGenerator.createQuery(item, registry));
                 }
