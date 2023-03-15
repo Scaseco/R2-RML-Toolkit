@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 import org.aksw.commons.algebra.allen.AllenRelations;
 import org.aksw.commons.util.range.Cmp;
 import org.aksw.commons.util.range.RangeTreeNode;
+import org.aksw.jena_sparql_api.algebra.transform.TransformPullExtend;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.arq.util.node.ComparableNodeValue;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.constraint.api.VSpace;
 import org.aksw.jenax.constraint.impl.VSpaceImpl;
 import org.aksw.jenax.stmt.core.SparqlStmt;
@@ -26,6 +28,9 @@ import org.aksw.rml.jena.impl.UnsortedUtils;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.modify.request.QuadAcc;
@@ -155,6 +160,21 @@ public class CmdRmlOptimizeWorkload
                 }
 
                 queries = newQueries.stream().map(q -> finalizeQuery(quadVars, List.of(q), null)).collect(Collectors.toList());
+
+
+                // pull OpExtent up as far as possible - especially over distinct
+                boolean pullExtent = true;
+                if (pullExtent) {
+                    queries = queries.stream().map(q -> {
+                        Op rawOp = Algebra.compile(q);
+                        Op op = TransformPullExtend.transform(rawOp);
+                        Query tmp = OpAsQuery.asQuery(op);
+                        Query r = QueryUtils.restoreQueryForm(tmp, q);
+                        return r;
+                    }).collect(Collectors.toList());
+                }
+
+
             } else {
 
                 RangeTreeNode<Cmp<Entry<?, Cmp<ComparableNodeValue>>>, Integer> tree = RangeTreeNode.newRoot();
