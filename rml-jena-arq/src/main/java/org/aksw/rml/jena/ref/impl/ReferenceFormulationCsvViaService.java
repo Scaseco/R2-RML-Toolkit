@@ -1,5 +1,23 @@
 package org.aksw.rml.jena.ref.impl;
 
+import java.util.Arrays;
+
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.NodeValue;
+
+public class ReferenceFormulationCsvViaService
+    extends ReferenceFormulationJsonViaService {
+    @Override
+    public Expr reference(Var itemVar, String expr) {
+        String jsonGet = "http://jsa.aksw.org/fn/json/get";
+        return new E_Function(jsonGet, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
+    }
+}
+
 //public class ReferenceFormulationCsvViaService
 //    implements ReferenceFormulation
 //{
