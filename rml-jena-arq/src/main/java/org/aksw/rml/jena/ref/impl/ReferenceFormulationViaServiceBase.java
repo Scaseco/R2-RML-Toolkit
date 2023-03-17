@@ -1,7 +1,6 @@
 package org.aksw.rml.jena.ref.impl;
 
 
-import org.aksw.fno.model.Fno;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
@@ -32,7 +31,7 @@ public abstract class ReferenceFormulationViaServiceBase
             .mapWith(t -> Triple.create(s, t.getPredicate(), t.getObject()))
             .forEach(bgp::add);
         // GraphUtil.findAll(logicalSource.getModel().getGraph()).forEach(bgp::add);
-        bgp.add(Triple.create(s, Fno.returns.asNode(), sourceVar));
+        bgp.add(Triple.create(s, NodeFactory.createURI(SparqlX_Rml_Terms.output), sourceVar));
         ElementService result = new ElementService(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
         return result;
     }
