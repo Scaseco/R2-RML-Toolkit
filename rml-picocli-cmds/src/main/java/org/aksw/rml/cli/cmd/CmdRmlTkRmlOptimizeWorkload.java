@@ -20,12 +20,14 @@ import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.constraint.api.VSpace;
 import org.aksw.jenax.constraint.impl.VSpaceImpl;
+import org.aksw.jenax.constraint.util.NodeRanges;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.rml.jena.impl.Clusters;
 import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.UnsortedUtils;
 import org.apache.jena.atlas.lib.tuple.Tuple;
+import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.sparql.algebra.Algebra;
@@ -46,7 +48,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "workload", description = "Optimize a workload of sparql queries by merging queries having the same RML source")
-public class CmdRmlOptimizeWorkload
+public class CmdRmlTkRmlOptimizeWorkload
     implements Callable<Integer>
 {
     @Parameters(arity = "1..n", description = "Input RML file(s)")
@@ -243,13 +245,31 @@ public class CmdRmlOptimizeWorkload
 
 
     /** This method exists to ease debugging by allowing for "drop to frame" */
-    private void indexQuery(List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>> init, int i,
+    private void indexQuery(List<Entry<Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>>, Integer>> init, int queryId,
             Query query) {
         Map<Quad, Tuple<VSpace>> cquads = UnsortedUtils.analyzeQuads(query);
-        for(Tuple<VSpace> t : cquads.values()) {
+        Collection<Tuple<VSpace>> vstuples;
+        
+        if (false) {
+        	 vstuples = cquads.values();
+        } else {
+	        // Create a component-wise union of the vspaces
+	        List<VSpace> vspaces = new ArrayList<>(4);
+	        for (int i = 0; i < 4; ++i) {
+	        	VSpace vspace = VSpaceImpl.create(NodeRanges.createClosed());
+		        for(Tuple<VSpace> t : cquads.values()) {
+		        	VSpace contrib = t.get(i);	        	
+		        	vspace.stateUnion(contrib);
+		        }
+		        vspaces.add(vspace);
+	        }
+	        vstuples = List.of(TupleFactory.create(vspaces));
+        }
+        
+        for(Tuple<VSpace> t : vstuples) {
             Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>> rt = t.map(VSpaceImpl::span);
             // clusters.put(rt, i);
-            init.add(Map.entry(rt, i));
+            init.add(Map.entry(rt, queryId));
         }
     }
 

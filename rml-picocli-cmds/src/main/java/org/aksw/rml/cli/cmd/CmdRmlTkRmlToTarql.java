@@ -21,8 +21,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "to-tarql", description = "Convert join-less RML/CSV mappings to Tarql/SPARQL queries")
-public class CmdRmlToTarql
+@Command(name = "tarql", description = "Convert join-less RML/CSV mappings to Tarql/SPARQL queries")
+public class CmdRmlTkRmlToTarql
 //     extends CmdCommonBase
     implements Callable<Integer>
 {

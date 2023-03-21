@@ -3,8 +3,8 @@ package org.aksw.rml.cli.cmd;
 import picocli.CommandLine.Command;
 
 @Command(name="optimize", description = "Optimization tasks", subcommands = {
-        CmdRmlOptimizeWorkload.class
+        CmdRmlTkRmlOptimizeWorkload.class
 })
-public class CmdRmlOptimizeParent {
+public class CmdRmlTkRmlOptimizeParent {
 
 }

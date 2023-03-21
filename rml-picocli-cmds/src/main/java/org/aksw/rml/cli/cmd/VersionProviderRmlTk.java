@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.aksw.commons.picocli.VersionProviderFromClasspathProperties;
 
-public class VersionProviderRml extends VersionProviderFromClasspathProperties
+public class VersionProviderRmlTk extends VersionProviderFromClasspathProperties
 {
     @Override public String getResourceName() { return "rml-jena-arq.properties"; }
     @Override public Collection<String> getStrings(Properties p) { return Arrays.asList(

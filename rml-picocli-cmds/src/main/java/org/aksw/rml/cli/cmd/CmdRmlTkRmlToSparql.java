@@ -43,30 +43,30 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 
-@Command(name = "to-sparql", description = "Convert RML mappings to corresponding SPARQL queries")
-public class CmdRmlToSparql
+@Command(name = "sparql", description = "Convert RML mappings to corresponding SPARQL queries")
+public class CmdRmlTkRmlToSparql
 //     extends CmdCommonBase
     implements Callable<Integer>
 {
     @Option(names = { "--fnml" }, description = "Function Mapping Language models")
     public List<String> fnmlFiles = new ArrayList<>();
 
-    @Option(names = { "--canonical" }, description = "Have each generated query produce only one tuple pattern", defaultValue = "false")
-    public boolean canonical = false;
+    @Option(names = { "--denorm" }, description = "Allow creation of denormalized CONSTRUCT queries. Such queries may have more than one quad in their template.", defaultValue = "false")
+    public boolean denormalize = false;
 
-    @Option(names = { "--no-optimize" }, description = "Disables merging of queries originating from multiple triples maps", defaultValue = "false")
-    public boolean noOptimize = false;
+    @Option(names = { "--merge" }, description = "Merge queries that have the same logical source. Prevents future partitioning and optimization.", defaultValue = "false")
+    public boolean merge = false;
 
     @Option(names = { "--cache" }, description = "Add cache operators around all sources", defaultValue = "false")
     public boolean cache = false;
 
-    @Option(names = { "--distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
+    @Option(names = { "--distinct" }, description = "Experimental. Apply intra-query distinct", defaultValue = "false")
     public boolean distinct = false;
 
-    @Option(names = { "--pre-distinct" }, description = "Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first", defaultValue = "false")
+    @Option(names = { "--pre-distinct" }, description = "Experimental. Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first.", defaultValue = "false")
     public boolean preDistinct = false;
 
-    @Option(names = { "--tm" }, description = "Only convert specific triple maps")
+    @Option(names = { "--tm" }, description = "Only convert specific triple maps whose IRIs match the given as arguments")
     public List<String> triplesMapIds = new ArrayList<>();
 
     @Parameters(arity = "1..n", description = "Input RML file(s)")
@@ -119,6 +119,8 @@ public class CmdRmlToSparql
                         base = elt.iri();
                     } else if (elt.isTriple()) {
                         graph.add(elt.triple());
+                    } else if (elt.isException()) {
+                    	throw new RuntimeException("Failed to process input " + inputFile, elt.exception());
                     }
                 }
             }
@@ -134,10 +136,10 @@ public class CmdRmlToSparql
             for (TriplesMapToSparqlMapping item : maps) {
                 String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
                 List<Query> queries;
-                if (canonical) {
-                    queries = RmlQueryGenerator.createCanonicalQueries(item, pushDistinct, registry);
-                } else {
+                if (denormalize) {
                     queries = List.of(RmlQueryGenerator.createQuery(item, registry));
+                } else {
+                    queries = RmlQueryGenerator.createCanonicalQueries(item, pushDistinct, registry);
                 }
 
                 // Query query = RmlQueryGenerator.createQuery(item, null);
@@ -164,7 +166,7 @@ public class CmdRmlToSparql
         // TODO Ensure the variables aren't mentioned/visible in the query
         Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
-        if (!noOptimize) { // If optimize ...
+        if (merge) { // If merge ...
             List<Query> queries = labeledQueries.stream().map(Entry::getKey).collect(Collectors.toList());
             RmlLib.optimizeRmlWorkloadInPlace(queries);
             for (Query query : queries) {
