@@ -67,6 +67,9 @@ public class CmdRmlTkRmlOptimizeWorkload
     public boolean noGroup = false;
 
 
+    @Option(names = { "--verbose" }, description = "Display additional information such as the partition tree", defaultValue = "false")
+    public boolean verbose = false;
+
 
     /** TODO This method fits better in the to-sparql command */
     @Option(names = { "--pre-distinct" }, description = "Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first", defaultValue = "false")
@@ -188,6 +191,10 @@ public class CmdRmlTkRmlOptimizeWorkload
                         tree.put(range, i);
                     }
                     ++i;
+                }
+                
+                if (verbose) {
+                	System.err.println(tree);
                 }
 
                 // Each child of the root forms a cluster
