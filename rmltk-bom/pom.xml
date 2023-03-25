@@ -3,37 +3,176 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
-                <groupId>org.aksw.r2rml</groupId>
-                <artifactId>rmltk-bom</artifactId>
-                <version>4.8.0-1-SNAPSHOT</version>
-                <relativePath>rmltk-bom</relativePath>
-	</parent>
-
-	<artifactId>rmltk-parent</artifactId>
-        <packaging>pom</packaging>
-
+	<groupId>org.aksw.r2rml</groupId>
+	<artifactId>rmltk-bom</artifactId>
+	<version>4.8.0-1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>RML API - Jena - BOM</name>
+	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
+	<url>https://github.com/SmartDataAnalytics/r2rml-jena</url>
 	<modules>
-		<module>r2rml-resource-ontology</module>
-		<module>r2rml-resource-w3c-testsuite</module>
-		<module>r2rml-resource-shacl</module>
-		<module>r2rml-common-vocab</module>
-		<module>r2rml-jena-vocab</module>
-		<module>r2rml-jena-api</module>
-		<module>r2rml-jena-arq</module>
-		<module>r2rml-jena-processor-jdbc</module>
-		<module>r2rml-jena-testsuite-processor-core</module>
-		<module>r2rml-jena-testsuite-processor-h2</module>
-		<module>r2rml-jena-sql-transforms</module>
-		<module>r2rmlx-jena-api</module>
-		<module>r2rml-jena-plugin</module>
-		<module>rml-jena-arq</module>
-		<module>rml-picocli-cmds</module>
-		<module>rml-cli</module>
-		<module>rml-pkg-parent</module>
+		<module>..</module>
 	</modules>
-
+	<issueManagement>
+		<url>https://github.com/SmartDataAnalytics/RdfProcessingToolkit/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<!-- scm section needs to be duplicated on child module for github-release-plugin; 
+		see https://github.com/jutzig/github-release-plugin/issues/14 -->
+	<scm>
+		<url>https://github.com/SmartDataAnalytics/RdfProcessingToolkit</url>
+		<connection>scm:git:git@github.com:SmartDataAnalytics/RdfProcessingToolkit.git</connection>
+		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/RdfProcessingToolkit.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	<developers>
+		<developer>
+			<name>Claus Stadler</name>
+			<url>http://aksw.org/ClausStadler</url>
+			<organization>AKSW</organization>
+			<organizationUrl>http://aksw.org</organizationUrl>
+		</developer>
+	</developers>
+	<properties>
+		<jena.version>4.8.0-SNAPSHOT</jena.version>
+		<jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
+		<aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<!-- Project Settings -->
+		<maven.compiler.release>11</maven.compiler.release>
+		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
+		<file.encoding>UTF-8</file.encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<gpg.keyname>AKSW</gpg.keyname>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-bom</artifactId>
+				<version>${jenax.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.commons</groupId>
+				<artifactId>aksw-commons-entity-codecs-sql</artifactId>
+				<version>${aksw-commons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-common-vocab</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-resource-w3c-testsuite</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-resource-ontology</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-resource-shacl</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-plugin</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-processor-jdbc</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-testsuite-processor-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-vocab</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-arq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rmlx-jena-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-jena-arq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-picocli-cmds</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>rml-cli</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-core</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-arq</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-shacl</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.12</version>
+			</dependency>
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-core-rdfterm</artifactId> 
+				<version>${jenax.version}</version> </dependency> -->
+			<!-- Using version 3.2 instead of 4.0 for compatibility with ontop -->
+			<dependency>
+				<groupId>com.github.jsqlparser</groupId>
+				<artifactId>jsqlparser</artifactId>
+				<version>4.3</version>
+			</dependency>
+			<!-- <dependency> -->
+			<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
+			<!-- <artifactId>jena-sparql-api-algebra</artifactId> -->
+			<!-- <version>${jenax.version}</version> -->
+			<!-- </dependency> -->
+		</dependencies>
+	</dependencyManagement>
 	<build>
 		<resources>
 			<resource>
@@ -316,4 +455,3 @@
 		</snapshotRepository>
 	</distributionManagement>
 </project>
-
