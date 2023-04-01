@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.aksw.fno.model.FnoTerms;
 import org.aksw.jenax.annotation.reprogen.Iri;
-import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
+import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
@@ -30,7 +30,7 @@ import org.apache.jena.sparql.core.Var;
 public interface SourceOutput
     extends Resource
 {
-    @Iri(SparqlX_Rml_Terms.output)
+    @Iri(NorseRmlTerms.output)
     SourceOutput setOutput(Resource output);
     Resource getOutput();
 
@@ -44,7 +44,7 @@ public interface SourceOutput
         return result;
     }
 
-    @Iri(SparqlX_Rml_Terms.output)
+    @Iri(NorseRmlTerms.output)
     List<Node> getOutputs();
 
     default List<Var> getOutputVars() {

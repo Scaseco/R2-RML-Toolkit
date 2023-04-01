@@ -2,7 +2,7 @@ package org.aksw.rml.jena.ref.impl;
 
 
 import org.aksw.rml.jena.impl.ReferenceFormulation;
-import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
+import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -23,7 +23,7 @@ public abstract class ReferenceFormulationViaServiceBase
 
         // Replace the logical source with a constant in order to make
         // equality checks easier
-        Node s = NodeFactory.createURI(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI);
+        Node s = NodeFactory.createURI(NorseRmlTerms.RML_SOURCE_SERVICE_IRI);
 
         // Only add the immediate triples
         logicalSource.listProperties()
@@ -31,8 +31,8 @@ public abstract class ReferenceFormulationViaServiceBase
             .mapWith(t -> Triple.create(s, t.getPredicate(), t.getObject()))
             .forEach(bgp::add);
         // GraphUtil.findAll(logicalSource.getModel().getGraph()).forEach(bgp::add);
-        bgp.add(Triple.create(s, NodeFactory.createURI(SparqlX_Rml_Terms.output), sourceVar));
-        ElementService result = new ElementService(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
+        bgp.add(Triple.create(s, NodeFactory.createURI(NorseRmlTerms.output), sourceVar));
+        ElementService result = new ElementService(NorseRmlTerms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
         return result;
     }
 

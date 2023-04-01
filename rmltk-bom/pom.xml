@@ -100,6 +100,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.r2rml</groupId>
+				<artifactId>r2rml-jena-sql-transforms</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.r2rml</groupId>
 				<artifactId>r2rml-jena-testsuite-processor-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>

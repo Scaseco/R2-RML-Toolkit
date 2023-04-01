@@ -195,7 +195,7 @@ public class RmlLib {
 //    }
 
     public static boolean isRmlServiceNode(Node node) {
-        boolean result = node != null && node.isURI() && SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
+        boolean result = node != null && node.isURI() && NorseRmlTerms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
         return result;
     }
 

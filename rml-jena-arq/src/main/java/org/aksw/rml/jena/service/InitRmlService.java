@@ -27,7 +27,7 @@ import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
 import org.aksw.rml.jena.impl.RmlLib;
-import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
+import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
@@ -64,7 +64,7 @@ public class InitRmlService {
         registry.addSingleLink((opExecute, opOriginal, binding, execCxt, chain) -> {
             QueryIterator r;
             Node serviceNode = opExecute.getService();
-            if (serviceNode.isURI() && serviceNode.getURI().equals(SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI)) {
+            if (serviceNode.isURI() && serviceNode.getURI().equals(NorseRmlTerms.RML_SOURCE_SERVICE_IRI)) {
                 Op subOp = opExecute.getSubOp();
                 Query query = OpAsQuery.asQuery(subOp);
                 Element elt = query.getQueryPattern();
