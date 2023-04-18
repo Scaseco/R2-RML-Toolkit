@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.aksw.r2rml</groupId>
-		<artifactId>r2rml-api-parent</artifactId>
+		<artifactId>rmltk-parent</artifactId>
 		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
 	<artifactId>rml-cli</artifactId>
