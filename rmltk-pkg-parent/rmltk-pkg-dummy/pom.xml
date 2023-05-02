@@ -49,8 +49,8 @@
                 <dependency>
                         <groupId>org.aksw.rmltk</groupId>
                         <artifactId>rmltk-pkg-rpm-cli</artifactId>
-                         <version>${project.version}</version>
-			<!-- <type>rpm</type> -->
+                        <version>${project.version}</version>
+			<type>rpm</type>
                         <scope>provided</scope>
                 </dependency>
                 <dependency>
