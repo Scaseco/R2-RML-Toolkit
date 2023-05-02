@@ -32,9 +32,18 @@
 	<properties>
 		<rmltk.cli.mainClass>org.aksw.rml.cli.main.MainCliRml</rmltk.cli.mainClass>
 	</properties>
-<!--
+
 	<build>
-		<plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>de.dentrassi.maven</groupId>
+					<artifactId>rpm</artifactId>
+					<extensions>true</extensions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<!--
 			<plugin>
 				<groupId>de.jutzig</groupId>
 				<artifactId>github-release-plugin</artifactId>
@@ -57,8 +66,7 @@
 					</fileSets>
 				</configuration>
 			</plugin>
-		</plugins>
+		-->
 	</build>
--->
 </project>
 
