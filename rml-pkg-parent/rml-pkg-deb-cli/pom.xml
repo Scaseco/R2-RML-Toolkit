@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.aksw.r2rml</groupId>
+		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rml-pkg-parent</artifactId>
 		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
@@ -147,7 +147,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>rml-cli</artifactId>
 		</dependency>
 	</dependencies>

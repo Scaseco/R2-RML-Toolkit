@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.aksw.r2rml</groupId>
-		<artifactId>r2rml-api-parent</artifactId>
+		<groupId>org.aksw.rmltk</groupId>
+		<artifactId>rmltk-parent</artifactId>
 		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
 
@@ -15,7 +15,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-common-vocab</artifactId>
 		</dependency>	
 	

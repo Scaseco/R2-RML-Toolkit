@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.aksw.r2rml</groupId>
+	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
 	<version>4.8.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -41,9 +41,9 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>4.8.0-SNAPSHOT</jena.version>
-		<jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
+		<jena.version>4.8.0</jena.version>
+		<jenax.version>4.8.0-1</jenax.version>
+		<aksw-commons.version>0.9.5</aksw-commons.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<!-- Project Settings -->
@@ -69,77 +69,77 @@
 				<version>${aksw-commons.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-common-vocab</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-resource-w3c-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-resource-ontology</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-resource-shacl</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-plugin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-processor-jdbc</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-sql-transforms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-testsuite-processor-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-vocab</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-arq</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rmlx-jena-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>rml-jena-arq</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>rml-picocli-cmds</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.aksw.r2rml</groupId>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>rml-cli</artifactId>
 				<version>${project.version}</version>
 			</dependency>
