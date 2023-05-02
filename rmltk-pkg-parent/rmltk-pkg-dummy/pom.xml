@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>rmltk-pkg-dummy</artifactId>
+
+	<parent>
+		<groupId>org.aksw.rmltk</groupId>
+		<artifactId>rmltk-pkg-parent</artifactId>
+		<version>4.8.0-1</version>
+	</parent>
+
+	<build>
+		<plugins>
+			<!-- Needed in order for <packaging>rpm</packaging> to be recognized -->
+			<plugin>
+				<groupId>de.dentrassi.maven</groupId>
+				<artifactId>rpm</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-deploy-plugin</artifactId> -->
+			<!-- <configuration> -->
+			<!-- <skip>true</skip> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rmltk-pkg-uberjar-cli</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+                <dependency>
+                        <groupId>org.aksw.rmltk</groupId>
+                        <artifactId>rmltk-pkg-deb-cli</artifactId>
+			<version>${project.version}</version>
+                        <scope>provided</scope>
+		</dependency>
+		<!--
+                <dependency>
+                        <groupId>org.aksw.rmltk</groupId>
+                        <artifactId>rmltk-pkg-rpm-cli</artifactId>
+                        <version>${project.version}</version>
+			<type>rpm</type>
+                        <scope>provided</scope>
+		</dependency>
+		-->
+                <dependency>
+                        <groupId>org.aksw.rmltk</groupId>
+                        <artifactId>rmltk-pkg-docker-cli</artifactId>
+                        <version>${project.version}</version>
+                        <scope>provided</scope>
+                </dependency>
+	</dependencies>
+
+	<!-- <build> -->
+	<!-- <plugins> -->
+	<!-- <plugin> -->
+	<!-- <groupId>org.apache.maven.plugins</groupId> -->
+	<!-- <artifactId>maven-shade-plugin</artifactId> -->
+	<!-- </plugin> -->
+	<!-- </plugins> -->
+	<!-- </build> -->
+
+</project>

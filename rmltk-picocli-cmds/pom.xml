@@ -8,7 +8,7 @@
 		<artifactId>rmltk-parent</artifactId>
 		<version>4.8.0-1</version>
 	</parent>
-	<artifactId>rml-picocli-cmds</artifactId>
+	<artifactId>rmltk-picocli-cmds</artifactId>
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>

@@ -29,9 +29,9 @@
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
 		<module>rml-jena-arq</module>
-		<module>rml-picocli-cmds</module>
-		<module>rml-cli</module>
-		<module>rml-pkg-parent</module>
+		<module>rmltk-picocli-cmds</module>
+		<module>rmltk-cli</module>
+		<module>rmltk-pkg-parent</module>
 	</modules>
 
 	<build>
@@ -68,6 +68,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
+				<!--
 				<plugin>
 					<groupId>com.amashchenko.maven.plugin</groupId>
 					<artifactId>gitflow-maven-plugin</artifactId>
@@ -78,6 +79,7 @@
 						</gitFlowConfig>
 					</configuration>
 				</plugin>
+				-->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
