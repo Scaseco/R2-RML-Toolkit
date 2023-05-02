@@ -45,14 +45,16 @@
                         <artifactId>rmltk-pkg-deb-cli</artifactId>
 			<version>${project.version}</version>
                         <scope>provided</scope>
-                </dependency>
+		</dependency>
+		<!--
                 <dependency>
                         <groupId>org.aksw.rmltk</groupId>
                         <artifactId>rmltk-pkg-rpm-cli</artifactId>
                         <version>${project.version}</version>
 			<type>rpm</type>
                         <scope>provided</scope>
-                </dependency>
+		</dependency>
+		-->
                 <dependency>
                         <groupId>org.aksw.rmltk</groupId>
                         <artifactId>rmltk-pkg-docker-cli</artifactId>

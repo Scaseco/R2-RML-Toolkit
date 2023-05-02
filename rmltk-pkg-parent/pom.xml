@@ -23,7 +23,7 @@
 
 	<modules>
 		<module>rmltk-pkg-deb-cli</module>
-		<module>rmltk-pkg-rpm-cli</module>
+		<!-- <module>rmltk-pkg-rpm-cli</module> -->
 		<module>rmltk-pkg-docker-cli</module>
 		<module>rmltk-pkg-uberjar-cli</module>
 		<module>rmltk-pkg-dummy</module>
