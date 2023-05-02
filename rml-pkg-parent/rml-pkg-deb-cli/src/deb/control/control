@@ -1,0 +1,12 @@
+Package: rml-toolkit-cli
+Version: [[version]]
+Section: web
+Priority: optional
+Architecture: all
+Depends: java-runtime-headless
+Maintainer: Claus Stadler <cstadler@informatik.uni-leipzig.de>
+Description: RML Toolkit Command Line Interfaces
+Distribution: ldstack-nightly
+Homepage: https://github.com/Scaseco/r2rml-api-jena
+Vcs-Git: git@github.com:Scaseco/r2rml-api-jena.git
+Vcs-Browser: https://github.com/Scaseco/r2rml-api-jena

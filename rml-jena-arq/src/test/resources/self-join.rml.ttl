@@ -1,0 +1,102 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rr: <http://www.w3.org/ns/r2rml#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<http://mapping.example.com/map_shapes_0>
+        rdf:type               rr:TriplesMap ;
+        rdfs:label             "shapes" ;
+        <http://semweb.mmlab.be/ns/rml#logicalSource>
+                [ rdf:type  <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>
+                          <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>
+                          "SHAPES.csv"
+                ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    rr:constant  <http://vocab.gtfs.org/terms#Shape>
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  rdf:type
+                                                  ]
+                               ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type             rr:ObjectMap ;
+                                                    rr:joinCondition     [ rr:child   "shape_id" ;
+                                                                           rr:parent  "shape_id"
+                                                                         ] ;
+                                                    rr:parentTriplesMap  <http://mapping.example.com/map_shape_points_0>
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  <http://vocab.gtfs.org/terms#shapePoint>
+                                                  ]
+                               ] ;
+        rr:subjectMap          [ rdf:type     rr:SubjectMap ;
+                                 rr:template  "http://transport.linkeddata.es/madrid/metro/shape/{shape_id}"
+                               ] .
+
+<http://mapping.example.com/map_shape_points_0>
+        rdf:type               rr:TriplesMap ;
+        rdfs:label             "shape_points" ;
+        <http://semweb.mmlab.be/ns/rml#logicalSource>
+                [ rdf:type  <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>
+                          <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>
+                          "SHAPES.csv"
+                ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    <http://semweb.mmlab.be/ns/rml#reference>
+                                                            "shape_pt_lon" ;
+                                                    rr:datatype  xsd:double ;
+                                                    rr:termType  rr:Literal
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  <http://www.w3.org/2003/01/geo/wgs84_pos#long>
+                                                  ]
+                               ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    <http://semweb.mmlab.be/ns/rml#reference>
+                                                            "shape_pt_lat" ;
+                                                    rr:datatype  xsd:double ;
+                                                    rr:termType  rr:Literal
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  <http://www.w3.org/2003/01/geo/wgs84_pos#lat>
+                                                  ]
+                               ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    <http://semweb.mmlab.be/ns/rml#reference>
+                                                            "shape_dist_traveled" ;
+                                                    rr:termType  rr:Literal
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  <http://vocab.gtfs.org/terms#distanceTraveled>
+                                                  ]
+                               ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    <http://semweb.mmlab.be/ns/rml#reference>
+                                                            "shape_pt_sequence" ;
+                                                    rr:termType  rr:Literal
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  <http://vocab.gtfs.org/terms#pointSequence>
+                                                  ]
+                               ] ;
+        rr:predicateObjectMap  [ rdf:type         rr:PredicateObjectMap ;
+                                 rr:objectMap     [ rdf:type     rr:ObjectMap ;
+                                                    rr:constant  <http://vocab.gtfs.org/terms#ShapePoint>
+                                                  ] ;
+                                 rr:predicateMap  [ rdf:type     rr:PredicateMap ;
+                                                    rr:constant  rdf:type
+                                                  ]
+                               ] ;
+        rr:subjectMap          [ rdf:type     rr:SubjectMap ;
+                                 rr:template  "http://transport.linkeddata.es/madrid/metro/shape_point/{shape_id}-{shape_pt_sequence}"
+                               ] .
+
