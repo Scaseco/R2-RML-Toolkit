@@ -6,11 +6,11 @@
 
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
-		<artifactId>rml-pkg-parent</artifactId>
-		<version>4.8.0-2-SNAPSHOT</version>
+		<artifactId>rmltk-pkg-parent</artifactId>
+		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>rml-pkg-deb-cli</artifactId>
+	<artifactId>rmltk-pkg-deb-cli</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -148,7 +148,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
-			<artifactId>rml-cli</artifactId>
+			<artifactId>rmltk-cli</artifactId>
 		</dependency>
 	</dependencies>
 </project>

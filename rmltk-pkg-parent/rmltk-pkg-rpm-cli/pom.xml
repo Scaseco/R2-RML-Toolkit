@@ -5,16 +5,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.aksw.rdf-processing-toolkit</groupId>
-		<artifactId>rdf-processing-toolkit-pkg-parent</artifactId>
-		<version>1.9.3-SNAPSHOT</version>
+		<groupId>org.aksw.rmltk</groupId>
+		<artifactId>rmltk-pkg-parent</artifactId>
+		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>rdf-processing-toolkit-pkg-rpm-cli</artifactId>
+	<artifactId>rmltk-pkg-rpm-cli</artifactId>
 	<packaging>rpm</packaging>
 
 	<properties>
-		<rpm.packageName>rdf-processing-toolkit-cli</rpm.packageName>
+		<rpm.packageName>rmltk-cli</rpm.packageName>
 		<!-- <deb.jarFile>${project.artifactId}-${project.version}-jar-with-dependencies.jar</deb.jarFile> -->
 		<!-- <rpm.jarFile>${project.artifactId}-${project.version}.jar</rpm.jarFile> -->
 
@@ -29,7 +29,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<project.description>RDF Processing Toolkit CLI (rpm bundle)</project.description>
+				<project.description>RML Toolkit CLI (rpm bundle)</project.description>
 			</properties>
 		</profile>
 
@@ -162,8 +162,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.rdf-processing-toolkit</groupId>
-			<artifactId>rdf-processing-toolkit-cli</artifactId>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rmltk-cli</artifactId>
 		</dependency>
 	</dependencies>
 

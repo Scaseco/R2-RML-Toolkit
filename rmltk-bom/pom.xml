@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
-	<version>4.8.0-2-SNAPSHOT</version>
+	<version>4.8.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - BOM</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -27,9 +27,9 @@
 	<!-- scm section needs to be duplicated on child module for github-release-plugin; 
 		see https://github.com/jutzig/github-release-plugin/issues/14 -->
 	<scm>
-		<url>https://github.com/SmartDataAnalytics/RdfProcessingToolkit</url>
-		<connection>scm:git:git@github.com:SmartDataAnalytics/RdfProcessingToolkit.git</connection>
-		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/RdfProcessingToolkit.git</developerConnection>
+		<url>https://github.com/Scaseco/RmlToolkit</url>
+		<connection>scm:git:git@github.com:Scaseco/RmlToolkit.git</connection>
+		<developerConnection>scm:git:git@github.com:Scaseco/RmlToolkit.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 	<developers>
@@ -135,12 +135,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.rmltk</groupId>
-				<artifactId>rml-picocli-cmds</artifactId>
+				<artifactId>rmltk-picocli-cmds</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.rmltk</groupId>
-				<artifactId>rml-cli</artifactId>
+				<artifactId>rmltk-cli</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

@@ -4,27 +4,27 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>rdf-processing-toolkit-pkg-uberjar-cli</artifactId>
+	<artifactId>rmltk-pkg-uberjar-cli</artifactId>
 
 	<parent>
-		<groupId>org.aksw.rdf-processing-toolkit</groupId>
-		<artifactId>rdf-processing-toolkit-pkg-parent</artifactId>
-		<version>1.9.3-SNAPSHOT</version>
+		<groupId>org.aksw.rmltk</groupId>
+		<artifactId>rmltk-pkg-parent</artifactId>
+		<version>4.8.0-1-SNAPSHOT</version>
 	</parent>
 
 	<!-- scm section needs to be duplicated on child module for github-release-plugin; 
 		see https://github.com/jutzig/github-release-plugin/issues/14 -->
 	<scm>
-		<url>https://github.com/SmartDataAnalytics/SparqlIntegrate</url>
-		<connection>scm:git:git@github.com:SmartDataAnalytics/SparqlIntegrate.git</connection>
-		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/SparqlIntegrate.git</developerConnection>
+		<url>https://github.com/Scaseco/RmlToolkit</url>
+		<connection>scm:git:git@github.com:Scaseco/RmlToolkit.git</connection>
+		<developerConnection>scm:git:git@github.com:Scaseco/RmlToolkit.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.rdf-processing-toolkit</groupId>
-			<artifactId>rdf-processing-toolkit-cli</artifactId>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rmltk-cli</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -81,7 +81,7 @@
 										<transformer
 											implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<manifestEntries>
-												<Main-Class>org.aksw.rdf_processing_toolkit.cli.main.MainCliRdfProcessingToolkit</Main-Class>
+												<Main-Class>${rmltk.cli.mainClass}</Main-Class>
 												<Multi-Release>true</Multi-Release>
 											</manifestEntries>
 										</transformer>
