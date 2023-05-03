@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.8.0-2-SNAPSHOT</version>
+		<version>4.8.0-2</version>
 	</parent>
 
 	<artifactId>r2rml-jena-arq</artifactId>
