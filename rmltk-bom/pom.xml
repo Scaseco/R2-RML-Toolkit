@@ -42,7 +42,7 @@
 	</developers>
 	<properties>
 		<jena.version>4.8.0</jena.version>
-		<jenax.version>4.8.0-1</jenax.version>
+		<jenax.version>4.8.0-2</jenax.version>
 		<aksw-commons.version>0.9.5</aksw-commons.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
