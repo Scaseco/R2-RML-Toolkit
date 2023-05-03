@@ -7,7 +7,7 @@
 	<parent>
                 <groupId>org.aksw.rmltk</groupId>
                 <artifactId>rmltk-bom</artifactId>
-                <version>4.8.0-2</version>
+                <version>4.8.0-3-SNAPSHOT</version>
                 <relativePath>rmltk-bom</relativePath>
 	</parent>
 
