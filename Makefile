@@ -12,10 +12,10 @@ help:   ## Show these help instructions
 	@sed -rn 's/^([a-zA-Z_-]+):.*?## (.*)$$/"\1" "\2"/p' < $(MAKEFILE_LIST) | xargs printf "make %-20s# %s\n"
 
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
-	$(MCIS) -Pdeb -am -pl :rml-pkg-deb-cli $(ARGS)
+	$(MCIS) -Pdeb -am -pl :rmltk-pkg-deb-cli $(ARGS)
 
 deb-reinstall: ## Reinstall deb (requires prior build)
-	@p1=`find rml-pkg-parent/rml-pkg-deb-cli/target | grep '\.deb$$'`
+	@p1=`find rmltk-pkg-parent/rmltk-pkg-deb-cli/target | grep '\.deb$$'`
 	sudo dpkg -i "$$p1"
 
 deb-rere: deb-rebuild deb-reinstall ## rebuild and reinstall deb
