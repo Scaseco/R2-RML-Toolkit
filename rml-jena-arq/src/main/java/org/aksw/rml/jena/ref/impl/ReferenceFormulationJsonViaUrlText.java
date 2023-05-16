@@ -25,7 +25,7 @@ public class ReferenceFormulationJsonViaUrlText
         );
 
         String str = templateStr
-                .replaceAll("URL", logicalSource.getSource())
+                .replaceAll("URL", logicalSource.getSourceAsString())
                 .replaceAll("ITER", logicalSource.getIterator())
                 .replaceAll("SRC", sourceVar.getName());
 
