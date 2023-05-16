@@ -20,7 +20,7 @@ public class ReferenceFormulationCsvViaCsvParse
 {
     @Override
     public Element source(LogicalSource logicalSource, Var sourceVar) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         Node csvParse = NodeFactory.createURI("http://jsa.aksw.org/fn/csv/parse");
         Element result = ElementUtils.createElementTriple(NodeFactory.createURI(source), csvParse, sourceVar);
         return result;

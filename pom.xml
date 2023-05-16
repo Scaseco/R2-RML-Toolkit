@@ -31,6 +31,7 @@
 		<module>rml-jena-arq</module>
 		<module>rmltk-picocli-cmds</module>
 		<module>rmltk-cli</module>
+		<module>rmltk-utils-parent</module>
 		<module>rmltk-pkg-parent</module>
 	</modules>
 

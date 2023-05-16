@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
@@ -39,6 +40,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.core.Var;
@@ -57,6 +59,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.univocity.parsers.common.record.RecordMetaData;
+import org.aksw.jenax.model.csvw.domain.api.Table;
 
 public class InitRmlService {
 
@@ -109,7 +112,7 @@ public class InitRmlService {
     }
 
     public static QueryIterator processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -139,7 +142,7 @@ public class InitRmlService {
     }
 
     public static QueryIterator processSourceAsXml(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -179,14 +182,28 @@ public class InitRmlService {
             throw new RuntimeException("No output specified");
         }
 
-        String source = logicalSource.getSource();
-        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(source), execCxt);
-        Dialect dialect = logicalSource.as(Dialect.class);
-
+        RDFNode source = logicalSource.getSource();
+        String sourceDoc;
         DialectMutable effectiveDialect = new DialectMutableImpl();
-        dialect.copyInto(effectiveDialect, false);
+        String[] nullValues = null;
+        if (source.isLiteral()) {
+            sourceDoc = logicalSource.getSourceAsString();
+        } else {
+            Table csvwtSource = source.as(Table.class);
 
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
+            Dialect dialect = csvwtSource.getDialect();
+            if (dialect != null) {
+                dialect.copyInto(effectiveDialect, false);
+            }
+            Set<String> nullSet = csvwtSource.getNull();
+            if (nullSet != null && !nullSet.isEmpty()) {
+                nullValues = nullSet.toArray(new String[0]);
+            }
+            sourceDoc = csvwtSource.getUrl();
+        }
+        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
+
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(true)
                 .configure(csvConf);
