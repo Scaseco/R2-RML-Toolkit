@@ -57,7 +57,7 @@ public class CmdRmlTkRmlOptimizeWorkload
 //    @Option(names = { "--no-distinct" }, description = "Apply intra-query distinct", defaultValue = "false")
 //    public boolean distinct = false;
 
-    @Option(names = { "--custer-by-predicate" }, description = "Cluster only by predicates. This is inferior to the default clustering by subject's value spaces.", defaultValue = "false")
+    @Option(names = { "--cluster-by-predicate" }, description = "Cluster only by predicates. This is inferior to the default clustering by subject's value spaces.", defaultValue = "false")
     public boolean clusterByPredicate = false;
 
     @Option(names = { "--no-order" }, description = "Do not sort the result", defaultValue = "false")
@@ -192,9 +192,9 @@ public class CmdRmlTkRmlOptimizeWorkload
                     }
                     ++i;
                 }
-                
+
                 if (verbose) {
-                	System.err.println(tree);
+                    System.err.println(tree);
                 }
 
                 // Each child of the root forms a cluster
@@ -256,23 +256,23 @@ public class CmdRmlTkRmlOptimizeWorkload
             Query query) {
         Map<Quad, Tuple<VSpace>> cquads = UnsortedUtils.analyzeQuads(query);
         Collection<Tuple<VSpace>> vstuples;
-        
+
         if (false) {
-        	 vstuples = cquads.values();
+             vstuples = cquads.values();
         } else {
-	        // Create a component-wise union of the vspaces
-	        List<VSpace> vspaces = new ArrayList<>(4);
-	        for (int i = 0; i < 4; ++i) {
-	        	VSpace vspace = VSpaceImpl.create(NodeRanges.createClosed());
-		        for(Tuple<VSpace> t : cquads.values()) {
-		        	VSpace contrib = t.get(i);	        	
-		        	vspace.stateUnion(contrib);
-		        }
-		        vspaces.add(vspace);
-	        }
-	        vstuples = List.of(TupleFactory.create(vspaces));
+            // Create a component-wise union of the vspaces
+            List<VSpace> vspaces = new ArrayList<>(4);
+            for (int i = 0; i < 4; ++i) {
+                VSpace vspace = VSpaceImpl.create(NodeRanges.createClosed());
+                for(Tuple<VSpace> t : cquads.values()) {
+                    VSpace contrib = t.get(i);
+                    vspace.stateUnion(contrib);
+                }
+                vspaces.add(vspace);
+            }
+            vstuples = List.of(TupleFactory.create(vspaces));
         }
-        
+
         for(Tuple<VSpace> t : vstuples) {
             Tuple<Range<Cmp<Entry<?, Cmp<ComparableNodeValue>>>>> rt = t.map(VSpaceImpl::span);
             // clusters.put(rt, i);

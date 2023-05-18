@@ -91,7 +91,9 @@ public class TriplesMapProcessorRml
 
     @Override
     protected Object getSourceIdentity(TriplesMap tm) {
-        Element result = referenceFormulation.source(tm.as(RmlTriplesMap.class).getLogicalSource(), Vars.x);
+        RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
+        LogicalSource logicalSource = rtm.getLogicalSource();
+        Element result = referenceFormulation.source(logicalSource, Vars.x);
         return result;
     }
 

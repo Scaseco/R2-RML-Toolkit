@@ -11,6 +11,8 @@ import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTermMap;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.aksw.rmlx.model.LogicalSourceWithAliases;
+import org.aksw.rmlx.model.SparqlAlias;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
@@ -43,11 +45,17 @@ public class JenaPluginRml
             FunctionMap.class
         );
 
-        // Rml
+        // Standard Rml
         JenaPluginUtils.registerResourceClasses(
             RmlTriplesMap.class,
             LogicalSource.class,
             RmlTermMap.class
+        );
+
+        // Rml Extensions
+        JenaPluginUtils.registerResourceClasses(
+            SparqlAlias.class,
+            LogicalSourceWithAliases.class
         );
 
         // JenaX
