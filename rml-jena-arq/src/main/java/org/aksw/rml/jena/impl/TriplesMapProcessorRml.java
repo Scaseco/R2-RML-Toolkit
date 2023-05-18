@@ -4,7 +4,6 @@ import org.aksw.fnml.model.FunctionMap;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
-import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
@@ -13,6 +12,7 @@ import org.aksw.rml.model.RmlTermMap;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.Element;
 
@@ -33,7 +33,7 @@ public class TriplesMapProcessorRml
     // protected ReferenceFormulation referenceFormulation;
     // protected Var itemVar; // Variable for an item of the source document
     protected ReferenceFormulationRegistry registry;
-    protected ReferenceFormulation referenceFormulation;
+    // protected ReferenceFormulation referenceFormulation;
 
 
     public TriplesMapProcessorRml(TriplesMap triplesMap,  Model fnmlModel) {
@@ -51,15 +51,28 @@ public class TriplesMapProcessorRml
     }
 
     @Override
-    public TriplesMapToSparqlMapping call() {
-        LogicalSource logicalSource = triplesMap.as(RmlTriplesMap.class).getLogicalSource();
+    public void initResolvers(MappingCxt cxt) {
+        TriplesMap ctm = cxt.getTriplesMap();
+        LogicalSource logicalSource = ctm.as(RmlTriplesMap.class).getLogicalSource();
+        ReferenceFormulation referenceFormulation = null;
         if (logicalSource != null) {
             String rfi = logicalSource.getReferenceFormulationIri();
             referenceFormulation = registry.getOrThrow(rfi);
         }
 
-        TriplesMapToSparqlMapping base = super.call();
-        return base;
+        ReferenceFormulation rf = referenceFormulation;
+        Var triplesMapVar = cxt.getTriplesMapVar();
+        cxt.setReferenceResolver(refStr -> {
+            Expr r = rf.reference(triplesMapVar, refStr);
+            return r;
+        });
+
+        cxt.setSourceIdentityResolver(tm -> {
+            RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
+            LogicalSource ls = rtm.getLogicalSource();
+            Element r = rf.source(ls, Vars.x);
+            return r;
+        });
     }
 
     @Override
@@ -89,17 +102,31 @@ public class TriplesMapProcessorRml
         return result;
     }
 
-    @Override
-    protected Object getSourceIdentity(TriplesMap tm) {
-        RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
-        LogicalSource logicalSource = rtm.getLogicalSource();
-        Element result = referenceFormulation.source(logicalSource, Vars.x);
-        return result;
-    }
+//    @Override
+//    protected Object getSourceIdentity(TriplesMap tm) {
+//        RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
+//        LogicalSource logicalSource = rtm.getLogicalSource();
+//        Element result = referenceFormulation.source(logicalSource, Vars.x);
+//        return result;
+//    }
 
-    @Override
-    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
-        Expr result = referenceFormulation.reference(cxt.getTriplesMapVar(), colName);
-        return result;
-    }
+//    @Override
+//    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
+//        Expr result = referenceFormulation.reference(cxt.getTriplesMapVar(), colName);
+//        return result;
+//    }
+
+//  @Override
+//  public TriplesMapToSparqlMapping call() {
+//      LogicalSource logicalSource = triplesMap.as(RmlTriplesMap.class).getLogicalSource();
+//      if (logicalSource != null) {
+//          String rfi = logicalSource.getReferenceFormulationIri();
+//          referenceFormulation = registry.getOrThrow(rfi);
+//      }
+//
+//      TriplesMapToSparqlMapping base = super.call();
+//      return base;
+//  }
+
+
 }

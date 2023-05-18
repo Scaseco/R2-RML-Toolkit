@@ -65,18 +65,29 @@ public class TriplesMapProcessorR2rml {
         this.baseIri = baseIri;
     }
 
+    public static Expr resolveR2rmlReference(String colName) {
+        ExprVar column = new ExprVar(colName);
+        return column;
+    }
+
+    public void initResolvers(MappingCxt cxt) {
+        cxt.setReferenceResolver(TriplesMapProcessorR2rml::resolveR2rmlReference);
+        cxt.setSourceIdentityResolver(xtriplesMap -> xtriplesMap);
+    }
+
     /**
      *
      * @param processPoms Whether to process predicate object maps. If false then only the subject map will be processed which is useful to process the parent side of a join.
      * @return
      */
     public TriplesMapToSparqlMapping call() {
-        // TODO shortcut expansion should already have happened
+        // TODO shortcut expansion should already have happened - and doing it in place here is hacky
         R2rmlLib.expandShortcuts(triplesMap);
 
         Var triplesMapVar = sourceVarGen.allocVar();
 
         this.childCxt = new MappingCxt(null, triplesMap, triplesMapVar);
+        initResolvers(childCxt);
 
         SubjectMap sm = triplesMap.getSubjectMap();
         Node s = allocateVarTracked(childCxt, sm, RR.IRI);
@@ -295,6 +306,7 @@ public class TriplesMapProcessorR2rml {
 
         Var parentVar = sourceVarGen.allocVar();
         MappingCxt parentCxt = new MappingCxt(childCxt, parentTm, parentVar);
+        initResolvers(parentCxt);
 
         Node o = allocateVarTracked(parentCxt, parentSm, RR.IRI);
 
@@ -315,8 +327,8 @@ public class TriplesMapProcessorR2rml {
         // - parent and child use the same logical source
         // - there is a join on the same columns (e.g. id = id)
         // - either childVars or parentVars references no columns besides the join columns
-        Object parentId = getSourceIdentity(parentTm);
-        Object childId = getSourceIdentity(triplesMap);
+        Object parentId = getSourceIdentity(parentCxt, parentTm);
+        Object childId = getSourceIdentity(childCxt, triplesMap);
 
         boolean isEliminated = false;
 
@@ -375,9 +387,9 @@ public class TriplesMapProcessorR2rml {
      * By default the triples map is returned as representing it's source.
      * This way however misses optimization oppor, two triples maps with the same logical source will
      */
-    protected Object getSourceIdentity(TriplesMap tm) {
-        return tm;
-    }
+//    protected Object getSourceIdentity(TriplesMap tm) {
+//        return tm;
+//    }
 
     protected Quad createQuad(Node g, Node s, Node p, Node o) {
         Node finalG = RR.defaultGraph.asNode().equals(g)
@@ -397,8 +409,22 @@ public class TriplesMapProcessorR2rml {
      * @param colName A column name or more generally a reference expression string.
      * @return
      */
-    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
-        ExprVar column = new ExprVar(colName);
-        return column;
+    protected final Expr referenceToExpr(MappingCxt cxt, String colName) {
+        Expr result = Objects
+            .requireNonNull(cxt.getReferenceResolver(), "ReferenceResolver not set")
+            .apply(colName);
+
+        return result;
+        // Expr result = cxt.getReferenceResolver().apply(colName);
+        // ExprVar column = new ExprVar(colName);
+        // return column;
+    }
+
+    protected Object getSourceIdentity(MappingCxt cxt, TriplesMap tm) {
+        Object result = Objects
+                .requireNonNull(cxt.getSourceIdentityResolver(), "SourceIdentityResolver not set")
+                .apply(tm);
+
+        return result;
     }
 }

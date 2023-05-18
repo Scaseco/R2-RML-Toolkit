@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.jena.domain.api.TermSpec;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import org.apache.jena.ext.com.google.common.collect.BiMap;
-import org.apache.jena.ext.com.google.common.collect.HashBiMap;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.expr.Expr;
@@ -40,6 +39,11 @@ public class MappingCxt {
 
     protected List<JoinDeclaration> joins = new ArrayList<>();
 
+
+    /** The reference resolver can be set after context creation. In the case of RML it needs information from the context. */
+    protected Function<String, Expr> referenceResolver = null;
+    protected Function<TriplesMap, Object> sourceIdentityResolver = null;
+
     public MappingCxt(MappingCxt parentCxt, TriplesMap triplesMap, Var triplesMapVar) {
         super();
         this.parentCxt = parentCxt;
@@ -49,6 +53,22 @@ public class MappingCxt {
         String baseExprVar = parentCxt == null ? "v" : triplesMapVar.getName() + "_v";
         this.varGen = new VarAlloc(baseExprVar);
         this.exprDag = new GenericDag<>(ExprUtils.getExprOps(), varGen::allocVar, null);
+    }
+
+    public Function<String, Expr> getReferenceResolver() {
+        return referenceResolver;
+    }
+
+    public void setReferenceResolver(Function<String, Expr> referenceResolver) {
+        this.referenceResolver = referenceResolver;
+    }
+
+    public Function<TriplesMap, Object> getSourceIdentityResolver() {
+        return sourceIdentityResolver;
+    }
+
+    public void setSourceIdentityResolver(Function<TriplesMap, Object> sourceIdentityResolver) {
+        this.sourceIdentityResolver = sourceIdentityResolver;
     }
 
     public Var getSubjectVar() {
