@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
+import javax.sql.DataSource;
 import javax.xml.xpath.XPathFactory;
 
 import org.aksw.commons.jena.graph.GraphVarImpl;
@@ -19,6 +21,8 @@ import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.aksw.commons.model.csvw.univocity.UnivocityUtils;
+import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
@@ -27,11 +31,17 @@ import org.aksw.jenax.arq.util.exec.QueryExecUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
-import org.aksw.rml.jena.impl.RmlLib;
+import org.aksw.jenax.model.csvw.domain.api.Table;
+import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.r2rml.jena.domain.api.LogicalTable;
+import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
+import org.aksw.r2rml.jena.jdbc.processor.R2rmlJdbcUtils;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
+import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -48,6 +58,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
+import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.graph.GraphFactory;
@@ -59,7 +70,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.univocity.parsers.common.record.RecordMetaData;
-import org.aksw.jenax.model.csvw.domain.api.Table;
 
 public class InitRmlService {
 
@@ -100,6 +110,7 @@ public class InitRmlService {
         registry.put(QlTerms.CSV, InitRmlService::processSourceAsCsv);
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
         registry.put(QlTerms.XPath, InitRmlService::processSourceAsXml);
+        registry.put(QlTerms.RDB, InitRmlService::processSourceAsJdbc);
 
         String iri = logicalSource.getReferenceFormulationIri();
         Preconditions.checkArgument(iri != null, "Reference formulation not specified on source. " + logicalSource);
@@ -109,6 +120,26 @@ public class InitRmlService {
 
         QueryIterator result = processor.eval(logicalSource, parentBinding, execCxt);
         return result;
+    }
+
+    public static QueryIterator processSourceAsJdbc(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        // TODO Register data source with execCxt and reuse if present
+        LogicalTable logicalTable = logicalSource.as(LogicalTable.class);
+        D2rqDatabase dataSourceSpec = logicalSource.getSource().as(D2rqDatabase.class);
+
+        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecDefault();
+
+        DataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec);
+        // Connection conn = dataSource.getConnection();
+
+        NodeMapper nodeMapper = null; // create on demand TODO This is hacky
+        IteratorCloseable<Binding> it;
+        try {
+            it = R2rmlJdbcUtils.processR2rml(dataSource, logicalTable, nodeMapper, sqlCodec);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return QueryIterPlainWrapper.create(it, execCxt);
     }
 
     public static QueryIterator processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
