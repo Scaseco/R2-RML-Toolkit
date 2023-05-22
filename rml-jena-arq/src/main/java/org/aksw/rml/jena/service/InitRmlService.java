@@ -23,6 +23,7 @@ import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.aksw.commons.model.csvw.univocity.UnivocityUtils;
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
+import org.aksw.jena_sparql_api.sparql.ext.binding.NodeValueBinding;
 import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
@@ -41,6 +42,7 @@ import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -58,6 +60,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.expr.NodeValue;
@@ -123,11 +126,14 @@ public class InitRmlService {
     }
 
     public static QueryIterator processSourceAsJdbc(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        SourceOutput output = logicalSource.as(SourceOutput.class);
+        Var outVar = output.getOutputVar();
+
         // TODO Register data source with execCxt and reuse if present
         LogicalTable logicalTable = logicalSource.as(LogicalTable.class);
         D2rqDatabase dataSourceSpec = logicalSource.getSource().as(D2rqDatabase.class);
 
-        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecDefault();
+        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark(); // SqlCodecUtils.createSqlCodecDefault();
 
         DataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec);
         // Connection conn = dataSource.getConnection();
@@ -139,7 +145,14 @@ public class InitRmlService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return QueryIterPlainWrapper.create(it, execCxt);
+
+        Iter<Binding> it2 = Iter.iter(it).map(b -> {
+            Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
+            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(bb).asNode());
+            return r;
+        });
+
+        return QueryIterPlainWrapper.create(it2, execCxt);
     }
 
     public static QueryIterator processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {

@@ -54,7 +54,7 @@ public class JdbcUtils {
 
         int columnCount = rsmd.getColumnCount();
         NodeMapper[] targets = new NodeMapper[columnCount + 1];
-        for (int i = 0; i < columnCount; ++i) {
+        for (int i = 1; i <= columnCount; ++i) {
             int sqlType = rsmd.getColumnType(i);
             targets[i] = NaturalMappings.createNodeMapper(sqlType, sqlTypeMapper);
         }
