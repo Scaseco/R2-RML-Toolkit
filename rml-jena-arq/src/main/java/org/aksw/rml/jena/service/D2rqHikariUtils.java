@@ -1,14 +1,12 @@
 package org.aksw.rml.jena.service;
 
-import javax.sql.DataSource;
-
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class D2rqHikariUtils {
-    public static DataSource configureDataSource(D2rqDatabase model) {
+    public static HikariDataSource configureDataSource(D2rqDatabase model) {
         HikariConfig conf = new HikariConfig();
         configure(conf, model);
         HikariDataSource result = new HikariDataSource(conf);
