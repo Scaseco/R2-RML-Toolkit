@@ -181,7 +181,6 @@ public class InitRmlService {
                 : JenaJsonUtils.evalJsonPath(gson, nv, NodeValue.makeString(iterator));
 
         QueryIterator result = JenaJsonUtils.unnestJsonArray(gson, parentBinding, null, execCxt, arr.asNode(), outVar);
-
         return result;
     }
 
@@ -207,7 +206,6 @@ public class InitRmlService {
     }
 
     public static QueryIterator processSourceAsCsv(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var[] headerVars = null;
@@ -251,7 +249,6 @@ public class InitRmlService {
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(true)
                 .configure(csvConf);
-
         QueryIterator result;
 
         // FIXME If the output var is bound to a constant then filter the source to that value

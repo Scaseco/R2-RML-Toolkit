@@ -47,7 +47,8 @@ import org.apache.jena.vocabulary.XSD;
 public class TriplesMapProcessorR2rml {
 
     /** Somewhat custom extension of R2RML which lacks the feature to use a column as a source for language tags.
-     *  This constant is not part of the standard R2RML terms but it is supported by this processor */
+     *  This constant is not part of the standard R2RML terms but it is supported by this processor.
+     *  A property for this will become part of the new RML spec ~ 2023-06-07 */
     public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
 
     protected TriplesMap triplesMap;

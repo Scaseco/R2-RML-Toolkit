@@ -1,6 +1,14 @@
 package org.aksw.rml.jena.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+
+import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.commons.util.function.FunctionUtils;
 import org.aksw.fnml.model.FunctionMap;
+import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
@@ -10,10 +18,13 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTermMap;
 import org.aksw.rml.model.RmlTriplesMap;
+import org.aksw.rmlx.model.RmlDefinitionBlock;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.Element;
 
 /**
@@ -62,8 +73,23 @@ public class TriplesMapProcessorRml
 
         ReferenceFormulation rf = referenceFormulation;
         Var triplesMapVar = cxt.getTriplesMapVar();
-        cxt.setReferenceResolver(refStr -> {
+
+        // The "raw" reference resolver does not deal with aliases
+        Function<String, Expr> rawRefResolver = refStr -> {
             Expr r = rf.reference(triplesMapVar, refStr);
+            return r;
+        };
+
+        // Remap of aliases
+        Map<Expr, Expr> remap = new HashMap<>();
+
+        // Set up the reference resolver where aliases take precedence
+        cxt.setReferenceResolver(refStr -> {
+            Expr tmp = new ExprVar(refStr);
+            Expr r = remap.get(tmp);
+            if (r == null) {
+                r = rawRefResolver.apply(refStr);
+            }
             return r;
         });
 
@@ -73,7 +99,34 @@ public class TriplesMapProcessorRml
             Element r = rf.source(ls, Vars.x);
             return r;
         });
+
+        // Expand aliases and definitions
+        if (logicalSource != null) {
+            RmlDefinitionBlock block = logicalSource.as(RmlDefinitionBlock.class);
+            GenericDag<Expr, Var> dag = cxt.getExprDag();
+            VarExprList vel = RmlDefinitionBlockUtils.processExprs(block, rawRefResolver);
+            for (Entry<Var, Expr> e : vel.getExprs().entrySet()) {
+                Var v = e.getKey();
+                Expr rawExpr = e.getValue();
+                Expr expr = ExprUtils.replace(rawExpr, FunctionUtils.nullToIdentity(remap::get));
+                Expr newExpr = dag.addRoot(expr);
+                if (newExpr.isVariable()) {
+                    remap.put(new ExprVar(v), newExpr);
+                }
+            }
+        }
     }
+
+//
+//    public static <T> Function<T, T> nullToDefault(Function<T, T> fn, T defaultValue) {
+//        return x -> {
+//            T r = fn.apply(x);
+//            if (r == null) {
+//                r = defaultValue;
+//            }
+//            return r;
+//        };
+//    }
 
     @Override
     protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
