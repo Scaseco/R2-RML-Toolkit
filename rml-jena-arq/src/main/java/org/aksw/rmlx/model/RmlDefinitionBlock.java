@@ -20,5 +20,9 @@ public interface RmlDefinitionBlock
     Set<RmlAlias> getAliases();
 
     @Iri(NorseRmlTerms.bind)
-    Set<RmlBind> getBinds();
+    Set<String> getBinds();
+
+    /** A more verbose variant of bind */
+    @Iri(NorseRmlTerms.qualifiedBind)
+    Set<RmlQualifiedBind> getQualifiedBinds();
 }

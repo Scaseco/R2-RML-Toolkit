@@ -3,14 +3,14 @@ package org.aksw.rmlx.model;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 
 @ResourceView
-public interface RmlBind extends RmlDefinition {
+public interface RmlQualifiedBind extends RmlDefinition {
 //    /**
 //     * The name of an alias for the given SPARQL expression string
 //     */
 //    @Iri("http://www.w3.org/2000/01/rdf-schema#label")
 //    String getLabel();
     @Override
-    RmlBind setLabel(String label);
+    RmlQualifiedBind setLabel(String label);
 
 //
 //    /**
@@ -19,5 +19,5 @@ public interface RmlBind extends RmlDefinition {
 //    @Iri(NorseRmlTerms.definition)
 //    String getDefinition();
     @Override
-    RmlBind setDefinition(String reference);
+    RmlQualifiedBind setDefinition(String reference);
 }

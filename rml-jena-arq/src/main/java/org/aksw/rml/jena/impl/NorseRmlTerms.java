@@ -27,6 +27,8 @@ public class NorseRmlTerms {
     /** Property IRI to introduce an alias for a SPARQL expression. Variables can be aliases. */
     public static final String bind = NS + "bind";
 
+    public static final String qualifiedBind = NS + "qualifiedBind";
+
     /** Property IRI to introduce a definition for an alias or macro name */
     public static final String definition = NS + "definition";
 }

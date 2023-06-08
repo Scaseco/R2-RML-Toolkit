@@ -12,7 +12,7 @@ import org.aksw.rml.model.RmlTermMap;
 import org.aksw.rml.model.RmlTriplesMap;
 import org.aksw.rml.rso.model.SourceOutput;
 import org.aksw.rmlx.model.RmlAlias;
-import org.aksw.rmlx.model.RmlBind;
+import org.aksw.rmlx.model.RmlQualifiedBind;
 import org.aksw.rmlx.model.RmlDefinitionBlock;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
@@ -56,7 +56,7 @@ public class JenaPluginRml
         // Rml Extensions
         JenaPluginUtils.registerResourceClasses(
             RmlAlias.class,
-            RmlBind.class,
+            RmlQualifiedBind.class,
             RmlDefinitionBlock.class
         );
 

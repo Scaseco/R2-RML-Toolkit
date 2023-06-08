@@ -80,7 +80,7 @@ public class TriplesMapProcessorRml
             return r;
         };
 
-        // Remap of aliases
+        // Remap of specified aliases to allocated variables (for better or worse we relabel variables)
         Map<Expr, Expr> remap = new HashMap<>();
 
         // Set up the reference resolver where aliases take precedence
@@ -96,6 +96,9 @@ public class TriplesMapProcessorRml
         cxt.setSourceIdentityResolver(tm -> {
             RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
             LogicalSource ls = rtm.getLogicalSource();
+
+            // Create a copy of the logical source that has aliases/binds cleared
+            // LogicalSource copy = RmlDefinitionBlockUtils.closureWithoutDefinitions(ls).as(LogicalSource.class);
             Element r = rf.source(ls, Vars.x);
             return r;
         });
