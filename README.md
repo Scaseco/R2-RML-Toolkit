@@ -72,6 +72,30 @@ Just include
 
 [List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
+## Usage of the CLI Tool
+
+### Conversion of RML to SPARQL Construct Queries
+```cli
+rmltk rml to sparql mapping.rml.ttl > mapping.raw.rq
+rmltk optimize workload mapping.raw.rq --no-order > mapping.rq
+```
+
+
+### How to Execute the Mapping
+
+The [RDF processing toolkit (RPT)](https://github.com/SmartDataAnalytics/RdfProcessingToolkit) supports execution of the generated mapping. RPT uses this repository.
+
+Using the single threaded Jena engine:
+```cli
+rpt integrate mapping.rq
+```
+
+Using RPT's parallel Spark-based executor:
+```cli
+rpt sansa query mapping.rq
+```
+
+
 
 ### Modules
 * [r2rml-resource-ontology](r2rml-resource-ontology): A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
