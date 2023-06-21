@@ -355,20 +355,16 @@ public class TriplesMapProcessorR2rml {
 
                 // Check whether the child subject or parent subject only makes use of definitions that are based on the join definition
                 // FIXME Wouldn't we also have to handle the case of a variable predicate?!
-                if (joinCoreDefs.containsAll(childCoreDefs)) {
+
+                // If either the parent or the child's expression is based only on identity-joining columns then we can eliminate the join
+                // https://github.com/Scaseco/r2rml-api-jena/issues/7
+                if (joinCoreDefs.containsAll(childCoreDefs) || joinCoreDefs.containsAll(parentCoreDefs)) {
                     isEliminated = true;
                     Var newParentVar = (Var)allocateVarForExpr(childCxt, newParentSubjectExpr);
                     if (newParentVar.isVariable()) {
                         childCxt.termMapToVar.put(rom, newParentVar);
                     }
                     childCxt.getQuadAcc().addQuad(createQuad(g, s, p, newParentVar));
-                } else if (joinCoreDefs.containsAll(parentCoreDefs)) {
-                    isEliminated = true;
-                    Var newParentVar = (Var)allocateVarForExpr(childCxt, newParentSubjectExpr);
-                    if (newParentVar.isVariable()) {
-                        childCxt.termMapToVar.put(rom, newParentVar);
-                    }
-                    childCxt.getQuadAcc().addQuad(createQuad(g, newParentVar, p, s));
                 }
             }
         }
