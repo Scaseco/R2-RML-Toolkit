@@ -4,17 +4,16 @@ import java.util.Set;
 
 import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
-import org.aksw.jenax.model.prefix.domain.api.NorsePrefixTerms;
-import org.aksw.jenax.model.prefix.domain.api.PrefixSet;
+import org.aksw.jenax.model.shacl.domain.ShHasPrefixes;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface RmlDefinitionBlock
-    extends Resource
+    extends Resource, ShHasPrefixes
 {
-    @Iri(NorsePrefixTerms.prefixes)
-    Set<PrefixSet> getPrefixSets();
+//    @Iri(NorsePrefixTerms.prefixes)
+//    Set<PrefixSet> getPrefixSets();
 
     @Iri(NorseRmlTerms.alias)
     Set<RmlAlias> getAliases();

@@ -24,7 +24,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
-			<artifactId>jenax-models-prefixes</artifactId>
+			<artifactId>jenax-models-shacl</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jgrapht</groupId>

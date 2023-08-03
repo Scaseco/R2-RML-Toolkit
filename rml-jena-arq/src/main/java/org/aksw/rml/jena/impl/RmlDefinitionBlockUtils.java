@@ -7,8 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.aksw.jenax.model.prefix.domain.api.PrefixSet;
-import org.aksw.jenax.model.prefix.domain.api.PrefixSetUtils;
+import org.aksw.jenax.model.shacl.util.ShPrefixUtils;
 import org.aksw.jenax.stmt.parser.element.SparqlElementParser;
 import org.aksw.jenax.stmt.parser.element.SparqlElementParserImpl;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
@@ -69,7 +68,7 @@ public class RmlDefinitionBlockUtils {
 
         block.getAliases().clear();
         block.getBinds().clear();
-        block.getPrefixSets().clear();
+        block.getPrefixes().clear();
         block.getQualifiedBinds().clear();
 
         // After clearing the attributes create another closure
@@ -80,8 +79,8 @@ public class RmlDefinitionBlockUtils {
 
     public static VarExprList processExprs(RmlDefinitionBlock block, Function<String, Expr> refResolver) {
 
-        Set<PrefixSet> prefixSets = block.getPrefixSets();
-        PrefixMap prefixMap = PrefixSetUtils.collect(prefixSets);
+        // Set<PrefixSet> prefixSets = block.getPrefixes();
+        PrefixMap prefixMap = ShPrefixUtils.collect(block);
         PrefixMapping prefixMapping = new PrefixMappingAdapter(prefixMap);
 
         // Set<String> aliases = new LinkedHashSet<>();
