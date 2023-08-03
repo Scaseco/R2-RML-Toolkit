@@ -57,7 +57,11 @@ Note, that any of the many serialization formats supported by Jena could be used
 |               0.9.0 | 3.17.0 |
 |               0.9.1 |  4.4.0 |
 |               0.9.2 |  4.4.0 |
-| 0.9.3 (in progress) |  4.5.0 |
+|               0.9.3 |  4.5.0 |
+|             4.8.0-X |  4.8.0 |
+
+Starting with Jena 4.8.0 we aligned the version of this project with Jena to make it easier to determine the compatibility.
+For example, `r2rml-jena-api` version `4.8.0-2` indicates the second release developed against Jena 4.8.0.
 
 ## Usage with Maven
 
