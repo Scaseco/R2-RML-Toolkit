@@ -83,6 +83,20 @@ rs:ObjectMapShape
   ] .
 
 
+
+# Stub!
+rs:PredicateObjectMapShape
+  rdf:type sh:NodeShape ;
+  rdfs:label "PredicateObjectMap Shape" ;
+  sh:targetObjectsOf rr:predicateObjectMap ;
+  sh:property [ sh:path rr:predicate ; sh:minCount 0 ] ;
+  sh:property [ sh:path rr:predicateMap ; sh:minCount 0 ] ;
+  sh:property [ sh:path rr:object ; sh:minCount 0 ] ;
+  sh:property [ sh:path rr:objectMap ; sh:minCount 0 ] ;
+  .
+
+
+
 rs:TriplesMapShape
   rdf:type sh:NodeShape ;
   rdfs:label "TriplesMap Shape" ;
