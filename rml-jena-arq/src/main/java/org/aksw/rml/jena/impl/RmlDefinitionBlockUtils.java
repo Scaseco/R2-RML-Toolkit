@@ -59,8 +59,10 @@ public class RmlDefinitionBlockUtils {
 
     }
 
-
-    /** Method to copy LogicalSources without the definition block*/
+    /**
+     * Method to copy LogicalSources without the definition block.
+     * Used in the creation of the SPARQL SERVICE <norse:rml.source> element from an RML logical source.
+     */
     public static Resource closureWithoutDefinitions(Resource r) {
         // Create a relevant copy of the logical source that has aliases/binds cleared
         Model closure1 = ResourceUtils.reachableClosure(r);
@@ -188,12 +190,3 @@ public class RmlDefinitionBlockUtils {
     }
 }
 
-//List<Var> roots = JGraphUtils.findRoots(dag);
-//class JGraphUtils {
-//    public static <V, E> List<V> findRoots(Graph<V, E> graph) {
-//        return graph.vertexSet().stream()
-//                .filter(v -> graph.inDegreeOf(v) == 0)
-//                .collect(Collectors.toList());
-//    }
-//}
-//

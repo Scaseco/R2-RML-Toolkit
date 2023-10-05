@@ -15,8 +15,8 @@ import org.aksw.r2rml.jena.jdbc.impl.NaturalMappings;
 import org.aksw.r2rml.jena.jdbc.impl.NodeMapperMultiplexer;
 import org.aksw.r2rml.jena.jdbc.impl.RowToBindingImpl;
 import org.aksw.r2rml.jena.jdbc.impl.SqlTypeMapper;
-import org.apache.jena.ext.com.google.common.collect.HashBiMap;
-import org.apache.jena.ext.com.google.common.collect.Sets;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Sets;
 import org.apache.jena.sparql.core.Var;
 
 

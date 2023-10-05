@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
-import org.apache.jena.ext.com.google.common.reflect.ClassPath;
-import org.apache.jena.ext.com.google.common.reflect.ClassPath.ResourceInfo;
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ResourceInfo;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;

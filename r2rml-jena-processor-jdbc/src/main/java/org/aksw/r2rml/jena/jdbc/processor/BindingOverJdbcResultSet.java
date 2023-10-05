@@ -2,7 +2,7 @@ package org.aksw.r2rml.jena.jdbc.processor;
 
 import java.util.Iterator;
 
-import org.apache.jena.ext.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.BindingBase;

@@ -28,7 +28,7 @@ import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
 import org.aksw.jena_sparql_api.sparql.ext.xml.JenaXmlUtils;
-import org.aksw.jenax.arq.util.exec.QueryExecUtils;
+import org.aksw.jenax.arq.util.exec.query.QueryExecUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;

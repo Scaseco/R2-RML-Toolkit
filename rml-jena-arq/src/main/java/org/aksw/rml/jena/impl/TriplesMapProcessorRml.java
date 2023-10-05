@@ -28,7 +28,7 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.Element;
 
 /**
- * The RML processor adds a bit of funcionality over the R2RML processor:
+ * The RML processor adds a bit of functionality over the R2RML processor:
  * <ul>
  *   <li>The triples map contains the reference formulation which controls how turn rml:reference's into SPARQL Exprs</li>
  *   <li>TermMaps may be FunctionMaps
@@ -61,6 +61,9 @@ public class TriplesMapProcessorRml
         this.registry = registry;
     }
 
+    /**
+     * Configures the context's referenceResolver and sourceIdentityResolver.
+     */
     @Override
     public void initResolvers(MappingCxt cxt) {
         TriplesMap ctm = cxt.getTriplesMap();
@@ -119,17 +122,6 @@ public class TriplesMapProcessorRml
             }
         }
     }
-
-//
-//    public static <T> Function<T, T> nullToDefault(Function<T, T> fn, T defaultValue) {
-//        return x -> {
-//            T r = fn.apply(x);
-//            if (r == null) {
-//                r = defaultValue;
-//            }
-//            return r;
-//        };
-//    }
 
     @Override
     protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {

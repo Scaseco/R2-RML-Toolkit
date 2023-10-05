@@ -1,6 +1,6 @@
 package org.aksw.rml.jena.impl;
 
-import org.aksw.jena_sparql_api.sparql.ext.init.NorseTerms;
+import org.aksw.jenax.norse.NorseTerms;
 
 /** Terms for the norse extensions of RML */
 public class NorseRmlTerms {
@@ -24,8 +24,11 @@ public class NorseRmlTerms {
     /** Property IRI to introduce an alias for a reference expression */
     public static final String alias = NS + "alias";
 
-    /** Property IRI to introduce an alias for a SPARQL expression. Variables can be aliases. */
+    /** Property IRI to introduce an alias for a SPARQL expression. Variables in expressions can be aliases. */
     public static final String bind = NS + "bind";
+
+    /** Property IRI whose range is the set of SPARQL expressions (as strings). */
+    public static final String filter = NS + "filter";
 
     public static final String qualifiedBind = NS + "qualifiedBind";
 

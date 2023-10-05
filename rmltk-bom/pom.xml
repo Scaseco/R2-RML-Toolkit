@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
-	<version>4.8.0-3-SNAPSHOT</version>
+	<version>4.9.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - BOM</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -41,8 +41,8 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>4.8.0</jena.version>
-		<jenax.version>4.8.0-3-SNAPSHOT</jenax.version>
+		<jena.version>4.9.0</jena.version>
+		<jenax.version>4.9.0-1-SNAPSHOT</jenax.version>
 		<aksw-commons.version>0.9.7-SNAPSHOT</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
 		<timestamp>${maven.build.timestamp}</timestamp>

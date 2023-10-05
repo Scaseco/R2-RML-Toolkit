@@ -20,7 +20,7 @@ import org.aksw.r2rml.jena.testsuite.domain.Database;
 import org.aksw.r2rml.jena.testsuite.domain.R2rmlTestCase;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.ext.com.google.common.collect.Streams;
+import com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
