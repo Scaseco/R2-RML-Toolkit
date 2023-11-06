@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
-	<version>4.8.0-2</version>
+	<version>4.9.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - BOM</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -41,9 +41,10 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>4.8.0</jena.version>
-		<jenax.version>4.8.0-2</jenax.version>
-		<aksw-commons.version>0.9.5</aksw-commons.version>
+		<jena.version>4.9.0</jena.version>
+		<jenax.version>4.9.0-1</jenax.version>
+		<aksw-commons.version>0.9.7</aksw-commons.version>
+		<hikaricp.version>5.0.1</hikaricp.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<!-- Project Settings -->
@@ -53,7 +54,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<gpg.keyname>AKSW</gpg.keyname>
-
 		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
 	</properties>
 	<dependencyManagement>
@@ -159,6 +159,12 @@
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-shacl</artifactId>
 				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.zaxxer</groupId>
+				<artifactId>HikariCP</artifactId>
+				<version>${hikaricp.version}</version>
+				<!-- <type>bundle</type> -->
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>

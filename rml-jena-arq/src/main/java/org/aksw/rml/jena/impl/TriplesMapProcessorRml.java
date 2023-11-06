@@ -1,23 +1,34 @@
 package org.aksw.rml.jena.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+
+import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.commons.util.function.FunctionUtils;
 import org.aksw.fnml.model.FunctionMap;
+import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
-import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.RmlTermMap;
 import org.aksw.rml.model.RmlTriplesMap;
+import org.aksw.rmlx.model.RmlDefinitionBlock;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.Element;
 
 /**
- * The RML processor adds a bit of funcionality over the R2RML processor:
+ * The RML processor adds a bit of functionality over the R2RML processor:
  * <ul>
  *   <li>The triples map contains the reference formulation which controls how turn rml:reference's into SPARQL Exprs</li>
  *   <li>TermMaps may be FunctionMaps
@@ -33,7 +44,7 @@ public class TriplesMapProcessorRml
     // protected ReferenceFormulation referenceFormulation;
     // protected Var itemVar; // Variable for an item of the source document
     protected ReferenceFormulationRegistry registry;
-    protected ReferenceFormulation referenceFormulation;
+    // protected ReferenceFormulation referenceFormulation;
 
 
     public TriplesMapProcessorRml(TriplesMap triplesMap,  Model fnmlModel) {
@@ -50,16 +61,66 @@ public class TriplesMapProcessorRml
         this.registry = registry;
     }
 
+    /**
+     * Configures the context's referenceResolver and sourceIdentityResolver.
+     */
     @Override
-    public TriplesMapToSparqlMapping call() {
-        LogicalSource logicalSource = triplesMap.as(RmlTriplesMap.class).getLogicalSource();
+    public void initResolvers(MappingCxt cxt) {
+        TriplesMap ctm = cxt.getTriplesMap();
+        LogicalSource logicalSource = ctm.as(RmlTriplesMap.class).getLogicalSource();
+        ReferenceFormulation referenceFormulation = null;
         if (logicalSource != null) {
             String rfi = logicalSource.getReferenceFormulationIri();
             referenceFormulation = registry.getOrThrow(rfi);
         }
 
-        TriplesMapToSparqlMapping base = super.call();
-        return base;
+        ReferenceFormulation rf = referenceFormulation;
+        Var triplesMapVar = cxt.getTriplesMapVar();
+
+        // The "raw" reference resolver does not deal with aliases
+        Function<String, Expr> rawRefResolver = refStr -> {
+            Expr r = rf.reference(triplesMapVar, refStr);
+            return r;
+        };
+
+        // Remap of specified aliases to allocated variables (for better or worse we relabel variables)
+        Map<Expr, Expr> remap = new HashMap<>();
+
+        // Set up the reference resolver where aliases take precedence
+        cxt.setReferenceResolver(refStr -> {
+            Expr tmp = new ExprVar(refStr);
+            Expr r = remap.get(tmp);
+            if (r == null) {
+                r = rawRefResolver.apply(refStr);
+            }
+            return r;
+        });
+
+        cxt.setSourceIdentityResolver(tm -> {
+            RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
+            LogicalSource ls = rtm.getLogicalSource();
+
+            // Create a copy of the logical source that has aliases/binds cleared
+            // LogicalSource copy = RmlDefinitionBlockUtils.closureWithoutDefinitions(ls).as(LogicalSource.class);
+            Element r = rf.source(ls, Vars.x);
+            return r;
+        });
+
+        // Expand aliases and definitions
+        if (logicalSource != null) {
+            RmlDefinitionBlock block = logicalSource.as(RmlDefinitionBlock.class);
+            GenericDag<Expr, Var> dag = cxt.getExprDag();
+            VarExprList vel = RmlDefinitionBlockUtils.processExprs(block, rawRefResolver);
+            for (Entry<Var, Expr> e : vel.getExprs().entrySet()) {
+                Var v = e.getKey();
+                Expr rawExpr = e.getValue();
+                Expr expr = ExprUtils.replace(rawExpr, FunctionUtils.nullToIdentity(remap::get));
+                Expr newExpr = dag.addRoot(expr);
+                if (newExpr.isVariable()) {
+                    remap.put(new ExprVar(v), newExpr);
+                }
+            }
+        }
     }
 
     @Override
@@ -89,15 +150,31 @@ public class TriplesMapProcessorRml
         return result;
     }
 
-    @Override
-    protected Object getSourceIdentity(TriplesMap tm) {
-        Element result = referenceFormulation.source(tm.as(RmlTriplesMap.class).getLogicalSource(), Vars.x);
-        return result;
-    }
+//    @Override
+//    protected Object getSourceIdentity(TriplesMap tm) {
+//        RmlTriplesMap rtm = tm.as(RmlTriplesMap.class);
+//        LogicalSource logicalSource = rtm.getLogicalSource();
+//        Element result = referenceFormulation.source(logicalSource, Vars.x);
+//        return result;
+//    }
 
-    @Override
-    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
-        Expr result = referenceFormulation.reference(cxt.getTriplesMapVar(), colName);
-        return result;
-    }
+//    @Override
+//    protected Expr referenceToExpr(MappingCxt cxt, String colName) {
+//        Expr result = referenceFormulation.reference(cxt.getTriplesMapVar(), colName);
+//        return result;
+//    }
+
+//  @Override
+//  public TriplesMapToSparqlMapping call() {
+//      LogicalSource logicalSource = triplesMap.as(RmlTriplesMap.class).getLogicalSource();
+//      if (logicalSource != null) {
+//          String rfi = logicalSource.getReferenceFormulationIri();
+//          referenceFormulation = registry.getOrThrow(rfi);
+//      }
+//
+//      TriplesMapToSparqlMapping base = super.call();
+//      return base;
+//  }
+
+
 }

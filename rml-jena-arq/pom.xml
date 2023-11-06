@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.8.0-2</version>
+		<version>4.9.0-1-SNAPSHOT</version>
 	</parent>
 	<artifactId>rml-jena-arq</artifactId>
 	<packaging>jar</packaging>
@@ -22,6 +22,14 @@
 		</resources>
 	</build>
 	<dependencies>
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-shacl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-core</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-reprogen-core</artifactId>
@@ -74,6 +82,14 @@
 			<artifactId>r2rml-resource-shacl</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>r2rml-jena-processor-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
@@ -84,6 +100,14 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-shacl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-csvw</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-d2rq</artifactId>
 		</dependency>
 	</dependencies>
 </project>

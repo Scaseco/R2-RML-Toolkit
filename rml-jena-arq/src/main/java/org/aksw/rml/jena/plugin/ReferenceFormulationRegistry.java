@@ -6,6 +6,7 @@ import java.util.Map;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationCsvViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonViaService;
+import org.aksw.rml.jena.ref.impl.ReferenceFormulationRdbViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationXmlViaService;
 import org.aksw.rml.model.QlTerms;
 import org.apache.jena.query.ARQ;
@@ -43,6 +44,7 @@ public class ReferenceFormulationRegistry
         registry.put(QlTerms.CSV, new ReferenceFormulationCsvViaService());
         registry.put(QlTerms.JSONPath, new ReferenceFormulationJsonViaService());
         registry.put(QlTerms.XPath, new ReferenceFormulationXmlViaService());
+        registry.put(QlTerms.RDB, new ReferenceFormulationRdbViaService());
     }
 
 //    public static ReferenceFormulationRegistry getOrDefault(Context cxt) {

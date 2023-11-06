@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.8.0-2</version>
+		<version>4.9.0-1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>r2rml-resource-ontology</artifactId>

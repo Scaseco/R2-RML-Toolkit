@@ -4,12 +4,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
+import javax.sql.DataSource;
 import javax.xml.xpath.XPathFactory;
 
 import org.aksw.commons.jena.graph.GraphVarImpl;
@@ -18,19 +21,29 @@ import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.aksw.commons.model.csvw.univocity.UnivocityUtils;
+import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
+import org.aksw.jena_sparql_api.sparql.ext.binding.NodeValueBinding;
 import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
 import org.aksw.jena_sparql_api.sparql.ext.xml.JenaXmlUtils;
-import org.aksw.jenax.arq.util.exec.QueryExecUtils;
+import org.aksw.jenax.arq.util.exec.query.QueryExecUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
-import org.aksw.rml.jena.impl.RmlLib;
+import org.aksw.jenax.model.csvw.domain.api.Table;
+import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.r2rml.jena.domain.api.LogicalTable;
+import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
+import org.aksw.r2rml.jena.jdbc.processor.R2rmlJdbcUtils;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
+import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -39,6 +52,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.core.Var;
@@ -46,6 +60,8 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.graph.GraphFactory;
@@ -97,6 +113,7 @@ public class InitRmlService {
         registry.put(QlTerms.CSV, InitRmlService::processSourceAsCsv);
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
         registry.put(QlTerms.XPath, InitRmlService::processSourceAsXml);
+        registry.put(QlTerms.RDB, InitRmlService::processSourceAsJdbc);
 
         String iri = logicalSource.getReferenceFormulationIri();
         Preconditions.checkArgument(iri != null, "Reference formulation not specified on source. " + logicalSource);
@@ -108,8 +125,38 @@ public class InitRmlService {
         return result;
     }
 
+    public static QueryIterator processSourceAsJdbc(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        SourceOutput output = logicalSource.as(SourceOutput.class);
+        Var outVar = output.getOutputVar();
+
+        // TODO Register data source with execCxt and reuse if present
+        LogicalTable logicalTable = logicalSource.as(LogicalTable.class);
+        D2rqDatabase dataSourceSpec = logicalSource.getSource().as(D2rqDatabase.class);
+
+        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark(); // SqlCodecUtils.createSqlCodecDefault();
+
+        DataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec);
+        // Connection conn = dataSource.getConnection();
+
+        NodeMapper nodeMapper = null; // create on demand TODO This is hacky
+        IteratorCloseable<Binding> it;
+        try {
+            it = R2rmlJdbcUtils.processR2rml(dataSource, logicalTable, nodeMapper, sqlCodec);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Iter<Binding> it2 = Iter.iter(it).map(b -> {
+            Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
+            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(bb).asNode());
+            return r;
+        });
+
+        return QueryIterPlainWrapper.create(it2, execCxt);
+    }
+
     public static QueryIterator processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -134,12 +181,11 @@ public class InitRmlService {
                 : JenaJsonUtils.evalJsonPath(gson, nv, NodeValue.makeString(iterator));
 
         QueryIterator result = JenaJsonUtils.unnestJsonArray(gson, parentBinding, null, execCxt, arr.asNode(), outVar);
-
         return result;
     }
 
     public static QueryIterator processSourceAsXml(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -160,7 +206,6 @@ public class InitRmlService {
     }
 
     public static QueryIterator processSourceAsCsv(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var[] headerVars = null;
@@ -179,18 +224,31 @@ public class InitRmlService {
             throw new RuntimeException("No output specified");
         }
 
-        String source = logicalSource.getSource();
-        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(source), execCxt);
-        Dialect dialect = logicalSource.as(Dialect.class);
-
+        RDFNode source = logicalSource.getSource();
+        String sourceDoc;
         DialectMutable effectiveDialect = new DialectMutableImpl();
-        dialect.copyInto(effectiveDialect, false);
+        String[] nullValues = null;
+        if (source.isLiteral()) {
+            sourceDoc = logicalSource.getSourceAsString();
+        } else {
+            Table csvwtSource = source.as(Table.class);
 
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
+            Dialect dialect = csvwtSource.getDialect();
+            if (dialect != null) {
+                dialect.copyInto(effectiveDialect, false);
+            }
+            Set<String> nullSet = csvwtSource.getNull();
+            if (nullSet != null && !nullSet.isEmpty()) {
+                nullValues = nullSet.toArray(new String[0]);
+            }
+            sourceDoc = csvwtSource.getUrl();
+        }
+        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
+
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(true)
                 .configure(csvConf);
-
         QueryIterator result;
 
         // FIXME If the output var is bound to a constant then filter the source to that value

@@ -7,7 +7,7 @@ import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.IriType;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
-import org.apache.jena.ext.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.RDFNode;

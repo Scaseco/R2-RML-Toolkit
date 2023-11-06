@@ -22,20 +22,6 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.function.user.UserDefinedFunctionDefinition;
 
-class XsdTerms {
-    public static final String uri = "http://www.w3.org/2001/XMLSchema#";
-
-    public static final String hexBinary = uri + "hexBinary";
-    public static final String decimal = uri + "decimal";
-    public static final String integer = uri + "integer";
-    public static final String xdouble = uri + "double";
-    public static final String xboolean = uri + "boolean";
-    public static final String date = uri + "date";
-    public static final String time = uri + "time";
-    public static final String dateTime = uri + "dateTime";
-    public static final String string = uri + "string";
-}
-
 public class NaturalMappings {
 
     private static final Var x = Var.alloc("x");
@@ -66,11 +52,8 @@ public class NaturalMappings {
 
     public static NodeMapper createNodeMapper(int sqlType, SqlTypeMapper sqlTypeMapper) {
         SqlDatatype sqlDatatype = sqlTypeMapper.getTypeBySqlType(sqlType);
-
         Objects.requireNonNull(sqlDatatype, "No SqlDatatype found for sqlType " + sqlType);
-
         return new NodeMapperViaSqlDatatype(sqlDatatype);
-
     }
 
     public static Set<SqlDatatype> getDefaultDatatypes(TypeMapper typeMapper) {

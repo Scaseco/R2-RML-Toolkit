@@ -57,7 +57,11 @@ Note, that any of the many serialization formats supported by Jena could be used
 |               0.9.0 | 3.17.0 |
 |               0.9.1 |  4.4.0 |
 |               0.9.2 |  4.4.0 |
-| 0.9.3 (in progress) |  4.5.0 |
+|               0.9.3 |  4.5.0 |
+|             4.8.0-X |  4.8.0 |
+
+Starting with Jena 4.8.0 we aligned the version of this project with Jena to make it easier to determine the compatibility.
+For example, `r2rml-jena-api` version `4.8.0-2` indicates the second release developed against Jena 4.8.0.
 
 ## Usage with Maven
 
@@ -71,6 +75,30 @@ Just include
 ```
 
 [List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
+
+## Usage of the CLI Tool
+
+### Conversion of RML to SPARQL Construct Queries
+```cli
+rmltk rml to sparql mapping.rml.ttl > mapping.raw.rq
+rmltk optimize workload mapping.raw.rq --no-order > mapping.rq
+```
+
+
+### How to Execute the Mapping
+
+The [RDF processing toolkit (RPT)](https://github.com/SmartDataAnalytics/RdfProcessingToolkit) supports execution of the generated mapping. RPT uses this repository.
+
+Using the single threaded Jena engine:
+```cli
+rpt integrate mapping.rq
+```
+
+Using RPT's parallel Spark-based executor:
+```cli
+rpt sansa query mapping.rq
+```
+
 
 
 ### Modules
