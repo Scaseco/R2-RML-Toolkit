@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.9.0-2-SNAPSHOT</version>
+		<version>4.10.0-1-SNAPSHOT</version>
 	</parent>
 	<artifactId>rmltk-picocli-cmds</artifactId>
 	<packaging>jar</packaging>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.aksw.rmltk</groupId>
             <artifactId>rmltk-utils-xmltojson</artifactId>
-            <version>4.9.0-2-SNAPSHOT</version>
+            <version>4.10.0-1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
