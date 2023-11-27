@@ -53,7 +53,7 @@ public class R2rmlTestSuiteProcessorH2 {
 
             NodeValue na = NodeValue.makeNode(a);
             NodeValue nb = NodeValue.makeNode(b);
-            System.out.println("Value equality: " + NodeValue.sameAs(na, nb));
+            System.out.println("Value equality: " + NodeValue.sameValueAs(na, nb));
             System.out.println(na.getDouble() == nb.getDouble());
             System.out.println("Term equality: " + a.equals(b));
             return;

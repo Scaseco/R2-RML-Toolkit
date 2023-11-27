@@ -68,7 +68,7 @@ import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sparql.syntax.Element;
 
-import com.github.jsonldjava.shaded.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
