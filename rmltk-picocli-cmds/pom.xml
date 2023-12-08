@@ -22,7 +22,6 @@
         <dependency>
             <groupId>org.aksw.rmltk</groupId>
             <artifactId>rmltk-utils-xmltojson</artifactId>
-            <version>5.0.0-1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

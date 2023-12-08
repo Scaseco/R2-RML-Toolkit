@@ -50,6 +50,31 @@ Note, that any of the many serialization formats supported by Jena could be used
 ] .
 ```
 
+## SPARQL Extensions in RML
+You can use SPARQL expressions to
+* add computed columns using `norse:bind` (analogous to SPARQL's `BIND`)
+* and to filter RDF terms using `norse:filter`
+
+```
+PREFIX norse: <https://w3id.org/aksw/norse#>
+PREFIX rr:    <http://www.w3.org/ns/r2rml#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+[ a                      rr:TriplesMap ;
+  rdfs:label             "My R2RML Mapping" ;
+  rr:predicateObjectMap  [ rr:objectMap  [ rr:column    "labels" ;
+                                           rr:language  "en"
+                                         ] ;
+                           rr:predicate  <urn:p>
+                         ] ;
+  rr:subject             <urn:s>
+] .
+
+
+
+```
+
+
 ## Jena Compatibility
 
 |           r2rml-api |  jena  |
