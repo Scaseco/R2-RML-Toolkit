@@ -51,27 +51,59 @@ Note, that any of the many serialization formats supported by Jena could be used
 ```
 
 ## SPARQL Extensions in RML
-You can use SPARQL expressions to
-* add computed columns using `norse:bind` (analogous to SPARQL's `BIND`)
-* and to filter RDF terms using `norse:filter`
+The RML toolkit provides extensions for the use SPARQL expressions to
+* add computed 'reference names' (columns) using `norse:rml.bind`
+* filter RDF terms using `norse:rml.filter`
 
-```
+An `norse:rml.bind` expression can override an existing column once. The existing column becomes 'shadowed' by the new value,
+so all other references will then refer to the shadowed values.
+
+Prefixes inside of these SPARQL expressions are specified using the SHACL vocabulary.
+
+```turtle
+PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+
+PREFIX sh: <http://www.w3.org/ns/shacl#>
 PREFIX norse: <https://w3id.org/aksw/norse#>
-PREFIX rr:    <http://www.w3.org/ns/r2rml#>
-PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 
-[ a                      rr:TriplesMap ;
-  rdfs:label             "My R2RML Mapping" ;
-  rr:predicateObjectMap  [ rr:objectMap  [ rr:column    "labels" ;
-                                           rr:language  "en"
-                                         ] ;
-                           rr:predicate  <urn:p>
-                         ] ;
-  rr:subject             <urn:s>
-] .
+_:prefixes
+  sh:declare [ sh:prefix "xsd"  ; sh:namespace "http://www.w3.org/2001/XMLSchema#" ] ;
+  sh:declare [ sh:prefix "geo"  ; sh:namespace "http://www.opengis.net/ont/geosparql#" ] ;
+  sh:declare [ sh:prefix "geof" ; sh:namespace "http://www.opengis.net/def/function/geosparql/" ] ;
+  .
 
+<#AssetEmission>
+  a rr:TriplesMap;
+    rml:logicalSource [
+      rml:source "asset_shipping_emissions_year.csv";
+      rml:referenceFormulation ql:CSV ;
+      sh:prefixes _:prefixes ;
 
+      # 'Shadow' the references of ?start_time based on the expression below.
+      # All rml:reference instances will refer to the shadowed value
+      norse:rml.bind "xsd:dateTime(replace(?start_time, ' ', 'T')) AS ?start_time" ;
+      norse:rml.bind "xsd:dateTime(replace(?end_time, ' ', 'T')) AS ?end_time" ;
+      norse:rml.bind "geof:simplifyDp(strdt(?st_astext, geo:wktLiteral), 0.0001) AS ?st_astext" ;
 
+      # Compute a new column
+      norse:rml.bind "xsd:gYear(?start_time) AS ?year" ;
+    ] ;
+    rr:subjectMap [
+      rr:template "https://data.coypu.org/ClimateTrace/{asset_id}-{iso3_country}-{gas}-{year}";
+      rr:class coy:AssetEmission
+    ] ;
+    rr:predicateObjectMap [
+      rr:predicate coy:hasAssetId;
+      rr:objectMap [
+        rml:reference "asset_id";
+        rr:datatype xsd:string ;
+        # Omit generation of this term (and thus the corresponding triples)
+        # if the condition evaluates to boolean false.
+        norse:rml.filter "?assert_id != ''" ;
+      ]
+    ] ;
+    # ...
+    .
 ```
 
 
