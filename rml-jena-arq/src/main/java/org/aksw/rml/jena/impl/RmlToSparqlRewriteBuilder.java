@@ -1,5 +1,6 @@
 package org.aksw.rml.jena.impl;
 
+import java.io.ByteArrayInputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +24,7 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.riot.system.AsyncParser;
@@ -133,6 +136,13 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
+    public RmlToSparqlRewriteBuilder addRmlString(String str) {
+        Input input = processInput("inline string",
+                () -> AsyncParser.of(new ByteArrayInputStream(str.getBytes()), Lang.TURTLE, null).streamElements());
+        modelAndBaseIriList.add(input);
+        return this;
+    }
+
     public RmlToSparqlRewriteBuilder addRmlFiles(Collection<String> rmlFiles) {
         for (String rmlFile : rmlFiles) {
             addRmlFile(rmlFile);
@@ -142,7 +152,7 @@ public class RmlToSparqlRewriteBuilder {
 
     public RmlToSparqlRewriteBuilder addRmlFile(String rmlFile) {
         // Model model = RDFDataMgr.loadModel(rmlFile);
-        Input input = processInput(rmlFile);
+        Input input = processInput(rmlFile, () -> AsyncParser.of(rmlFile).streamElements());
         modelAndBaseIriList.add(input);
         return this;
     }
@@ -152,12 +162,12 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
-    public static Input processInput(String inputFile) {
+    public static Input processInput(String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
 
         // Extract the base IRI needed to succeed on test cases such as RMLTC0020a-CSV and RMLTC0020b-CSV
         String base = null;
         Graph graph = GraphFactory.createDefaultGraph();
-        try (Stream<EltStreamRDF> stream = AsyncParser.of(inputFile).streamElements()) {
+        try (Stream<EltStreamRDF> stream = streamSupplier.get()) {
             Iterator<EltStreamRDF> it = stream.iterator();
             while (it.hasNext()) {
                 EltStreamRDF elt = it.next();
@@ -166,7 +176,7 @@ public class RmlToSparqlRewriteBuilder {
                 } else if (elt.isTriple()) {
                     graph.add(elt.triple());
                 } else if (elt.isException()) {
-                    throw new RuntimeException("Failed to process input " + inputFile, elt.exception());
+                    throw new RuntimeException("Failed to process input " + inputLabel, elt.exception());
                 }
             }
         }
@@ -174,7 +184,7 @@ public class RmlToSparqlRewriteBuilder {
         Model model = ModelFactory.createModelForGraph(graph);
 
         // modelAndBaseIriList.add(new Input(inputFile, model, base));
-        return new Input(inputFile, model, base);
+        return new Input(inputLabel, model, base);
     }
 
 
