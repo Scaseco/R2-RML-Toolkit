@@ -2,7 +2,22 @@
 
 A modular R2RML suite built on Apache Jena. Featuring a complete domain API built on Jena's polymorphism system, SHACL validation, an R2RML processor with 100% standard conformance based an Jena's ARQ plus common tooling every R2RML project needs. 
 
-### Example
+## R2RML Model API
+
+The core of this project is formed by R2RML model classes that integrate directly with Apache Jena's polymorphism system.
+This means, you can write your application logic against ordinary Java interfaces.
+But under the hood their getters and setters actually read and write directly from/to an underlying RDF model.
+
+```xml
+<dependency>
+  <groupId>org.aksw.r2rml</groupId>
+  <artifactId>r2rml-jena-plugin</artifactId>
+  <version><!-- Check the link below --></version>
+</dependency>
+```
+
+
+[List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
 The following Java snippet demonstrates usage of the API:
 ```java
@@ -106,6 +121,30 @@ _:prefixes
     .
 ```
 
+## RML to SPARQL Conversion
+
+Since version 5.0.0 there is now the `RmlToSparqlRewriteBuilder` for translating RML to SPARQL.
+
+```xml
+<dependency>
+  <groupId>org.aksw.rmltk</groupId>
+  <artifactId>rml-jena-arq</artifactId>
+</dependency>
+```
+
+
+```java
+RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+  .setCache(cache)
+  .addFnmlFiles(fnmlFiles)
+  .addRmlFiles(inputFiles)
+  .setDenormalize(denormalize)
+  .setMerge(merge)
+  ;
+
+List<Entry<Query, String>> labeledQueries = builder.generate();
+```
+
 
 ## Jena Compatibility
 
@@ -120,18 +159,6 @@ _:prefixes
 Starting with Jena 4.8.0 we aligned the version of this project with Jena to make it easier to determine the compatibility.
 For example, `r2rml-jena-api` version `4.8.0-2` indicates the second release developed against Jena 4.8.0.
 
-## Usage with Maven
-
-Just include
-```xml
-<dependency>
-  <groupId>org.aksw.r2rml</groupId>
-  <artifactId>r2rml-jena-plugin</artifactId>
-  <version><!-- Check the link below --></version>
-</dependency>
-```
-
-[List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
 ## Usage of the CLI Tool
 
@@ -156,8 +183,6 @@ Using RPT's parallel Spark-based executor:
 rpt sansa query mapping.rq
 ```
 
-
-
 ### Modules
 * [r2rml-resource-ontology](r2rml-resource-ontology): A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
 * [r2rml-resource-w3c-testsuite](r2rml-resource-w3c-testsuite): The W3C R2RML test suite resources (editor's draft)
@@ -174,9 +199,19 @@ rpt sansa query mapping.rq
 * [r2rmlx-jena-api](r2rmlx-jena-api): Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns. Registers the r2rmlx extensions when added as a maven dependency.
 
 
+## How to Cite this Work
+
+```bibtex
+@inproceedings{kgcw2023sbmm,
+  title={Scaling RML and SPARQL-based Knowledge Graph Construction with Apache Spark},
+  author={Stadler, Claus and B{\"u}hmann, Lorenz and Meyer, Lars-Peter and Martin, Michael},
+  booktitle={KGCW2023, the 4th International Workshop on Knowledge Graph Construction},
+  year={2023}
+}
+```
+
 ## License
 The **source code** and **shacl** specification of this repo is published under the [Apache License Version 2.0](LICENSE).
-
 
 * The R2RML ontology is under http://creativecommons.org/licenses/by/3.0/
 * The w3c test suite is under its respective license.
