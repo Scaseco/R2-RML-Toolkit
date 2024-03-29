@@ -23,7 +23,12 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.200</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<!-- not in test scope because; this artifact is meant as a compile dep for tests -->
 		</dependency>
 
 <!-- 		<dependency> -->

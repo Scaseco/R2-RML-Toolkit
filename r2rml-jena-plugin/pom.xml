@@ -14,7 +14,6 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-arq</artifactId>
@@ -30,6 +29,11 @@
 			<artifactId>jenax-reprogen-core</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
 
