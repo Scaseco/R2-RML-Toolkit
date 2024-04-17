@@ -42,9 +42,9 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>5.0.0-SNAPSHOT</jena.version>
+		<jena.version>5.0.0</jena.version>
 		<jenax.version>5.0.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.8-SNAPSHOT</aksw-commons.version>
+		<aksw-commons.version>0.9.8</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
