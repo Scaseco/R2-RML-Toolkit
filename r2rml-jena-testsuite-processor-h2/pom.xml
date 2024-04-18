@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.9.0-1</version>
+		<version>5.0.0-1</version>
 	</parent>
 
 	<artifactId>r2rml-jena-testsuite-processor-h2</artifactId>
@@ -23,7 +23,12 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.200</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<!-- not in test scope because; this artifact is meant as a compile dep for tests -->
 		</dependency>
 
 <!-- 		<dependency> -->

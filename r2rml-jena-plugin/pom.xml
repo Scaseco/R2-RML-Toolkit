@@ -7,14 +7,13 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.9.0-1</version>
+		<version>5.0.0-1</version>
 	</parent>
 
 	<artifactId>r2rml-jena-plugin</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-arq</artifactId>
@@ -30,6 +29,11 @@
 			<artifactId>jenax-reprogen-core</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
 

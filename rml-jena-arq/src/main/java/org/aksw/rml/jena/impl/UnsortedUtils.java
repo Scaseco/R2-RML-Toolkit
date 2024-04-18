@@ -2,16 +2,10 @@ package org.aksw.rml.jena.impl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 import org.aksw.commons.algebra.allen.AllenConstants;
 import org.aksw.commons.algebra.allen.AllenRelation;
@@ -22,7 +16,6 @@ import org.aksw.jenax.constraint.impl.CBindingMap;
 import org.aksw.jenax.constraint.util.ConstraintDerivations;
 import org.aksw.jenax.sparql.algebra.eval.EvaluationOfConstraints;
 import org.aksw.jenax.sparql.algebra.eval.Evaluator;
-import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Node;
@@ -32,7 +25,6 @@ import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.ExprLib;
-import org.junit.Assert;
 
 import com.google.common.base.Preconditions;
 

@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>4.9.0-1</version>
+		<version>5.0.0-1</version>
 	</parent>
 
 	<artifactId>r2rml-jena-sql-transforms</artifactId>

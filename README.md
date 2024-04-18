@@ -2,7 +2,22 @@
 
 A modular R2RML suite built on Apache Jena. Featuring a complete domain API built on Jena's polymorphism system, SHACL validation, an R2RML processor with 100% standard conformance based an Jena's ARQ plus common tooling every R2RML project needs. 
 
-### Example
+## R2RML Model API
+
+The core of this project is formed by R2RML model classes that integrate directly with Apache Jena's polymorphism system.
+This means, you can write your application logic against ordinary Java interfaces.
+But under the hood their getters and setters actually read and write directly from/to an underlying RDF model.
+
+```xml
+<dependency>
+  <groupId>org.aksw.r2rml</groupId>
+  <artifactId>r2rml-jena-plugin</artifactId>
+  <version><!-- Check the link below --></version>
+</dependency>
+```
+
+
+[List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
 The following Java snippet demonstrates usage of the API:
 ```java
@@ -50,6 +65,87 @@ Note, that any of the many serialization formats supported by Jena could be used
 ] .
 ```
 
+## SPARQL Extensions in RML
+The RML toolkit provides extensions for the use SPARQL expressions to
+* add computed 'reference names' (columns) using `norse:rml.bind`
+* filter RDF terms using `norse:rml.filter`
+
+An `norse:rml.bind` expression can override an existing column once. The existing column becomes 'shadowed' by the new value,
+so all other references will then refer to the shadowed values.
+
+Prefixes inside of these SPARQL expressions are specified using the SHACL vocabulary.
+
+```turtle
+PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX norse: <https://w3id.org/aksw/norse#>
+
+_:prefixes
+  sh:declare [ sh:prefix "xsd"  ; sh:namespace "http://www.w3.org/2001/XMLSchema#" ] ;
+  sh:declare [ sh:prefix "geo"  ; sh:namespace "http://www.opengis.net/ont/geosparql#" ] ;
+  sh:declare [ sh:prefix "geof" ; sh:namespace "http://www.opengis.net/def/function/geosparql/" ] ;
+  .
+
+<#AssetEmission>
+  a rr:TriplesMap;
+    rml:logicalSource [
+      rml:source "asset_shipping_emissions_year.csv";
+      rml:referenceFormulation ql:CSV ;
+      sh:prefixes _:prefixes ;
+
+      # 'Shadow' the references of ?start_time based on the expression below.
+      # All rml:reference instances will refer to the shadowed value
+      norse:rml.bind "xsd:dateTime(replace(?start_time, ' ', 'T')) AS ?start_time" ;
+      norse:rml.bind "xsd:dateTime(replace(?end_time, ' ', 'T')) AS ?end_time" ;
+      norse:rml.bind "geof:simplifyDp(strdt(?st_astext, geo:wktLiteral), 0.0001) AS ?st_astext" ;
+
+      # Compute a new column
+      norse:rml.bind "xsd:gYear(?start_time) AS ?year" ;
+    ] ;
+    rr:subjectMap [
+      rr:template "https://data.coypu.org/ClimateTrace/{asset_id}-{iso3_country}-{gas}-{year}";
+      rr:class coy:AssetEmission
+    ] ;
+    rr:predicateObjectMap [
+      rr:predicate coy:hasAssetId;
+      rr:objectMap [
+        rml:reference "asset_id";
+        rr:datatype xsd:string ;
+        # Omit generation of this term (and thus the corresponding triples)
+        # if the condition evaluates to boolean false.
+        norse:rml.filter "?assert_id != ''" ;
+      ]
+    ] ;
+    # ...
+    .
+```
+
+## RML to SPARQL Conversion
+
+Since version 5.0.0 there is now the `RmlToSparqlRewriteBuilder` for translating RML to SPARQL.
+
+```xml
+<dependency>
+  <groupId>org.aksw.rmltk</groupId>
+  <artifactId>rml-jena-arq</artifactId>
+</dependency>
+```
+
+
+```java
+RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+  .setCache(cache)
+  .addFnmlFiles(fnmlFiles)
+  .addRmlFiles(inputFiles)
+  .setDenormalize(denormalize)
+  .setMerge(merge)
+  ;
+
+List<Entry<Query, String>> labeledQueries = builder.generate();
+```
+
+
 ## Jena Compatibility
 
 |           r2rml-api |  jena  |
@@ -63,18 +159,6 @@ Note, that any of the many serialization formats supported by Jena could be used
 Starting with Jena 4.8.0 we aligned the version of this project with Jena to make it easier to determine the compatibility.
 For example, `r2rml-jena-api` version `4.8.0-2` indicates the second release developed against Jena 4.8.0.
 
-## Usage with Maven
-
-Just include
-```xml
-<dependency>
-  <groupId>org.aksw.r2rml</groupId>
-  <artifactId>r2rml-jena-plugin</artifactId>
-  <version><!-- Check the link below --></version>
-</dependency>
-```
-
-[List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
 ## Usage of the CLI Tool
 
@@ -99,8 +183,6 @@ Using RPT's parallel Spark-based executor:
 rpt sansa query mapping.rq
 ```
 
-
-
 ### Modules
 * [r2rml-resource-ontology](r2rml-resource-ontology): A copy of the [R2RML ontology](https://www.w3.org/ns/r2rml) in turtle syntax
 * [r2rml-resource-w3c-testsuite](r2rml-resource-w3c-testsuite): The W3C R2RML test suite resources (editor's draft)
@@ -117,9 +199,19 @@ rpt sansa query mapping.rq
 * [r2rmlx-jena-api](r2rmlx-jena-api): Extensions of R2RML. Provides support for specification of prefix constraints for columns containing IRIs and support for and language tags from columns. Registers the r2rmlx extensions when added as a maven dependency.
 
 
+## How to Cite this Work
+
+```bibtex
+@inproceedings{kgcw2023sbmm,
+  title={Scaling RML and SPARQL-based Knowledge Graph Construction with Apache Spark},
+  author={Stadler, Claus and B{\"u}hmann, Lorenz and Meyer, Lars-Peter and Martin, Michael},
+  booktitle={KGCW2023, the 4th International Workshop on Knowledge Graph Construction},
+  year={2023}
+}
+```
+
 ## License
 The **source code** and **shacl** specification of this repo is published under the [Apache License Version 2.0](LICENSE).
-
 
 * The R2RML ontology is under http://creativecommons.org/licenses/by/3.0/
 * The w3c test suite is under its respective license.

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
-	<version>4.9.0-1</version>
+	<version>5.0.0-1</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - BOM</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -24,7 +24,8 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<!-- scm section needs to be duplicated on child module for github-release-plugin; 
+	<!-- scm section needs to be duplicated on child module for
+	github-release-plugin; 
 		see https://github.com/jutzig/github-release-plugin/issues/14 -->
 	<scm>
 		<url>https://github.com/Scaseco/RmlToolkit</url>
@@ -41,14 +42,14 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>4.9.0</jena.version>
-		<jenax.version>4.9.0-1</jenax.version>
-		<aksw-commons.version>0.9.7</aksw-commons.version>
+		<jena.version>5.0.0</jena.version>
+		<jenax.version>5.0.0-1</jenax.version>
+		<aksw-commons.version>0.9.8</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<!-- Project Settings -->
-		<maven.compiler.release>11</maven.compiler.release>
+		<maven.compiler.release>17</maven.compiler.release>
 		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
 		<file.encoding>UTF-8</file.encoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -146,6 +147,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.aksw.rmltk</groupId>
+				<artifactId>rmltk-utils-xmltojson</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-core</artifactId>
 				<version>${jena.version}</version>
@@ -171,7 +177,8 @@
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
 			</dependency>
-			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-core-rdfterm</artifactId> 
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-core-rdfterm</artifactId> 
 				<version>${jenax.version}</version> </dependency> -->
 			<!-- Using version 3.2 instead of 4.0 for compatibility with ontop -->
 			<dependency>
@@ -233,7 +240,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.11.0</version>
 					<configuration>
 						<release>${maven.compiler.release}</release>
 						<encoding>${project.build.sourceEncoding}</encoding>
@@ -280,7 +287,8 @@
 						<!-- <forkCount>1C</forkCount> -->
 						<!-- <reuseForks>true</reuseForks> -->
 						<useSystemClassLoader>false</useSystemClassLoader>
-						<!-- <forkCount>1</forkCount> <reuseForks>false</reuseForks> -->
+						<!-- <forkCount>1</forkCount>
+						<reuseForks>false</reuseForks> -->
 						<argLine>-Xms256m -Xmx512m</argLine>
 						<testFailureIgnore>false</testFailureIgnore>
 						<skipTests>false</skipTests>
@@ -303,11 +311,14 @@
 								<goal>shade</goal>
 							</goals>
 							<configuration>
-								<!-- TODO Shading is currently needed for the debian packages, which 
+								<!-- TODO Shading is currently needed for the
+								debian packages, which 
 									is slow and causes huge deployments -->
-								<!-- The deb packaging should be modified to work similar to the 
+								<!-- The deb packaging should be modified to
+								work similar to the 
 									dockerfile maven plugin: -->
-								<!-- Use the resource plugin to copy deps to a lib folder and adjust 
+								<!-- Use the resource plugin to copy deps to a
+								lib folder and adjust 
 									the bash scripts -->
 								<shadedArtifactAttached>true</shadedArtifactAttached>
 								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
@@ -325,8 +336,10 @@
 									<transformer
 										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 									<!-- add Main-Class to manifest file -->
-									<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
-									<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+									<!-- <transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+									<!--
+									<mainClass>com.mkyong.core.utils.App</mainClass> -->
 									<!-- </transformer> -->
 								</transformers>
 							</configuration>
@@ -392,12 +405,17 @@
 		</pluginManagement>
 	</build>
 	<profiles>
-		<!-- <profile> <id>doclint-java8-disable</id> <activation> <jdk>[1.8,)</jdk> 
-			</activation> <build> <plugins> <plugin> <groupId>org.apache.maven.plugins</groupId> 
-			<artifactId>maven-javadoc-plugin</artifactId> <version>2.10.4</version> <executions> 
-			<execution> <id>attach-javadocs</id> <goals> <goal>jar</goal> </goals> <configuration> 
+		<!-- <profile> <id>doclint-java8-disable</id> <activation>
+		<jdk>[1.8,)</jdk> 
+			</activation> <build> <plugins> <plugin>
+		<groupId>org.apache.maven.plugins</groupId> 
+			<artifactId>maven-javadoc-plugin</artifactId> <version>2.10.4</version>
+		<executions> 
+			<execution> <id>attach-javadocs</id> <goals> <goal>jar</goal> </goals>
+		<configuration> 
 			<failOnError>false</failOnError> </configuration> </execution> </executions> 
-			<configuration> <additionalparam>-Xdoclint:none</additionalparam> </configuration> 
+			<configuration> <additionalparam>-Xdoclint:none</additionalparam>
+		</configuration> 
 			</plugin> </plugins> </build> </profile> -->
 		<profile>
 			<id>release-aksw</id>
@@ -414,7 +432,8 @@
 			<distributionManagement>
 				<repository>
 					<id>ossrh</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<url>
+						https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 				</repository>
 			</distributionManagement>
 			<activation>

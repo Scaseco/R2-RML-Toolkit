@@ -1,5 +1,6 @@
 package org.aksw.rml.cli.cmd;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import org.aksw.rml.jena.impl.ReferenceFormulationWrapper;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
+import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.LogicalSource;
@@ -72,9 +74,35 @@ public class CmdRmlTkRmlToSparql
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
 
-
     @Override
     public Integer call() throws Exception {
+        RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                .setCache(cache)
+                .addFnmlFiles(fnmlFiles)
+                .addRmlFiles(inputFiles)
+                .setDenormalize(denormalize)
+                .setMerge(merge)
+                ;
+
+        List<Entry<Query, String>> labeledQueries = builder.generate();
+
+        write(System.out, labeledQueries);
+
+        return 0;
+    }
+
+    public static void write(PrintStream ps, List<Entry<Query, String>> labeledQueries) {
+        for (Entry<Query, String> entry : labeledQueries) {
+            String label = entry.getValue();
+            if (label != null) {
+                ps.println(label);
+            }
+            ps.println(entry.getKey());
+        }
+    }
+
+    // @Override
+    public Integer callOld() throws Exception {
         ReferenceFormulationService registry = ReferenceFormulationRegistry.get();
 
         if (cache) {
@@ -120,7 +148,7 @@ public class CmdRmlTkRmlToSparql
                     } else if (elt.isTriple()) {
                         graph.add(elt.triple());
                     } else if (elt.isException()) {
-                    	throw new RuntimeException("Failed to process input " + inputFile, elt.exception());
+                        throw new RuntimeException("Failed to process input " + inputFile, elt.exception());
                     }
                 }
             }
@@ -186,6 +214,30 @@ public class CmdRmlTkRmlToSparql
             }
         }
 
+        for (Entry<Query, String> entry : labeledQueries) {
+            String label = entry.getValue();
+            if (label != null) {
+                System.out.println(label);
+            }
+            System.out.println(entry.getKey());
+        }
+
         return 0;
     }
+
+
+//    public static class Input<I, O> {
+//    	protected I specification;
+//    	protected O value;
+//		public Input(I specification, O value) {
+//			super();
+//			this.specification = specification;
+//			this.value = value;
+//		}
+//
+//
+//
+//    }
+
+
 }
