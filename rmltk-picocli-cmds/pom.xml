@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-parent</artifactId>
-		<version>5.0.0-1</version>
+		<version>5.0.0-2-SNAPSHOT</version>
 	</parent>
 	<artifactId>rmltk-picocli-cmds</artifactId>
 	<packaging>jar</packaging>
