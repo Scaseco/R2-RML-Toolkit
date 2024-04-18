@@ -43,7 +43,7 @@
 	</developers>
 	<properties>
 		<jena.version>5.0.0</jena.version>
-		<jenax.version>5.0.0-1-SNAPSHOT</jenax.version>
+		<jenax.version>5.0.0-1</jenax.version>
 		<aksw-commons.version>0.9.8</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
