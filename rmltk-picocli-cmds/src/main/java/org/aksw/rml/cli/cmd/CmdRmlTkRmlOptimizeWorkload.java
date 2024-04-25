@@ -1,5 +1,7 @@
 package org.aksw.rml.cli.cmd;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,10 +12,12 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.algebra.allen.AllenRelations;
+import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.util.range.Cmp;
 import org.aksw.commons.util.range.RangeTreeNode;
 import org.aksw.jena_sparql_api.algebra.transform.TransformPullExtend;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
+import org.aksw.jenax.arq.picocli.CmdMixinOutput;
 import org.aksw.jenax.arq.util.node.ComparableNodeValue;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
@@ -44,6 +48,7 @@ import org.apache.jena.sparql.syntax.Template;
 import com.google.common.collect.Range;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -75,6 +80,8 @@ public class CmdRmlTkRmlOptimizeWorkload
     @Option(names = { "--pre-distinct" }, description = "Whenever DISTINCT is applied to the outcome of a UNION then also apply distinct to each member first", defaultValue = "false")
     public boolean preDistinct = false;
 
+    @Mixin
+    public CmdMixinOutput outputConfig = new CmdMixinOutput();
 
     /** Returns 0 when ranges overlap */
     public static <T extends Comparable<T>> int compareRanges(Range<T> x, Range<T> y) {
@@ -243,8 +250,10 @@ public class CmdRmlTkRmlOptimizeWorkload
             }
         }
 
-        for (Query query : queries) {
-            System.out.println(query);
+        try (PrintStream out = new PrintStream(FileUtils.newOutputStream(outputConfig), false, StandardCharsets.UTF_8)) {
+            for (Query query : queries) {
+                out.println(query);
+            }
         }
         return 0;
     }

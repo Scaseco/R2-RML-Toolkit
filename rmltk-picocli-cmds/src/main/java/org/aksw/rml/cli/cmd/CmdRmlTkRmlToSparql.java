@@ -1,6 +1,7 @@
 package org.aksw.rml.cli.cmd;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -11,6 +12,8 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.commons.io.util.FileUtils;
+import org.aksw.jenax.arq.picocli.CmdMixinOutput;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
@@ -41,6 +44,7 @@ import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -71,6 +75,9 @@ public class CmdRmlTkRmlToSparql
     @Option(names = { "--tm" }, description = "Only convert specific triple maps whose IRIs match the given as arguments")
     public List<String> triplesMapIds = new ArrayList<>();
 
+    @Mixin
+    public CmdMixinOutput outputConfig = new CmdMixinOutput();
+
     @Parameters(arity = "1..n", description = "Input RML file(s)")
     public List<String> inputFiles = new ArrayList<>();
 
@@ -86,7 +93,10 @@ public class CmdRmlTkRmlToSparql
 
         List<Entry<Query, String>> labeledQueries = builder.generate();
 
-        write(System.out, labeledQueries);
+        // XXX Validate that the output format refers to something meaningful
+        try (PrintStream out = new PrintStream(FileUtils.newOutputStream(outputConfig), false, StandardCharsets.UTF_8)) {
+            write(out, labeledQueries);
+        }
 
         return 0;
     }
