@@ -12,6 +12,9 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.update.UpdateAction;
 import picocli.CommandLine;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,8 +24,16 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "xmltojson", description = "Convert XML sources to JSON sources")
 public class CmdRmlTkRmlXmlToJson
         implements Callable<Integer> {
-    @CommandLine.Parameters(arity = "1..n", description = "Input RML file(s)")
-    public List<String> inputFiles = new ArrayList<>();
+
+    @CommandLine.ArgGroup(multiplicity = "0..*", exclusive = false)
+    List<ArgGroup> args;
+
+    static class ArgGroup {
+        @CommandLine.Parameters(description = "Input RML file(s)")
+        public String inputFile;
+        @CommandLine.Option(names = {"-o", "--out-file"}, description = "output file")
+        public String outFile;
+    }
 
     final static String sparql_prefixes = "" +
             "PREFIX rml: <http://semweb.mmlab.be/ns/rml#>\n" +
@@ -43,8 +54,9 @@ public class CmdRmlTkRmlXmlToJson
     @Override
     public Integer call() throws Exception {
         LinkedHashMap<XpathSpec, String> seenMap = new LinkedHashMap<>();
-        for (String inputFile : inputFiles) {
-            Model model = RDFDataMgr.loadModel(inputFile);
+        if (args == null) return null;
+        for (ArgGroup arg : args) {
+            Model model = RDFDataMgr.loadModel(arg.inputFile);
 
             try (QueryExecution qe = QueryExecutionFactory.create(
                     sparql_prefixes +
@@ -78,7 +90,11 @@ public class CmdRmlTkRmlXmlToJson
                                 filename_generation +
                             "}", model);
 
-            RDFDataMgr.write(System.out, model, RDFFormat.TTL);
+
+            OutputStream out;
+            if (arg.outFile != null) out = new BufferedOutputStream(new FileOutputStream(arg.outFile));
+            else out = System.out;
+            RDFDataMgr.write(out, model, RDFFormat.TTL);
         }
 
         return null;

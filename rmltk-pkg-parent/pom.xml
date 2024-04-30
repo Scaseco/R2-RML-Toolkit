@@ -39,6 +39,7 @@
 				<plugin>
 					<groupId>de.dentrassi.maven</groupId>
 					<artifactId>rpm</artifactId>
+					<version>1.8.0</version>
 					<extensions>true</extensions>
 				</plugin>
 			</plugins>
