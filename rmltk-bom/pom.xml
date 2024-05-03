@@ -123,12 +123,22 @@
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.rmltk</groupId>
+				<artifactId>r2rml-jena-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-arq</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rmlx-jena-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.rmltk</groupId>
+				<artifactId>rml-jena-common</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

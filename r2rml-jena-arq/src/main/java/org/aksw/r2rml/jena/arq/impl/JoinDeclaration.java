@@ -1,8 +1,8 @@
 package org.aksw.r2rml.jena.arq.impl;
 
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rmltk.model.backbone.common.IRefObjectMap;
+import org.aksw.rmltk.model.backbone.common.ITermMap;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.ExprList;
@@ -11,13 +11,13 @@ import org.apache.jena.sparql.syntax.ElementBind;
 public class JoinDeclaration {
     protected MappingCxt parentCxt; // Owns a reference to the child cxt
     // protected TriplesMap childTriplesMap;
-    protected TermMap predicateMap; // Remove?
-    protected RefObjectMap refObjectMap; // The child's refObjectMap
+    protected ITermMap predicateMap; // Remove?
+    protected IRefObjectMap refObjectMap; // The child's refObjectMap
 
     protected Quad quad;
     protected ExprList conditionExprs;
 
-    public JoinDeclaration(MappingCxt parentCxt, TermMap predicateMap, RefObjectMap refObjectMap, Quad quad, ExprList conditionExprs) {
+    public JoinDeclaration(MappingCxt parentCxt, ITermMap predicateMap, IRefObjectMap refObjectMap, Quad quad, ExprList conditionExprs) {
         super();
         this.parentCxt = parentCxt;
         this.predicateMap = predicateMap;
@@ -32,7 +32,7 @@ public class JoinDeclaration {
         return parentCxt;
     }
 
-    public TriplesMap getParentTriplesMap() {
+    public ITriplesMap getParentTriplesMap() {
         return getParentCxt().getTriplesMap(); // same as refObjectMap.getParentTriplesMap();
     }
 
@@ -56,15 +56,15 @@ public class JoinDeclaration {
         return getChildCxt().getSubjectDefinition();
     }
 
-    public TriplesMap getChildTriplesMap() {
+    public ITriplesMap getChildTriplesMap() {
         return getChildCxt().getTriplesMap();
     }
 
-    public TermMap getPredicateMap() {
+    public ITermMap getPredicateMap() {
         return predicateMap;
     }
 
-    public RefObjectMap getRefObjectMap() {
+    public IRefObjectMap getRefObjectMap() {
         return refObjectMap;
     }
 

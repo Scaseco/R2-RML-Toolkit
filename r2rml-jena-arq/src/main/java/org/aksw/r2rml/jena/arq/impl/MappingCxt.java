@@ -8,8 +8,8 @@ import java.util.function.Function;
 
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
-import org.aksw.r2rml.jena.domain.api.TermSpec;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rmltk.model.backbone.common.ITermSpec;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.expr.Expr;
@@ -23,13 +23,13 @@ public class MappingCxt {
     /** Reference to the triples map that acts as the _child_ of rr:joins */
     protected MappingCxt parentCxt;
 
-    protected TriplesMap triplesMap;
+    protected ITriplesMap triplesMap;
     protected Var triplesMapVar;
 
     /** Data structure to factor out common subexpressions eagerly */
     protected GenericDag<Expr, Var> exprDag;
     // protected BiMap<Var, Expr> varToExpr = HashBiMap.create();
-    protected Map<TermSpec, Var> termMapToVar = new HashMap<>();
+    protected Map<ITermSpec, Var> termMapToVar = new HashMap<>();
 
     // Accumulator for generated quads
     protected QuadAcc quadAcc = new QuadAcc();
@@ -42,9 +42,9 @@ public class MappingCxt {
 
     /** The reference resolver can be set after context creation. In the case of RML it needs information from the context. */
     protected Function<String, Expr> referenceResolver = null;
-    protected Function<TriplesMap, Object> sourceIdentityResolver = null;
+    protected Function<ITriplesMap, Object> sourceIdentityResolver = null;
 
-    public MappingCxt(MappingCxt parentCxt, TriplesMap triplesMap, Var triplesMapVar) {
+    public MappingCxt(MappingCxt parentCxt, ITriplesMap triplesMap, Var triplesMapVar) {
         super();
         this.parentCxt = parentCxt;
         this.triplesMap = triplesMap;
@@ -63,17 +63,17 @@ public class MappingCxt {
         this.referenceResolver = referenceResolver;
     }
 
-    public Function<TriplesMap, Object> getSourceIdentityResolver() {
+    public Function<ITriplesMap, Object> getSourceIdentityResolver() {
         return sourceIdentityResolver;
     }
 
-    public void setSourceIdentityResolver(Function<TriplesMap, Object> sourceIdentityResolver) {
+    public void setSourceIdentityResolver(Function<ITriplesMap, Object> sourceIdentityResolver) {
         this.sourceIdentityResolver = sourceIdentityResolver;
     }
 
     public Var getSubjectVar() {
         MappingCxt cxt = this; // Make this a static util function?
-        TriplesMap tm = cxt.getTriplesMap();
+        ITriplesMap tm = cxt.getTriplesMap();
         Var result = cxt.getTermMapToVar().get(tm.getSubjectMap());
         return result;
     }
@@ -85,7 +85,7 @@ public class MappingCxt {
         return new ElementBind(subjectVar, expr);
     }
 
-    public TriplesMap getTriplesMap() {
+    public ITriplesMap getTriplesMap() {
         return triplesMap;
     }
 
@@ -105,7 +105,7 @@ public class MappingCxt {
 //        return exprDag.getVarToExpr();
 //    }
 
-    public Map<TermSpec, Var> getTermMapToVar() {
+    public Map<ITermSpec, Var> getTermMapToVar() {
         return termMapToVar;
     }
 

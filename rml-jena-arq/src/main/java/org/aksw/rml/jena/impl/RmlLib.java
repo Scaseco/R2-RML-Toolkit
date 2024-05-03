@@ -25,14 +25,15 @@ import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.triple.GraphVarImpl;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.r2rml.jena.domain.api.ObjectMap;
-import org.aksw.r2rml.jena.domain.api.ObjectMapType;
-import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.TermSpec;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.impl.Clusters.Cluster;
-import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.Rml;
+import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.common.IObjectMap;
+import org.aksw.rmltk.model.backbone.common.IObjectMapType;
+import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
+import org.aksw.rmltk.model.backbone.common.ITermSpec;
+import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -85,39 +86,39 @@ public class RmlLib {
      * Extract a logical source from a service node.
      * Attempts to collect the SPARQL expression's triples into an RDF graph.
      */
-    public static LogicalSource getLogicalSource(OpService opService) {
+    public static LogicalSourceRml1 getLogicalSource(OpService opService) {
         Op subOp = opService.getSubOp();
         Query query = OpAsQuery.asQuery(subOp);
         Element elt = query.getQueryPattern();
         Graph graph = ElementUtils.toGraph(elt, new GraphVarImpl());
         Model model = ModelFactory.createModelForGraph(graph);
-        LogicalSource result = RmlLib.getOnlyLogicalSource(model);
+        LogicalSourceRml1 result = RmlLib.getOnlyLogicalSource(model);
         return result;
     }
 
     /** Extract the only logical source from a given model. Null if none found; exception if more than one. */
-    public static LogicalSource getOnlyLogicalSource(Model model) {
-        List<LogicalSource> matches = model.listResourcesWithProperty(Rml.source)
-                .mapWith(r -> r.as(LogicalSource.class))
+    public static LogicalSourceRml1 getOnlyLogicalSource(Model model) {
+        List<LogicalSourceRml1> matches = model.listResourcesWithProperty(Rml.source)
+                .mapWith(r -> r.as(LogicalSourceRml1.class))
                 .toList();
-        LogicalSource result = IterableUtils.expectZeroOrOneItems(matches);
+        LogicalSourceRml1 result = IterableUtils.expectZeroOrOneItems(matches);
         return result;
     }
 
-    public static Expr buildFunctionCall(Model fnmlModel, TriplesMap rawFnMap) {
+    public static Expr buildFunctionCall(Model fnmlModel, ITriplesMapRml rawFnMap) {
         Model extra = ModelFactory.createDefaultModel();
         Model union = ModelFactory.createUnion(rawFnMap.getModel(), extra);
 
-        TriplesMap fnMap = rawFnMap.inModel(union).as(TriplesMap.class);
+        ITriplesMapRml fnMap = rawFnMap.inModel(union).as(TriplesMapRml1.class);
         // Add a dummy subject in order to allow for passing it throw the standard R2RML machinery
         fnMap.setSubjectIri("urn:x-r2rml:dummy-subject");
 
         TriplesMapToSparqlMapping mapping = RmlImporterLib.read(fnMap, fnmlModel);
-        Map<TermSpec, Var> tmToVar = mapping.getTermMapToVar();
+        Map<ITermSpec, Var> tmToVar = mapping.getTermMapToVar();
         VarExprList varToExpr = mapping.getVarToExpr(); //getVarToExpr();
 
-        Map<String, ObjectMapType> args = new HashMap<>();
-        for (PredicateObjectMap pom : fnMap.getPredicateObjectMaps()) {
+        Map<String, IObjectMapType> args = new HashMap<>();
+        for (IPredicateObjectMap pom : fnMap.getPredicateObjectMaps()) {
             String p = pom.getPredicateIri();
             if (p == null) {
                 p = pom.getPredicateMap().getConstant().asNode().getURI();
@@ -127,7 +128,7 @@ public class RmlLib {
             args.put(p, pom.getObjectMap());
         }
 
-        ObjectMap om = args.get(FnoTerms.executes).asTermMap();
+        IObjectMap om = args.get(FnoTerms.executes).asTermMap();
         Node fnId = om.asTermMap().getConstant().asNode();
         RDFNode fnn = fnmlModel.asRDFNode(fnId);
         if (fnn == null) {
@@ -141,7 +142,7 @@ public class RmlLib {
 
         for (Param param : fn.getExpects()) {
             String p = param.getPredicateIri();
-            ObjectMapType omt = args.get(p);
+            IObjectMapType omt = args.get(p);
             Var var = tmToVar.get(omt);
             Expr expr = varToExpr.getExpr(var);
             el.add(expr);

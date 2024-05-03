@@ -1,6 +1,6 @@
 package org.aksw.rml.jena.impl;
 
-import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.LogicalSourceRml1;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.Element;
@@ -16,7 +16,7 @@ public class ReferenceFormulationWrapper
     }
 
     @Override
-    public Element source(LogicalSource logicalSource, Var sourceVar) {
+    public Element source(LogicalSourceRml1 logicalSource, Var sourceVar) {
         return delegate.source(logicalSource, sourceVar);
     }
 

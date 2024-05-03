@@ -2,6 +2,7 @@ package org.aksw.rml.v2.jena.domain.api;
 
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.rml2.vocab.jena.RML2;
+import org.aksw.rmltk.model.backbone.r2rml.ILogicalTableR2rml;
 
 /**
  * Interface for RDF-based logical tables.
@@ -17,7 +18,7 @@ import org.aksw.rml2.vocab.jena.RML2;
  */
 @ResourceView
 public interface LogicalTable
-    extends MappingComponent
+    extends ILogicalTableR2rml, MappingComponentRml2
 {
     /**
      * R2RML specifies that the minimum condition for an entity to qualify as an "base table or view" is
@@ -25,6 +26,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsBaseTableOrView() {
         return hasProperty(RML2.tableName);
     }
@@ -35,6 +37,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default BaseTableOrView asBaseTableOrView() {
         return as(BaseTableOrView.class);
     }
@@ -45,6 +48,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsR2rmlView() {
         return hasProperty(RML2.sqlQuery);
     }
@@ -55,6 +59,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default R2rmlView asR2rmlView() {
         return as(R2rmlView.class);
     }

@@ -6,7 +6,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,24 +16,22 @@ import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.jdbc.api.BindingMapper;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
+import org.aksw.rmltk.model.backbone.common.IRefObjectMap;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
+import org.aksw.rmltk.model.r2rml.LogicalTable;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.expr.ExprVars;
 import org.apache.jena.sparql.function.FunctionEnv;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
@@ -69,7 +66,7 @@ public class R2rmlProcessorJdbc {
         // Expand joins
         for (TriplesMap tm : rawTms) {
             R2rmlLib.expandShortcuts(tm);
-            Map<RefObjectMap, TriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(tm, sqlCodec);
+            Map<IRefObjectMap, ITriplesMap> map = R2rmlLib.expandRefObjectMapsInPlace(TriplesMap.class, tm, sqlCodec);
             if (!map.isEmpty()) {
                 map.values().forEach(R2rmlLib::expandShortcuts);
             }
@@ -78,7 +75,10 @@ public class R2rmlProcessorJdbc {
         //									RDFDataMgr.write(System.out, ResourceUtils.reachableClosure(joinTm), RDFFormat.TURTLE_PRETTY);
         //								}
 
-            tms.addAll(map.values());
+            for (ITriplesMap tmp : map.values()) {
+                tms.add(tmp.as(TriplesMap.class));
+            }
+            //tms.addAll(map.values());
         }
 
         // RDFDataMgr.write(System.out, r2rmlDocument, RDFFormat.TURTLE_PRETTY);

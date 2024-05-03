@@ -18,8 +18,8 @@ import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
-import org.aksw.rml.model.LogicalSource;
-import org.aksw.rml.model.RmlTriplesMap;
+import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rml.model.TriplesMapRml1;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -44,7 +44,7 @@ public class RmlQueryGenerator {
             registry = ReferenceFormulationRegistry.get();
         }
 
-        LogicalSource childSource = mapping.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
+        LogicalSourceRml1 childSource = mapping.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
         String childRfIri = childSource.getReferenceFormulationIri();
         ReferenceFormulation childRf = registry.getOrThrow(childRfIri);
         Element childElt = childRf.source(childSource, mapping.getMappingCxt().getTriplesMapVar());
@@ -150,7 +150,7 @@ public class RmlQueryGenerator {
             registry = ReferenceFormulationRegistry.get();
         }
 
-        LogicalSource childSource = mapping.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
+        LogicalSourceRml1 childSource = mapping.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
         String childRfIri = childSource.getReferenceFormulationIri();
         ReferenceFormulation childRf = registry.getOrThrow(childRfIri);
         Element childElt = childRf.source(childSource, mapping.getMappingCxt().getTriplesMapVar());
@@ -211,7 +211,7 @@ public class RmlQueryGenerator {
     }
 
     public static Element createJoinGroup(ReferenceFormulationService registry, JoinDeclaration join, boolean preDistinct, MappingCxt cxt, Function<E_Equals, Expr> getConditions) {
-        LogicalSource source = cxt.getTriplesMap().as(RmlTriplesMap.class).getLogicalSource();
+        LogicalSourceRml1 source = cxt.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
         String rfIri = source.getReferenceFormulationIri();
         ReferenceFormulation rf = registry.getOrThrow(rfIri);
         Element sourceElt = rf.source(source, cxt.getTriplesMapVar());

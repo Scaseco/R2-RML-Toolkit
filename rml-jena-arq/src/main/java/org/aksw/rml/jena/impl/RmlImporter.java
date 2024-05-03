@@ -5,7 +5,8 @@ import java.util.stream.Collectors;
 
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
-import org.aksw.rml.model.RmlTriplesMap;
+import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
@@ -76,11 +77,11 @@ public class RmlImporter {
         return this;
     }
 
-    protected Collection<RmlTriplesMap> buildWorkloads(Model effectiveRmlModel) {
-        Collection<RmlTriplesMap> result;
+    protected Collection<ITriplesMapRml> buildWorkloads(Model effectiveRmlModel) {
+        Collection<ITriplesMapRml> result;
         if (triplesMapIds != null && !triplesMapIds.isEmpty()) {
             result = triplesMapIds.stream()
-                .map(id -> effectiveRmlModel.createResource(id).as(RmlTriplesMap.class))
+                .map(id -> effectiveRmlModel.createResource(id).as(TriplesMapRml1.class))
                 .collect(Collectors.toList());
         } else {
             result = RmlImporterLib.listAllTriplesMaps(rmlModel);
@@ -88,7 +89,7 @@ public class RmlImporter {
         return result;
     }
 
-    protected Collection<TriplesMapToSparqlMapping> processWorkloads(Collection<RmlTriplesMap> workloads) {
+    protected Collection<TriplesMapToSparqlMapping> processWorkloads(Collection<ITriplesMapRml> workloads) {
         Collection<TriplesMapToSparqlMapping> result = workloads.stream()
             .map(workload -> new TriplesMapProcessorRml(workload, baseIri, fnmlModel, registry).call())
             .collect(Collectors.toList());
@@ -104,7 +105,7 @@ public class RmlImporter {
 
     public Collection<TriplesMapToSparqlMapping> process() {
         Model effectiveRmlModel = buildEffectiveRmlModel();
-        Collection<RmlTriplesMap> workloads = buildWorkloads(effectiveRmlModel);
+        Collection<ITriplesMapRml> workloads = buildWorkloads(effectiveRmlModel);
         Collection<TriplesMapToSparqlMapping> result = processWorkloads(workloads);
         return result;
     }

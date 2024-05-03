@@ -1,23 +1,23 @@
 package org.aksw.r2rml.jena.plugin;
 
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
-import org.aksw.r2rml.jena.domain.api.BaseTableOrView;
-import org.aksw.r2rml.jena.domain.api.GraphMap;
-import org.aksw.r2rml.jena.domain.api.JoinCondition;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.ObjectMap;
-import org.aksw.r2rml.jena.domain.api.ObjectMapType;
-import org.aksw.r2rml.jena.domain.api.PredicateMap;
-import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.R2rmlView;
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.SubjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rmlx.domain.api.Constraint;
 import org.aksw.r2rmlx.domain.api.PrefixConstraint;
 import org.aksw.r2rmlx.domain.api.RangeConstraint;
 import org.aksw.r2rmlx.domain.api.TermMapX;
+import org.aksw.rmltk.model.r2rml.BaseTableOrView;
+import org.aksw.rmltk.model.r2rml.GraphMap;
+import org.aksw.rmltk.model.r2rml.JoinCondition;
+import org.aksw.rmltk.model.r2rml.LogicalTable;
+import org.aksw.rmltk.model.r2rml.ObjectMap;
+import org.aksw.rmltk.model.r2rml.ObjectMapType;
+import org.aksw.rmltk.model.r2rml.PredicateMap;
+import org.aksw.rmltk.model.r2rml.PredicateObjectMap;
+import org.aksw.rmltk.model.r2rml.R2rmlView;
+import org.aksw.rmltk.model.r2rml.RefObjectMap;
+import org.aksw.rmltk.model.r2rml.SubjectMap;
+import org.aksw.rmltk.model.r2rml.TermMap;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
 public class JenaPluginR2rml
@@ -34,7 +34,6 @@ public class JenaPluginR2rml
 
 
     public static void init() {
-
         JenaPluginUtils.registerResourceClasses(
             TriplesMap.class,
             LogicalTable.class,

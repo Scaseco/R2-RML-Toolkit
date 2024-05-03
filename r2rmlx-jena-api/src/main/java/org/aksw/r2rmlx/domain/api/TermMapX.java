@@ -3,8 +3,8 @@ package org.aksw.r2rmlx.domain.api;
 import java.util.Set;
 
 import org.aksw.jenax.annotation.reprogen.Iri;
-import org.aksw.r2rml.jena.domain.api.TermMap;
 import org.aksw.r2rmlx.common.vocab.R2RMLXStrings;
+import org.aksw.rmltk.model.r2rml.TermMap;
 
 public interface TermMapX
     extends TermMap

@@ -14,12 +14,10 @@ import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.jenax.arq.util.var.VarUtils;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.TermSpec;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Streams;
-import com.google.common.collect.Table;
+import org.aksw.rmltk.model.backbone.common.IAbstractSource;
+import org.aksw.rmltk.model.backbone.common.ITermSpec;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
+import org.aksw.rmltk.model.backbone.r2rml.ILogicalTableR2rml;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.irix.IRIs;
@@ -32,7 +30,6 @@ import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_Str;
-import org.apache.jena.sparql.expr.E_StrConcat;
 import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprEvalException;
@@ -50,6 +47,10 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Symbol;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Streams;
+import com.google.common.collect.Table;
+
 /**
  * A mapping of a single TriplesMap to the triples and SPARQL expressions
  * is corresponds to.
@@ -59,7 +60,7 @@ import org.apache.jena.sparql.util.Symbol;
  */
 public class TriplesMapToSparqlMapping {
     // The triples map from which this mapping was created
-    protected TriplesMap triplesMap;
+    protected ITriplesMap triplesMap;
 
     protected MappingCxt mappingCxt;
 
@@ -67,7 +68,7 @@ public class TriplesMapToSparqlMapping {
     protected Template template;
 
     // The mapping of variables to the term maps from which they were derived
-    protected Map<TermSpec, Var> termMapToVar;
+    protected Map<ITermSpec, Var> termMapToVar;
 
     // The mapping for term maps' variables to the corresponding sparql expression
     // E.g. a rr:template "foo{bar}" becomes IRI(CONCAT("foo", STR(?var)))
@@ -76,7 +77,7 @@ public class TriplesMapToSparqlMapping {
 
     protected List<JoinDeclaration> joins;
 
-    public TriplesMapToSparqlMapping(TriplesMap triplesMap, MappingCxt mappingCxt, Template template, Map<TermSpec, Var> termMapToVar,
+    public TriplesMapToSparqlMapping(ITriplesMap triplesMap, MappingCxt mappingCxt, Template template, Map<ITermSpec, Var> termMapToVar,
             GenericDag<Expr, Var> exprDag, List<JoinDeclaration> joins) {
         super();
         this.triplesMap = triplesMap;
@@ -145,7 +146,7 @@ public class TriplesMapToSparqlMapping {
         return result;
     }
 
-    public TriplesMap getTriplesMap() {
+    public ITriplesMap getTriplesMap() {
         return triplesMap;
     }
 
@@ -157,7 +158,7 @@ public class TriplesMapToSparqlMapping {
         return template;
     }
 
-    public Map<TermSpec, Var> getTermMapToVar() {
+    public Map<ITermSpec, Var> getTermMapToVar() {
         return termMapToVar;
     }
 
@@ -368,11 +369,15 @@ public class TriplesMapToSparqlMapping {
         // It seems better to let the application handle this
         // result.setPrefixMapping(triplesMap.getModel());
 
-        LogicalTable logicalTable = triplesMap.getLogicalTable();
-        if (logicalTable != null && triplesMap.getLogicalTable().qualifiesAsBaseTableOrView()) {
-            String tableName = logicalTable.asBaseTableOrView().getTableName();
-            if (tableName != null) {
-                result.getGraphURIs().add(tableName);
+        IAbstractSource abstractSource = triplesMap.getAbstractSource();
+        if (abstractSource instanceof ILogicalTableR2rml) {
+            ILogicalTableR2rml logicalTable = (ILogicalTableR2rml)abstractSource;
+            // logicalTable != null &&
+            if (logicalTable.qualifiesAsBaseTableOrView()) {
+                String tableName = logicalTable.asBaseTableOrView().getTableName();
+                if (tableName != null) {
+                    result.getGraphURIs().add(tableName);
+                }
             }
         }
 

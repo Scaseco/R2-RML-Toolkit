@@ -4,10 +4,11 @@ import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.RmlQueryGenerator;
+import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -33,7 +34,7 @@ public class TestFno {
         JavaMethodReference ref = fn.getProvidedBy();
         // System.out.println(ref.toUri());
 
-        System.out.println(RmlLib.buildFunctionCall(fnModel, map.as(TriplesMap.class)));
+        System.out.println(RmlLib.buildFunctionCall(fnModel, map.as(TriplesMapRml1.class)));
 //        System.out.println(fn.getExpects().iterator().next().getPredicate());
 //        System.out.println(fn.getReturns());
 
@@ -47,7 +48,7 @@ public class TestFno {
         // RmlLib.renameRmlToR2rml(rmlModel);
         String id = "http://data.gtfs.org/stopsMapping";
         // String id = "http://data.gtfs.org/stopTimeMapping";
-        TriplesMap map = rmlModel.getResource(id).as(TriplesMap.class);
+        ITriplesMapRml map = rmlModel.getResource(id).as(TriplesMapRml1.class);
 
         Model fnmlModel = RDFDataMgr.loadModel("functions_moin.ttl");
 

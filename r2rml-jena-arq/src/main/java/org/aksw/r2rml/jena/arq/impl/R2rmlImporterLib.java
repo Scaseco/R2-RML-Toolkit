@@ -12,10 +12,8 @@ import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidationException
 import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidator;
 import org.aksw.jena_sparql_api.langtag.validator.impl.LangTagValidators;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Literal;
@@ -38,6 +36,9 @@ import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.apache.jena.vocabulary.XSD;
+
+import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 /**
  * Methods to import and validate R2RML.

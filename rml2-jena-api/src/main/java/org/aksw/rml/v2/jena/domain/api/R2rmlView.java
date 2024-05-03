@@ -6,18 +6,19 @@ import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.IriType;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.rml.v2.common.vocab.Rml2Terms;
+import org.aksw.rmltk.model.backbone.r2rml.IR2rmlView;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface R2rmlView
-    extends LogicalTable
+    extends IR2rmlView, LogicalTable
 {
     @Iri(Rml2Terms.sqlQuery)
-    String getSqlQuery();
-    R2rmlView setSqlQuery(String queryString);
+    @Override String getSqlQuery();
+    @Override R2rmlView setSqlQuery(String queryString);
 
     @Iri(Rml2Terms.sqlVersion)
-    Set<Resource> getSqlVersions();
+    @Override Set<Resource> getSqlVersions();
 
     /**
      * Convenience view of the resource IRIs as strings
@@ -26,5 +27,5 @@ public interface R2rmlView
      */
     @Iri(Rml2Terms.sqlVersion)
     @IriType
-    Set<String> getSqlVersionIris();
+    @Override Set<String> getSqlVersionIris();
 }

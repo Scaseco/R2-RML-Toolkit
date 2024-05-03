@@ -16,18 +16,19 @@ import java.util.stream.Stream;
 import org.aksw.commons.codec.entity.api.EntityCodec;
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.r2rml.jena.arq.impl.R2rmlTemplateLib;
-import org.aksw.r2rml.jena.domain.api.GraphMap;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
-import org.aksw.r2rml.jena.domain.api.ObjectMap;
-import org.aksw.r2rml.jena.domain.api.ObjectMapType;
-import org.aksw.r2rml.jena.domain.api.PredicateMap;
-import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.SubjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
-import com.google.common.collect.Streams;
+import org.aksw.rmltk.model.backbone.common.IAbstractSource;
+import org.aksw.rmltk.model.backbone.common.IGraphMap;
+import org.aksw.rmltk.model.backbone.common.IObjectMap;
+import org.aksw.rmltk.model.backbone.common.IObjectMapType;
+import org.aksw.rmltk.model.backbone.common.IPredicateMap;
+import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
+import org.aksw.rmltk.model.backbone.common.IRefObjectMap;
+import org.aksw.rmltk.model.backbone.common.ISubjectMap;
+import org.aksw.rmltk.model.backbone.common.ITermMap;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
+import org.aksw.rmltk.model.backbone.r2rml.ILogicalTableR2rml;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -42,6 +43,7 @@ import org.apache.jena.sparql.syntax.syntaxtransform.ExprTransformNodeElement;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
 
+import com.google.common.collect.Streams;
 
 /** Move to a dedicated utils package? */
 public class R2rmlLib {
@@ -74,23 +76,23 @@ public class R2rmlLib {
 
     /** Create a new TriplesMap for each RefObjectMap. The new TriplesMap will have a generated SQL
      * query string that performs the appropriate join. */
-    public static Map<RefObjectMap, TriplesMap> expandRefObjectMapsInPlace(
-            TriplesMap triplesMap, SqlCodec sqlCodec) {
+    public static Map<IRefObjectMap, ITriplesMap> expandRefObjectMapsInPlace(
+            Class<? extends ITriplesMap> triplesMapClass,
+            ITriplesMap triplesMap, SqlCodec sqlCodec) {
         Model outModel = triplesMap.getModel();
 
         Model tmp = ModelFactory.createDefaultModel();
-        Map<RefObjectMap, TriplesMap> result = expandRefObjectMaps(tmp, triplesMap, sqlCodec);
+        Map<IRefObjectMap, ITriplesMap> result = expandRefObjectMaps(triplesMapClass, tmp, triplesMap, sqlCodec);
 
         outModel.add(tmp);
 
         result.entrySet().forEach(e -> {
-            TriplesMap newTm = e.getValue();
+            ITriplesMap newTm = e.getValue();
             e.setValue(newTm.inModel(outModel).as(TriplesMap.class));
         });
 
         return result;
     }
-
 
     /**
      * Create a new triples map where any ref object map has been turned into a new TriplesMap
@@ -103,68 +105,69 @@ public class R2rmlLib {
      * @return A map from any encountered RefObjectMap (in the given TriplesMap) to the TriplesMap
      * 			it was expanded to.
      */
-    public static Map<RefObjectMap, TriplesMap> expandRefObjectMaps(
+    public static Map<IRefObjectMap, ITriplesMap> expandRefObjectMaps(
+            Class<? extends ITriplesMap> triplesMapClass,
             Model outModel,
-            TriplesMap tm,
+            ITriplesMap tm,
             SqlCodec sqlCodec) {
         // TriplesMap result = ModelFactory.createDefaultModel().createResource().as(TriplesMap.class);
-        Map<RefObjectMap, TriplesMap> result = new LinkedHashMap<>();
+        Map<IRefObjectMap, ITriplesMap> result = new LinkedHashMap<>();
 
-        for (PredicateObjectMap pom : tm.getPredicateObjectMaps()) {
-            for (ObjectMapType om : pom.getObjectMaps()) {
+        for (IPredicateObjectMap pom : tm.getPredicateObjectMaps()) {
+            for (IObjectMapType om : pom.getObjectMaps()) {
                 if (om.qualifiesAsRefObjectMap()) {
-                    RefObjectMap rom = om.asRefObjectMap();
+                    IRefObjectMap rom = om.asRefObjectMap();
 
                     Set<Var> childVars = new HashSet<>();
 
-                    TriplesMap targetTm = outModel.createResource().as(TriplesMap.class);
-                    SubjectMap sm = tm.getSubjectMap();
+                    ITriplesMap targetTm = outModel.createResource().as(triplesMapClass); // TriplesMap.class);
+                    ISubjectMap sm = tm.getSubjectMap();
 
 
                     targetTm.setSubject(tm.getSubject());
-                    SubjectMap targetSm = copyProperties(targetTm::getOrSetSubjectMap, sm);
+                    ISubjectMap targetSm = copyProperties(targetTm::getOrSetSubjectMap, sm);
                     collectReferencedColumns(childVars, targetSm);
 
                     // Copy graphs of the subject map
                     if (targetSm != null) {
                         targetSm.getGraphs().addAll(sm.getGraphs());
 
-                        for (GraphMap gm : sm.getGraphMaps()) {
-                            GraphMap targetGm = targetSm.addNewGraphMap();
+                        for (IGraphMap gm : sm.getGraphMaps()) {
+                            IGraphMap targetGm = targetSm.addNewGraphMap();
                             copyResource(targetGm, gm);
 //							renameVariables(targetGm, "child");
                             collectReferencedColumns(childVars, targetGm);
                         }
                     }
 
-                    PredicateObjectMap targetPom = targetTm.addNewPredicateObjectMap();
+                    IPredicateObjectMap targetPom = targetTm.addNewPredicateObjectMap();
                     targetPom.getPredicates().addAll(pom.getPredicates());
                     targetPom.getGraphs().addAll(pom.getGraphs());
-                    for (GraphMap pomgm : pom.getGraphMaps()) {
-                        GraphMap targetGm = targetPom.addNewGraphMap();
+                    for (IGraphMap pomgm : pom.getGraphMaps()) {
+                        IGraphMap targetGm = targetPom.addNewGraphMap();
                         copyResource(targetGm, pomgm);
 //						renameVariables(targetGm, "child");
                         collectReferencedColumns(childVars, targetGm);
                     }
 
-                    for (PredicateMap pm : pom.getPredicateMaps()) {
-                        PredicateMap targetPm = targetPom.addNewPredicateMap();
+                    for (IPredicateMap pm : pom.getPredicateMaps()) {
+                        IPredicateMap targetPm = targetPom.addNewPredicateMap();
                         copyResource(targetPm, pm);
 //						renameVariables(targetPm, "child");
                         collectReferencedColumns(childVars, targetPm);
                     }
 
 
-                    TriplesMap parentTm = rom.getParentTriplesMap();
+                    ITriplesMap parentTm = rom.getParentTriplesMap();
                     Set<Var> parentVars = new LinkedHashSet<>();
                     Map<Var, Var> parentRenames = new LinkedHashMap<>();
 
                     Optional.ofNullable(parentTm.getSubject())
                         .ifPresent(targetPom.getObjects()::add);
 
-                    SubjectMap parentSm = parentTm.getSubjectMap();
+                    ISubjectMap parentSm = parentTm.getSubjectMap();
                     if (parentSm != null) {
-                        ObjectMap targetOm = targetPom.addNewObjectMap();
+                        IObjectMap targetOm = targetPom.addNewObjectMap();
 
                         targetOm
                             .setColumn(parentSm.getColumn())
@@ -201,16 +204,23 @@ public class R2rmlLib {
                         // R2rmlTemplateParser.parseTemplate(null);
                     }
 
+                    IAbstractSource childSource = tm.getAbstractSource();
+                    IAbstractSource parentSource = parentTm.getAbstractSource();
 
-                    LogicalTable childTable = tm.getLogicalTable();
-                    LogicalTable parentTable = parentTm.getLogicalTable();
+                    ILogicalTableR2rml childTable = (ILogicalTableR2rml)childSource;
+                    ILogicalTableR2rml parentTable = (ILogicalTableR2rml)parentSource;
 
                     if (childTable != null) {
                         String jointSqlQuery = createJointSqlQuery(rom, childVars, parentVars, parentRenames, childTable, parentTable);
-                        targetTm.getOrSetLogicalTable().asR2rmlView()
+                        // targetTm.getOrSetLogicalTable().asR2rmlView()
+                        //    .setSqlQuery(jointSqlQuery);
+                        ILogicalTableR2rml logicalTable = (ILogicalTableR2rml)targetTm.getOrSetAbstractSource();
+                        logicalTable.asR2rmlView()
                             .setSqlQuery(jointSqlQuery);
+
                     } else {
-                        targetTm.setLogicalTable(parentTable);
+                        // targetTm.setLogicalTable(parentTable);
+                        targetTm.setAbstractSource(parentTable);
                     }
 
                     // FIXME Adjust variables in the subject and object maps (i.e. parent.var / child.var)
@@ -232,7 +242,7 @@ public class R2rmlLib {
     }
 
     /** Return the set of columns (as Vars) referenced within a term map */
-    public static <T extends Collection<Var>> T collectReferencedColumns(T out, TermMap termMap) {
+    public static <T extends Collection<Var>> T collectReferencedColumns(T out, ITermMap termMap) {
 
         if (termMap.getColumn() != null) {
             out.add(Var.alloc(termMap.getColumn()));
@@ -249,7 +259,7 @@ public class R2rmlLib {
         return out;
     }
 
-    public static void renameVariables(TermMap termMap, NodeTransform nodeTransform) {
+    public static void renameVariables(ITermMap termMap, NodeTransform nodeTransform) {
 
         if (termMap.getColumn() != null) {
             termMap.setColumn(nodeTransform.apply(Var.alloc(termMap.getColumn())).getName());
@@ -298,12 +308,12 @@ public class R2rmlLib {
 
 
     public static String createJointSqlQuery(
-            RefObjectMap rom,
+            IRefObjectMap rom,
             Set<Var> childVars,
             Set<Var> parentVars,
             Map<Var, Var> parentRemap,
-            LogicalTable childTable,
-            LogicalTable parentTable) {
+            ILogicalTableR2rml childTable,
+            ILogicalTableR2rml parentTable) {
 
         String conditionPart = rom.getJoinConditions().stream()
                 .map(jc -> "child." + jc.getChild() + " = parent." + jc.getParent() + "")
@@ -331,7 +341,7 @@ public class R2rmlLib {
         return jointSqlQuery;
     }
 
-    public static String toSqlString(LogicalTable logicalTable) {
+    public static String toSqlString(ILogicalTableR2rml logicalTable) {
         String result = logicalTable.qualifiesAsBaseTableOrView()
                 ? logicalTable.asBaseTableOrView().getTableName()
                 : logicalTable.qualifiesAsR2rmlView()
@@ -378,7 +388,7 @@ public class R2rmlLib {
      *
      * @param tm The triple map for which to expand all mentioned short cuts
      */
-    public static void expandShortcuts(TriplesMap tm) {
+    public static void expandShortcuts(ITriplesMap tm) {
 
         // Implementation note: The wrapping with new ArrayList<>(...) is needed
         // because all objects are backed by the same graph which in general
@@ -397,7 +407,7 @@ public class R2rmlLib {
 
 
         // rr:graph on subject map
-        SubjectMap sm = tm.getSubjectMap();
+        ISubjectMap sm = tm.getSubjectMap();
         Set<Resource> smgs = sm.getGraphs();
         for (Resource smg : new ArrayList<>(smgs)) {
             sm.addNewGraphMap().setConstant(smg);
@@ -409,7 +419,7 @@ public class R2rmlLib {
         // get expanded again in the immediately following code
         List<Resource> classes = new ArrayList<>(sm.getClasses());
         if (!classes.isEmpty()) {
-            PredicateObjectMap typePom = tm.addNewPredicateObjectMap();
+            IPredicateObjectMap typePom = tm.addNewPredicateObjectMap();
             typePom.addPredicate(RDF.Nodes.type);
 
             for (Resource c : classes) {
@@ -418,8 +428,8 @@ public class R2rmlLib {
         }
 
 
-        Set<PredicateObjectMap> poms = tm.getPredicateObjectMaps();
-        for (PredicateObjectMap pom : new ArrayList<>(poms)) {
+        Set<? extends IPredicateObjectMap> poms = tm.getPredicateObjectMaps();
+        for (IPredicateObjectMap pom : new ArrayList<>(poms)) {
 
             // rr:graph on predicate-object map
             Set<Resource> gs = pom.getGraphs();

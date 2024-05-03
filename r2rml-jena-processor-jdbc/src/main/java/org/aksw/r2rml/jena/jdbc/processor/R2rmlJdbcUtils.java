@@ -10,10 +10,10 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.aksw.r2rml.jena.jdbc.impl.SqlTypeMapper;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
+import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.sparql.engine.binding.Binding;

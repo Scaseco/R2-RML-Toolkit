@@ -1,8 +1,8 @@
 package org.aksw.r2rmlx.jena.test;
 
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
 import org.aksw.r2rmlx.domain.api.TermMapX;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;

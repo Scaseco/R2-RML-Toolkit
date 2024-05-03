@@ -1,17 +1,19 @@
 package org.aksw.xml_to_json;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.StreamWriteFeature;
-import jlibs.xml.sax.dog.NodeItem;
-import jlibs.xml.sax.dog.expr.Expression;
-import jlibs.xml.sax.dog.expr.InstantEvaluationListener;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
+
+import jlibs.xml.sax.dog.NodeItem;
+import jlibs.xml.sax.dog.expr.Expression;
+import jlibs.xml.sax.dog.expr.InstantEvaluationListener;
 
 public class InstantConverter extends InstantEvaluationListener {
     protected final Writer writer;

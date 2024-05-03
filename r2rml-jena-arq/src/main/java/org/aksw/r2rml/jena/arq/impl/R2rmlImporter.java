@@ -1,6 +1,6 @@
 package org.aksw.r2rml.jena.arq.impl;
 
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
+import org.aksw.rmltk.model.r2rml.TriplesMap;
 
 /**
  * Main class for importing R2RML documents into TriplesMapToSparqlMappings

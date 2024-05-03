@@ -34,14 +34,14 @@ import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
 import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.aksw.r2rml.jena.jdbc.processor.R2rmlJdbcUtils;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.RmlLib;
-import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Graph;
@@ -89,7 +89,7 @@ public class InitRmlService {
                 ElementUtils.toGraph(elt, graph);
                 Model model = ModelFactory.createModelForGraph(graph);
                 // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
-                LogicalSource logicalSource = RmlLib.getOnlyLogicalSource(model);
+                LogicalSourceRml1 logicalSource = RmlLib.getOnlyLogicalSource(model);
                 r = processSource(logicalSource, binding, execCxt);
             } else {
                 return chain.createExecution(opExecute, opOriginal, binding, execCxt);
@@ -108,7 +108,7 @@ public class InitRmlService {
 //        return QueryExecUtils.fromStream(stream, outVar, parentBinding, execCxt, RDFDatatypeJson::jsonToNode);
 //    }
 
-    public static QueryIterator processSource(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSource(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         Map<String, RmlSourceProcessor> registry = new HashMap<>();
         registry.put(QlTerms.CSV, InitRmlService::processSourceAsCsv);
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
@@ -125,7 +125,7 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsJdbc(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSourceAsJdbc(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         SourceOutput output = logicalSource.as(SourceOutput.class);
         Var outVar = output.getOutputVar();
 
@@ -155,7 +155,7 @@ public class InitRmlService {
         return QueryIterPlainWrapper.create(it2, execCxt);
     }
 
-    public static QueryIterator processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSourceAsJson(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
@@ -184,7 +184,7 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsXml(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSourceAsXml(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
@@ -205,7 +205,7 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsCsv(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSourceAsCsv(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var[] headerVars = null;

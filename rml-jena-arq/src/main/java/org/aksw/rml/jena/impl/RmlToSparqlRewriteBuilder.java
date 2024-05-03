@@ -18,7 +18,8 @@ import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
-import org.aksw.rml.model.LogicalSource;
+import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rml.model.TriplesMapRml1;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
@@ -201,7 +202,7 @@ public class RmlToSparqlRewriteBuilder {
                 ReferenceFormulation rf = tmp.getOrThrow(iri);
                 return new ReferenceFormulationWrapper(rf) {
                     @Override
-                    public Element source(LogicalSource source, Var sourceVar) {
+                    public Element source(LogicalSourceRml1 source, Var sourceVar) {
                         Element baseElt = delegate.source(source, sourceVar);
                         Query q = new Query();
                         q.setQuerySelectType();
@@ -223,7 +224,7 @@ public class RmlToSparqlRewriteBuilder {
             String base = input.baseIri();
 
             // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(model, fnmlModel, triplesMapIds, null);
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(TriplesMapRml1.class, model, fnmlModel, triplesMapIds, null);
 
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {

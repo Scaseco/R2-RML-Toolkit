@@ -12,17 +12,17 @@ import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
-import org.aksw.r2rml.jena.domain.api.GraphMap;
-import org.aksw.r2rml.jena.domain.api.JoinCondition;
-import org.aksw.r2rml.jena.domain.api.ObjectMapType;
-import org.aksw.r2rml.jena.domain.api.PredicateMap;
-import org.aksw.r2rml.jena.domain.api.PredicateObjectMap;
-import org.aksw.r2rml.jena.domain.api.RefObjectMap;
-import org.aksw.r2rml.jena.domain.api.SubjectMap;
-import org.aksw.r2rml.jena.domain.api.TermMap;
-import org.aksw.r2rml.jena.domain.api.TriplesMap;
 import org.aksw.r2rml.jena.vocab.RR;
-import com.google.common.collect.Sets;
+import org.aksw.rmltk.model.backbone.common.IGraphMap;
+import org.aksw.rmltk.model.backbone.common.IJoinCondition;
+import org.aksw.rmltk.model.backbone.common.IObjectMapType;
+import org.aksw.rmltk.model.backbone.common.IPredicateMap;
+import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
+import org.aksw.rmltk.model.backbone.common.IRefObjectMap;
+import org.aksw.rmltk.model.backbone.common.ISubjectMap;
+import org.aksw.rmltk.model.backbone.common.ITermMap;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
+import org.aksw.rmltk.model.r2rml.TermMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -44,6 +44,8 @@ import org.apache.jena.sparql.graph.NodeTransform;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.vocabulary.XSD;
 
+import com.google.common.collect.Sets;
+
 public class TriplesMapProcessorR2rml {
 
     /** Somewhat custom extension of R2RML which lacks the feature to use a column as a source for language tags.
@@ -51,7 +53,7 @@ public class TriplesMapProcessorR2rml {
      *  A property for this will become part of the new RML spec ~ 2023-06-07 */
     public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
 
-    protected TriplesMap triplesMap;
+    protected ITriplesMap triplesMap;
     protected String baseIri;
 
     /** VarAlloc for generating variables that represent the set of records of a logical source */
@@ -60,7 +62,7 @@ public class TriplesMapProcessorR2rml {
     /** The context for *this* triple maps. Parent contexts are created when there are joins. */
     protected MappingCxt childCxt;
 
-    public TriplesMapProcessorR2rml(TriplesMap triplesMap, String baseIri) {
+    public TriplesMapProcessorR2rml(ITriplesMap triplesMap, String baseIri) {
         // this(tm, new VarAlloc("v"), HashBiMap.create(), new HashMap<>(), new QuadAcc());
         this.triplesMap = triplesMap;
         this.baseIri = baseIri;
@@ -90,17 +92,17 @@ public class TriplesMapProcessorR2rml {
         this.childCxt = new MappingCxt(null, triplesMap, triplesMapVar);
         initResolvers(childCxt);
 
-        SubjectMap sm = triplesMap.getSubjectMap();
+        ISubjectMap sm = triplesMap.getSubjectMap();
         Node s = allocateVarTracked(childCxt, sm, RR.IRI);
         Objects.requireNonNull(sm, "SubjectMap was null on " + triplesMap);
 
-        Set<GraphMap> sgms = sm.getGraphMaps();
+        Set<? extends IGraphMap> sgms = sm.getGraphMaps();
 
-        for(PredicateObjectMap pom : triplesMap.getPredicateObjectMaps()) {
-            Set<GraphMap> pogms = pom.getGraphMaps();
+        for(IPredicateObjectMap pom : triplesMap.getPredicateObjectMaps()) {
+            Set<? extends IGraphMap> pogms = pom.getGraphMaps();
 
             // egms = effective graph maps
-            Set<GraphMap> egms = Sets.union(sgms, pogms);
+            Set<? extends IGraphMap> egms = Sets.union(sgms, pogms);
 
 
             // A single graph without a name
@@ -108,14 +110,14 @@ public class TriplesMapProcessorR2rml {
                 egms = Collections.singleton(null);
             }
 
-            Set<PredicateMap> pms = pom.getPredicateMaps();
-            Set<ObjectMapType> oms = pom.getObjectMaps();
+            Set<? extends IPredicateMap> pms = pom.getPredicateMaps();
+            Set<? extends IObjectMapType> oms = pom.getObjectMaps();
 
-            for(GraphMap gm : egms) {
+            for(IGraphMap gm : egms) {
                 Node g = gm == null ? RR.defaultGraph.asNode() : allocateVarTracked(childCxt, gm, RR.IRI);
-                for(PredicateMap pm : pms) {
+                for(IPredicateMap pm : pms) {
                     Node p = allocateVarTracked(childCxt, pm, RR.IRI);
-                    for(ObjectMapType om : oms) {
+                    for(IObjectMapType om : oms) {
                         if (!om.qualifiesAsRefObjectMap()) {
                             Node o = allocateVarTracked(childCxt, om.asTermMap(), RR.Literal);
 
@@ -126,7 +128,7 @@ public class TriplesMapProcessorR2rml {
                             Quad quad = createQuad(g, s, p, o);
                             childCxt.quadAcc.addQuad(quad);
                         } else {
-                            RefObjectMap rom = om.asRefObjectMap();
+                            IRefObjectMap rom = om.asRefObjectMap();
                             processRefObjectMap(g, s, p, rom);
                         }
                     }
@@ -151,7 +153,7 @@ public class TriplesMapProcessorR2rml {
      */
     protected Node allocateVarTracked(
             MappingCxt cxt,
-            TermMap tm,
+            ITermMap tm,
             Resource fallbackTermType) {
         Node result = allocateVar(cxt, tm, fallbackTermType);
         if (result.isVariable()) {
@@ -163,7 +165,7 @@ public class TriplesMapProcessorR2rml {
     /** Allocates a variable for a given term map. */
     protected Node allocateVar(
             MappingCxt cxt,
-            TermMap tm,
+            ITermMap tm,
             Resource fallbackTermType) {
         Expr expr = termMapToExpr(cxt, tm, fallbackTermType);
         // expr = postProcessExpr(cxt, expr);
@@ -192,7 +194,7 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    protected String getLanguageColumn(TermMap tm) {
+    protected String getLanguageColumn(ITermMap tm) {
         return Optional.ofNullable(tm.getProperty(languageColumn)).map(Statement::getString).orElse(null);
     }
 
@@ -202,7 +204,7 @@ public class TriplesMapProcessorR2rml {
      * @param tm
      * @return
      */
-    protected Expr termMapToExpr(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
+    protected Expr termMapToExpr(MappingCxt cxt, ITermMap tm, Resource fallbackTermType) {
         Expr result;
 
         // In the following derive the effective term type based on the term map's attributes
@@ -291,7 +293,7 @@ public class TriplesMapProcessorR2rml {
      * Column like term maps include RML references and custom function invocations.
      * Override this method for RML termMap and references
      */
-    protected Expr resolveColumnLikeTermMap(MappingCxt cxt, TermMap tm, Resource fallbackTermType) {
+    protected Expr resolveColumnLikeTermMap(MappingCxt cxt, ITermMap tm, Resource fallbackTermType) {
         Expr result = null;
         String colName = tm.getColumn();
         if(colName != null) {
@@ -301,9 +303,9 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
-    protected void processRefObjectMap(Node g, Node s, Node p, RefObjectMap rom) {
-        TriplesMap parentTm = rom.getParentTriplesMap();
-        SubjectMap parentSm = parentTm.getSubjectMap();
+    protected void processRefObjectMap(Node g, Node s, Node p, IRefObjectMap rom) {
+        ITriplesMap parentTm = rom.getParentTriplesMap();
+        ISubjectMap parentSm = parentTm.getSubjectMap();
 
         Var parentVar = sourceVarGen.allocVar();
         MappingCxt parentCxt = new MappingCxt(childCxt, parentTm, parentVar);
@@ -311,10 +313,10 @@ public class TriplesMapProcessorR2rml {
 
         Node o = allocateVarTracked(parentCxt, parentSm, RR.IRI);
 
-        Set<JoinCondition> joinConditions = rom.getJoinConditions();
+        Set<? extends IJoinCondition> joinConditions = rom.getJoinConditions();
         ExprList constraints = new ExprList();
 
-        for (JoinCondition jc : joinConditions) {
+        for (IJoinCondition jc : joinConditions) {
             String parentStr = jc.getParent();
             String childStr = jc.getChild();
             Expr parentExpr = referenceToExpr(parentCxt, parentStr);
@@ -417,7 +419,7 @@ public class TriplesMapProcessorR2rml {
         // return column;
     }
 
-    protected Object getSourceIdentity(MappingCxt cxt, TriplesMap tm) {
+    protected Object getSourceIdentity(MappingCxt cxt, ITriplesMap tm) {
         Object result = Objects
                 .requireNonNull(cxt.getSourceIdentityResolver(), "SourceIdentityResolver not set")
                 .apply(tm);
