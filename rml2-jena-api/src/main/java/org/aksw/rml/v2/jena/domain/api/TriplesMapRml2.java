@@ -28,9 +28,9 @@ public interface TriplesMapRml2
     @Iri(Rml2Terms.predicateObjectMap)
     @Override Set<PredicateObjectMapRml2> getPredicateObjectMaps();
 
-//    @Iri(Rml2Terms.logicalTable)
-//    @Override LogicalTable getLogicalTable();
-//    @Override Rml2TriplesMap setLogicalTable(ILogicalTableR2rml logicalTable);
+    @Iri(Rml2Terms.logicalSource)
+    @Override LogicalSourceRml2 getLogicalSource();
+    @Override TriplesMapRml2 setLogicalSource(Resource logicalSource);
 
     /** Get an existing subject map or allocate a new blank node for it */
     @Override

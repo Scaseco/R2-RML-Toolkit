@@ -22,12 +22,24 @@
 
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
-			<artifactId>r2rml-jena-plugin</artifactId>
+			<artifactId>rml-jena-arq</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>rml-resource-testsuite-kgcw2024</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rml2-jena-vocab</artifactId>
+			<version>5.1.0-1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rml2-jena-api</artifactId>
+			<version>5.1.0-1-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>

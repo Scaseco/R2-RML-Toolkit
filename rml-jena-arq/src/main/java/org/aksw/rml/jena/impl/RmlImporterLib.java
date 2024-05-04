@@ -4,12 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.Rml;
 import org.aksw.rml.model.TriplesMapRml1;
-import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -60,7 +58,6 @@ public class RmlImporterLib {
                 .mapWith(r -> (ITriplesMapRml)r)
                 .toList();
         return result;
-
     }
 
     public static Collection<TriplesMapToSparqlMapping> read(Model rawModel, Model fnmlModel) {

@@ -13,6 +13,11 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+import org.aksw.rml.jena.impl.RmlImporterLib;
+import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
+import org.aksw.rml2.vocab.jena.RML2;
+import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
+import org.apache.commons.math3.genetics.Fitness;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -20,6 +25,17 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 
 public class TestSuiteProcessorRmlKgcw2024 {
+
+    // TODO Consolidate
+    public static List<ITriplesMapRml> listAllTriplesMapsRml2(Model model) {
+        List<ITriplesMapRml> result = model
+                .listSubjectsWithProperty(RML2.logicalSource)
+                .mapWith(r -> r.as(TriplesMapRml2.class))
+                .mapWith(r -> (ITriplesMapRml)r)
+                .toList();
+        return result;
+    }
+
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         List<String> suiteNames = List.of(
@@ -52,8 +68,15 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 Model model = ModelFactory.createDefaultModel();
                 try (InputStream in = Files.newInputStream(mappingTtl)) {
                     RDFDataMgr.read(model, in, Lang.TURTLE);
+
+                    List<ITriplesMapRml> tms = listAllTriplesMapsRml2(model);
+                    for (ITriplesMapRml tm : tms) {
+                        System.out.println(tm);
+                    }
+                    // RmlImporter rmlImporter = RmlImporter.from(model);
+                    // rmlImporter.process();
                 }
-                RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+                // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             }
 
         }
