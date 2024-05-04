@@ -1,0 +1,36 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0012d-PostgreSQL",
+    "name": "rml-core test-case RMLTC0012d-PostgreSQL",
+    "description": "Execute test-case RMLTC0012d-PostgreSQL of rml-core",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0012d-PostgreSQL#step1",
+            "name": "Initialize PostgreSQL",
+            "resource": "PostgreSQL",
+            "command": "load_sql_schema",
+            "parameters": {
+                "schema_file": "resource.sql",
+                "csv_files": []
+            },
+            "expect_failure": true
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0012d-PostgreSQL#step2",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "out.nq",
+                "serialization": "nquads",
+                "rdb_host": "PostgreSQL",
+                "rdb_port": "5432",
+                "rdb_username": "root",
+                "rdb_password": "root",
+                "rdb_type": "PostgreSQL",
+                "rdb_name": "db"
+            },
+            "expect_failure": true
+        }
+    ]
+}

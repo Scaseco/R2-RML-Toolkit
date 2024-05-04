@@ -1,0 +1,30 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007e-XML",
+    "name": "rml-core test-case RMLTC0007e-XML",
+    "description": "Execute test-case RMLTC0007e-XML of rml-core",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007e-XML#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "output.nq",
+                "serialization": "nquads"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007e-XML#step2",
+            "name": "Validate rml-core/RMLTC0007e-XML/output.nq",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "output.nq",
+                "expected_graph_file": "expected/output.nq"
+            },
+            "expect_failure": false
+        }
+    ]
+}

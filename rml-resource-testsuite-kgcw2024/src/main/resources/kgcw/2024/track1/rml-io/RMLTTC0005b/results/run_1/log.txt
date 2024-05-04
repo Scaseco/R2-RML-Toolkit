@@ -1,0 +1,20 @@
+[2024-04-15 10:03:04,263] ERROR    SLF4J(W): No SLF4J providers were found.
+[2024-04-15 10:03:04,263] ERROR    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2024-04-15 10:03:04,263] ERROR    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2024-04-15 10:03:04,263] ERROR    com.jayway.jsonpath.InvalidJsonException: com.fasterxml.jackson.core.JsonParseException: Unexpected character ('<' (code 60)): expected a valid value (JSON String, Number, Array, Object or token 'null', 'true' or 'false')
+[2024-04-15 10:03:04,263] ERROR    at [Source: (String)"<!DOCTYPE html>
+[2024-04-15 10:03:04,263] ERROR    <html>
+[2024-04-15 10:03:04,263] ERROR    <head>
+[2024-04-15 10:03:04,263] ERROR    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+[2024-04-15 10:03:04,263] ERROR    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'">
+[2024-04-15 10:03:04,263] ERROR    <title>Page not found &middot; GitHub Pages</title>
+[2024-04-15 10:03:04,263] ERROR    <style type="text/css" media="screen">
+[2024-04-15 10:03:04,263] ERROR    body {
+[2024-04-15 10:03:04,263] ERROR    background-color: #f1f1f1;
+[2024-04-15 10:03:04,263] ERROR    margin: 0;
+[2024-04-15 10:03:04,264] ERROR    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+[2024-04-15 10:03:04,264] ERROR    }
+[2024-04-15 10:03:04,264] ERROR    
+[2024-04-15 10:03:04,264] ERROR    .contai"[truncated 8879 chars]; line: 1, column: 2]
+[2024-04-15 10:03:04,264] ERROR    System exiting with code: 1
+[2024-04-15 10:03:04,264] ERROR    Command failed while waiting for exit with status code: 1

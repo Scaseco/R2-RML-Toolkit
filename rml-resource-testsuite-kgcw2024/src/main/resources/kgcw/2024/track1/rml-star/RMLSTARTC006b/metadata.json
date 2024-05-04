@@ -1,0 +1,19 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-star/test-cases/RMLSTARTC006b",
+    "name": "rml-star test-case RMLSTARTC006b",
+    "description": "Execute test-case RMLSTARTC006b of rml-star",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-star/test-cases/RMLSTARTC006b#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "output.nt",
+                "serialization": "nquads"
+            },
+            "expect_failure": false
+        }
+    ]
+}

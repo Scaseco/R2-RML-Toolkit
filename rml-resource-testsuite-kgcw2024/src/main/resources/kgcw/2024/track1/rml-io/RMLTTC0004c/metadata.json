@@ -1,0 +1,41 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLTTC0004c",
+    "name": "rml-io test-case RMLTTC0004c",
+    "description": "Execute test-case RMLTTC0004c of rml-io",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLTTC0004c#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "default.nq",
+                "serialization": "nquads"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLTTC0004c#step2",
+            "name": "Validate rml-io/RMLTTC0004c/default.nq",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "default.nq",
+                "expected_graph_file": "expected/default.nq"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLTTC0004c#step3",
+            "name": "Validate rml-io/RMLTTC0004c/dump1.nt",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "dump1.nt",
+                "expected_graph_file": "expected/dump1.nt"
+            },
+            "expect_failure": false
+        }
+    ]
+}

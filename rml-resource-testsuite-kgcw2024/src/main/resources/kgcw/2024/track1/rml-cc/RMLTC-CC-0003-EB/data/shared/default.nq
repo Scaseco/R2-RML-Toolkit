@@ -1,0 +1,7 @@
+<http://example.com/base/e/a> <http://example.com/ns#with> _:Bd84cda20X2Dc1faX2D4dbfX2Daf31X2D538fca9e1410 .
+_:B476673f2X2D611dX2D46acX2D9c94X2Dff97b81c592a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> .
+<http://example.com/base/e/b> <http://example.com/ns#with> _:B476673f2X2D611dX2D46acX2D9c94X2Dff97b81c592a .
+_:Bd84cda20X2Dc1faX2D4dbfX2Daf31X2D538fca9e1410 <http://www.w3.org/1999/02/22-rdf-syntax-ns#_3> "3" .
+_:Bd84cda20X2Dc1faX2D4dbfX2Daf31X2D538fca9e1410 <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2> "2" .
+_:Bd84cda20X2Dc1faX2D4dbfX2Daf31X2D538fca9e1410 <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> "1" .
+_:Bd84cda20X2Dc1faX2D4dbfX2Daf31X2D538fca9e1410 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> .

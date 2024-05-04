@@ -1,0 +1,4 @@
+_:B43ae583aX2Dcf6aX2D4623X2D80dcX2D06537ff921cc <http://xmlns.com/foaf/0.1/name> "Sue Jones" .
+_:B43ae583aX2Dcf6aX2D4623X2D80dcX2D06537ff921cc <http://example.com/amount> "20"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:B882e3522X2D0de5X2D4d57X2Daa2eX2Deb6e9a13e3a7 <http://xmlns.com/foaf/0.1/name> "Bob Smith" .
+_:B882e3522X2D0de5X2D4d57X2Daa2eX2Deb6e9a13e3a7 <http://example.com/amount> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .

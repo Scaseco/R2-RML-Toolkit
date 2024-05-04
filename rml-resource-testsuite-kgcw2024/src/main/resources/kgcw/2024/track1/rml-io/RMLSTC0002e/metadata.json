@@ -1,0 +1,30 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLSTC0002e",
+    "name": "rml-io test-case RMLSTC0002e",
+    "description": "Execute test-case RMLSTC0002e of rml-io",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLSTC0002e#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "default.nq",
+                "serialization": "nquads"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-io/test-cases/RMLSTC0002e#step2",
+            "name": "Validate rml-io/RMLSTC0002e/default.nq",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "default.nq",
+                "expected_graph_file": "expected/default.nq"
+            },
+            "expect_failure": false
+        }
+    ]
+}

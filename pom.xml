@@ -26,6 +26,8 @@
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
 
+		<module>rml-resource-testsuite-kgcw2024</module>
+		<module>rml-testsuite-processor-core</module>
 		<module>rml-jena-common</module>
 
 		<module>rml2-common-vocab</module>

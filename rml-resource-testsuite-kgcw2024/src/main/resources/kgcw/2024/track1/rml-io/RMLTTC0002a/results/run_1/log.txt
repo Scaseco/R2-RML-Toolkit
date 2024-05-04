@@ -1,0 +1,16 @@
+[2024-04-15 10:00:43,935] ERROR    SLF4J(W): No SLF4J providers were found.
+[2024-04-15 10:00:43,935] ERROR    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2024-04-15 10:00:43,935] ERROR    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2024-04-15 10:00:43,935] ERROR    Node=_:B39da2609717d130ca9ba9a9e99304859
+[2024-04-15 10:00:43,935] ERROR    Value: _:B39da2609717d130ca9ba9a9e99304859
+[2024-04-15 10:00:43,935] ERROR    Message:
+[2024-04-15 10:00:43,935] ERROR    Subject Map must generate an IRI representing the subject of an RDF triple.
+[2024-04-15 10:00:43,935] ERROR    
+[2024-04-15 10:00:43,935] ERROR    Node=_:B39da2609717d130ca9ba9a9e99304859
+[2024-04-15 10:00:43,935] ERROR    Path=<http://w3id.org/rml/logicalTarget>
+[2024-04-15 10:00:43,935] ERROR    Message:
+[2024-04-15 10:00:43,935] ERROR    Zero or one rml:logicalTarget is required to export RDF triples.
+[2024-04-15 10:00:43,935] ERROR    
+[2024-04-15 10:00:43,935] ERROR    Mapping did not satisfy shapes.
+[2024-04-15 10:00:43,935] ERROR    System exiting with code: 1
+[2024-04-15 10:00:43,935] ERROR    Command failed while waiting for exit with status code: 1

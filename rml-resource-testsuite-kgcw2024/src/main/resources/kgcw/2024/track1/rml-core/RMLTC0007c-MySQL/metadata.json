@@ -1,0 +1,47 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007c-MySQL",
+    "name": "rml-core test-case RMLTC0007c-MySQL",
+    "description": "Execute test-case RMLTC0007c-MySQL of rml-core",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007c-MySQL#step1",
+            "name": "Initialize MySQL",
+            "resource": "MySQL",
+            "command": "load_sql_schema",
+            "parameters": {
+                "schema_file": "resource.sql",
+                "csv_files": []
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007c-MySQL#step2",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "output.nq",
+                "serialization": "nquads",
+                "rdb_host": "MySQL",
+                "rdb_port": "3306",
+                "rdb_username": "root",
+                "rdb_password": "root",
+                "rdb_type": "MySQL",
+                "rdb_name": "db"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0007c-MySQL#step3",
+            "name": "Validate rml-core/RMLTC0007c-MySQL/output.nq",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "output.nq",
+                "expected_graph_file": "expected/output.nq"
+            },
+            "expect_failure": false
+        }
+    ]
+}

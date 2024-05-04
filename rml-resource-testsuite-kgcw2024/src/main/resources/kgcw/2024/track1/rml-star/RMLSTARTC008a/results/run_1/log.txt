@@ -1,0 +1,48 @@
+[2024-04-15 10:54:15,010] ERROR    SLF4J(W): No SLF4J providers were found.
+[2024-04-15 10:54:15,011] ERROR    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2024-04-15 10:54:15,011] ERROR    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2024-04-15 10:54:15,011] ERROR    Node=_:B852f6c9b0dea60e7230f8f0a65c56504
+[2024-04-15 10:54:15,011] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,011] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,011] ERROR    Message:
+[2024-04-15 10:54:15,011] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,011] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,011] ERROR    
+[2024-04-15 10:54:15,011] ERROR    Node=_:B4a023b3c24e85079f4ac55185edce8a6
+[2024-04-15 10:54:15,011] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,011] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,011] ERROR    Message:
+[2024-04-15 10:54:15,011] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,011] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,011] ERROR    
+[2024-04-15 10:54:15,011] ERROR    Node=_:Be1c4b8a88a930081a15bb8802487e7e4
+[2024-04-15 10:54:15,011] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,011] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,011] ERROR    Message:
+[2024-04-15 10:54:15,012] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,012] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,012] ERROR    
+[2024-04-15 10:54:15,012] ERROR    Node=_:Bf0b0940fcaae0dbd18541ce836a5847f
+[2024-04-15 10:54:15,012] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,012] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,012] ERROR    Message:
+[2024-04-15 10:54:15,012] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,012] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,012] ERROR    
+[2024-04-15 10:54:15,012] ERROR    Node=_:Bba70d956c6018bbfa7b52cacd27d4539
+[2024-04-15 10:54:15,012] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,012] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,012] ERROR    Message:
+[2024-04-15 10:54:15,012] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,013] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,013] ERROR    
+[2024-04-15 10:54:15,013] ERROR    Node=_:Bdc05a1d4a2218f79715b1958aa36a728
+[2024-04-15 10:54:15,013] ERROR    Path=<http://w3id.org/rml/source>
+[2024-04-15 10:54:15,013] ERROR    Value: "data.csv"
+[2024-04-15 10:54:15,013] ERROR    Message:
+[2024-04-15 10:54:15,013] ERROR    rml:source must be provided to locate the data source.
+[2024-04-15 10:54:15,013] ERROR    rml:source must be provided exactly once as an URI.
+[2024-04-15 10:54:15,013] ERROR    
+[2024-04-15 10:54:15,013] ERROR    Mapping did not satisfy shapes.
+[2024-04-15 10:54:15,013] ERROR    System exiting with code: 1
+[2024-04-15 10:54:15,013] ERROR    Command failed while waiting for exit with status code: 1

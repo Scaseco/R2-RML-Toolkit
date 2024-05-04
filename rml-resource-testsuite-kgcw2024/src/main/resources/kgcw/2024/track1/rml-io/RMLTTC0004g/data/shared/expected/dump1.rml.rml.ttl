@@ -1,0 +1,17 @@
+@prefix ns1: <foaf:> .
+
+<ex:0> ns1:age "33" ;
+    ns1:name "Monica Geller" .
+
+<ex:1> ns1:age "34" ;
+    ns1:name "Rachel Green" .
+
+<ex:2> ns1:age "35" ;
+    ns1:name "Joey Tribbiani" .
+
+<ex:3> ns1:age "36" ;
+    ns1:name "Chandler Bing" .
+
+<ex:4> ns1:age "37" ;
+    ns1:name "Ross Geller" .
+

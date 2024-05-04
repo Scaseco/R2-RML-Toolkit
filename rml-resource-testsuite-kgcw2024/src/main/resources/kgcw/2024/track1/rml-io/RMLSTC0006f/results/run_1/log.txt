@@ -1,0 +1,6 @@
+[2024-04-15 09:59:58,822] ERROR    SLF4J(W): No SLF4J providers were found.
+[2024-04-15 09:59:58,822] ERROR    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2024-04-15 09:59:58,823] ERROR    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2024-04-15 09:59:58,823] ERROR    Cannot invoke "org.apache.jena.rdf.model.Statement.getLiteral()" because the return value of "org.apache.jena.rdf.model.Resource.getProperty(org.apache.jena.rdf.model.Property)" is null
+[2024-04-15 09:59:58,823] ERROR    System exiting with code: 1
+[2024-04-15 09:59:58,823] ERROR    Command failed while waiting for exit with status code: 1

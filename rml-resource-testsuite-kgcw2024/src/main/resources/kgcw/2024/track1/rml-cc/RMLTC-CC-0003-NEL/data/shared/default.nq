@@ -1,0 +1,7 @@
+_:Bd12083e1X2D1ac0X2D4dadX2Da575X2Dff8e7456894b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "3" .
+_:Bd12083e1X2D1ac0X2D4dadX2Da575X2Dff8e7456894b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+_:B4d93384fX2D5ff4X2D40ddX2Da7ccX2Dc480f2e2bdd3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "2" .
+_:B4d93384fX2D5ff4X2D40ddX2Da7ccX2Dc480f2e2bdd3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:Bd12083e1X2D1ac0X2D4dadX2Da575X2Dff8e7456894b .
+<http://example.com/base/e/a> <http://example.com/ns#with> _:Bb0f071a5X2Dc109X2D4e76X2Dae1aX2D3561c3ec994f .
+_:Bb0f071a5X2Dc109X2D4e76X2Dae1aX2D3561c3ec994f <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:B4d93384fX2D5ff4X2D40ddX2Da7ccX2Dc480f2e2bdd3 .
+_:Bb0f071a5X2Dc109X2D4e76X2Dae1aX2D3561c3ec994f <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "1" .

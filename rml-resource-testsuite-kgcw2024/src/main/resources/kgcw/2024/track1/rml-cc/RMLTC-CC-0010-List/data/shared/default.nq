@@ -1,0 +1,9 @@
+_:Bebc0c41fX2Ddd00X2D471eX2D8776X2Dde892987839e <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "2" <http://example.com/base/g/2> .
+_:Bebc0c41fX2Ddd00X2D471eX2D8776X2Dde892987839e <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> <http://example.com/base/g/2> .
+<http://example.com/base/e/a> <http://example.com/ns#with> _:Bebc0c41fX2Ddd00X2D471eX2D8776X2Dde892987839e <http://example.com/base/g/2> .
+<http://example.com/base/e/a> <http://example.com/ns#with> _:B3d504427X2Df1c9X2D49f0X2Dba79X2D0dd00b1eb899 <http://example.com/base/g/1> .
+<http://example.com/base/e/a> <http://example.com/ns#with> _:B59c18b30X2D2077X2D4fcfX2D84beX2D0d3167ebdfd6 <http://example.com/base/g/1> .
+_:B3d504427X2Df1c9X2D49f0X2Dba79X2D0dd00b1eb899 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "3" <http://example.com/base/g/1> .
+_:B3d504427X2Df1c9X2D49f0X2Dba79X2D0dd00b1eb899 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> <http://example.com/base/g/1> .
+_:B59c18b30X2D2077X2D4fcfX2D84beX2D0d3167ebdfd6 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "1" <http://example.com/base/g/1> .
+_:B59c18b30X2D2077X2D4fcfX2D84beX2D0d3167ebdfd6 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> <http://example.com/base/g/1> .

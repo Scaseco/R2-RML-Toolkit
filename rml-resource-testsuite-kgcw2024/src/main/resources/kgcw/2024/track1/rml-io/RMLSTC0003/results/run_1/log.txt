@@ -1,0 +1,6 @@
+[2024-04-15 09:59:29,317] ERROR    SLF4J(W): No SLF4J providers were found.
+[2024-04-15 09:59:29,317] ERROR    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+[2024-04-15 09:59:29,317] ERROR    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[2024-04-15 09:59:29,317] ERROR    org.apache.jena.riot.RiotNotFoundException: Not found: /data/shared/./Friends.nt
+[2024-04-15 09:59:29,317] ERROR    System exiting with code: 1
+[2024-04-15 09:59:29,317] ERROR    Command failed while waiting for exit with status code: 1

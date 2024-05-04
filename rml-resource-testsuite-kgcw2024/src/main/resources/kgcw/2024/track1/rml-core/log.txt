@@ -1,0 +1,8 @@
+[2024-04-15 08:56:24,677] ERROR    Executing command "load_sql_schema" failed for resource "PostgreSQL"
+[2024-04-15 10:43:08,709] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:44:14,842] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:44:17,605] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:46:18,984] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:47:04,282] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:47:27,975] ERROR    Executing command "compare_graphs" failed for resource "Validate"
+[2024-04-15 10:48:14,660] ERROR    Executing command "compare_graphs" failed for resource "Validate"

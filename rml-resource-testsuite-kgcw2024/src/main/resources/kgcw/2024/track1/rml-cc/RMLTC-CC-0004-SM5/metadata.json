@@ -1,0 +1,30 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-cc/test-cases/RMLTC-CC-0004-SM5",
+    "name": "rml-cc test-case RMLTC-CC-0004-SM5",
+    "description": "Execute test-case RMLTC-CC-0004-SM5 of rml-cc",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-cc/test-cases/RMLTC-CC-0004-SM5#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "default.nq",
+                "serialization": "nquads"
+            },
+            "expect_failure": false
+        },
+        {
+            "@id": "http://w3id.org/kg-construct/rml-cc/test-cases/RMLTC-CC-0004-SM5#step2",
+            "name": "Validate rml-cc/RMLTC-CC-0004-SM5/default.nq",
+            "resource": "Validate",
+            "command": "compare_graphs",
+            "parameters": {
+                "graph_file": "default.nq",
+                "expected_graph_file": "expected/default.nq"
+            },
+            "expect_failure": false
+        }
+    ]
+}

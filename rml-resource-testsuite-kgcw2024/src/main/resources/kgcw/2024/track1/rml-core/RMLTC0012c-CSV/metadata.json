@@ -1,0 +1,19 @@
+{
+    "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0012c-CSV",
+    "name": "rml-core test-case RMLTC0012c-CSV",
+    "description": "Execute test-case RMLTC0012c-CSV of rml-core",
+    "steps": [
+        {
+            "@id": "http://w3id.org/kg-construct/rml-core/test-cases/RMLTC0012c-CSV#step1",
+            "name": "Execute RML mapping",
+            "resource": "BURP",
+            "command": "execute_mapping",
+            "parameters": {
+                "mapping_file": "mapping.ttl",
+                "output_file": "out.nq",
+                "serialization": "nquads"
+            },
+            "expect_failure": true
+        }
+    ]
+}
