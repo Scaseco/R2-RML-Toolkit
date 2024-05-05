@@ -51,7 +51,6 @@ public class TriplesMapProcessorRml
     protected ReferenceFormulationRegistry registry;
     // protected ReferenceFormulation referenceFormulation;
 
-
     public TriplesMapProcessorRml(ITriplesMapRml triplesMap,  Model fnmlModel) {
         this(triplesMap, null, fnmlModel, null);
     }

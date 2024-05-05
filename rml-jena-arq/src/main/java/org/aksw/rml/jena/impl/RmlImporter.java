@@ -84,7 +84,7 @@ public class RmlImporter {
                 .map(id -> effectiveRmlModel.createResource(id).as(TriplesMapRml1.class))
                 .collect(Collectors.toList());
         } else {
-            result = RmlImporterLib.listAllTriplesMaps(rmlModel);
+            result = RmlImporterLib.listAllTriplesMaps(TriplesMapRml1.class, rmlModel);
         }
         return result;
     }

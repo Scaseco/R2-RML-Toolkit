@@ -12,17 +12,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
-import org.aksw.rml.jena.impl.RmlImporterLib;
+import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
 import org.aksw.rml2.vocab.jena.RML2;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
-import org.apache.commons.math3.genetics.Fitness;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 
 public class TestSuiteProcessorRmlKgcw2024 {
 
@@ -73,6 +73,21 @@ public class TestSuiteProcessorRmlKgcw2024 {
                     for (ITriplesMapRml tm : tms) {
                         System.out.println(tm);
                     }
+
+                    RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                            // .setCache(cache)
+                            // .addFnmlFiles(fnmlFiles)
+                            .addRmlModel(TriplesMapRml2.class, model)
+                            .setDenormalize(false)
+                            .setMerge(true)
+                            ;
+
+                    List<Entry<Query, String>> labeledQueries = builder.generate();
+
+                    for (Entry<Query, String> e : labeledQueries) {
+                        System.out.println(e);
+                    }
+
                     // RmlImporter rmlImporter = RmlImporter.from(model);
                     // rmlImporter.process();
                 }

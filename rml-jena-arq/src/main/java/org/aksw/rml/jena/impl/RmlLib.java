@@ -63,6 +63,7 @@ import org.apache.jena.sparql.syntax.ElementWalker;
 import org.apache.jena.sparql.syntax.PatternVars;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
+import org.apache.jena.util.iterator.ExtendedIterator;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;

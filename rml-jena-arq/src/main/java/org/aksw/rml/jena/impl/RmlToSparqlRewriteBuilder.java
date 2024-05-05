@@ -20,6 +20,7 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
@@ -42,7 +43,7 @@ import org.apache.jena.sparql.syntax.ElementSubQuery;
  */
 public class RmlToSparqlRewriteBuilder {
 
-    protected static record Input(String file, Model model, String baseIri) {}
+    protected static record Input(String file, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, String baseIri) {}
 
     // protected List<String> fnmlFiles = new ArrayList<>();
     protected ReferenceFormulationService registry = null;
@@ -63,6 +64,10 @@ public class RmlToSparqlRewriteBuilder {
 
     public RmlToSparqlRewriteBuilder() {
         this.fnmlModel = ModelFactory.createDefaultModel();
+    }
+
+    public static RmlToSparqlRewriteBuilder newInstance() {
+        return new RmlToSparqlRewriteBuilder();
     }
 
     public ReferenceFormulationService getRegistry() {
@@ -137,33 +142,33 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder addRmlString(String str) {
-        Input input = processInput("inline string",
+    public RmlToSparqlRewriteBuilder addRmlString(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String str) {
+        Input input = processInput(rmlTriplesMapClass, "inline string",
                 () -> AsyncParser.of(new ByteArrayInputStream(str.getBytes()), Lang.TURTLE, null).streamElements());
         modelAndBaseIriList.add(input);
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder addRmlFiles(Collection<String> rmlFiles) {
+    public RmlToSparqlRewriteBuilder addRmlFiles(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Collection<String> rmlFiles) {
         for (String rmlFile : rmlFiles) {
-            addRmlFile(rmlFile);
+            addRmlFile(rmlTriplesMapClass, rmlFile);
         }
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder addRmlFile(String rmlFile) {
+    public RmlToSparqlRewriteBuilder addRmlFile(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String rmlFile) {
         // Model model = RDFDataMgr.loadModel(rmlFile);
-        Input input = processInput(rmlFile, () -> AsyncParser.of(rmlFile).streamElements());
+        Input input = processInput(rmlTriplesMapClass, rmlFile, () -> AsyncParser.of(rmlFile).streamElements());
         modelAndBaseIriList.add(input);
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder addRmlModel(Model contrib) {
-        modelAndBaseIriList.add(new Input(null, contrib, null));
+    public RmlToSparqlRewriteBuilder addRmlModel(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model contrib) {
+        modelAndBaseIriList.add(new Input(null, rmlTriplesMapClass, contrib, null));
         return this;
     }
 
-    public static Input processInput(String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
+    public static Input processInput(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
 
         // Extract the base IRI needed to succeed on test cases such as RMLTC0020a-CSV and RMLTC0020b-CSV
         String base = null;
@@ -185,7 +190,7 @@ public class RmlToSparqlRewriteBuilder {
         Model model = ModelFactory.createModelForGraph(graph);
 
         // modelAndBaseIriList.add(new Input(inputFile, model, base));
-        return new Input(inputLabel, model, base);
+        return new Input(inputLabel, rmlTriplesMapClass, model, base);
     }
 
 
@@ -222,9 +227,10 @@ public class RmlToSparqlRewriteBuilder {
         for (RmlToSparqlRewriteBuilder.Input input : modelAndBaseIriList) {
             Model model = input.model();
             String base = input.baseIri();
+            Class<? extends ITriplesMapRml> rmlTriplesMapClass = input.rmlTriplesMapClass();
 
             // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(TriplesMapRml1.class, model, fnmlModel, triplesMapIds, null);
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(rmlTriplesMapClass, model, fnmlModel, triplesMapIds, null);
 
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {

@@ -87,7 +87,7 @@ public class CmdRmlTkRmlToSparql
         RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
                 .setCache(cache)
                 .addFnmlFiles(fnmlFiles)
-                .addRmlFiles(inputFiles)
+                .addRmlFiles(TriplesMapRml1.class, inputFiles)
                 .setDenormalize(denormalize)
                 .setMerge(merge)
                 ;
