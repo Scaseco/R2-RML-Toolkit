@@ -3,7 +3,7 @@ package org.aksw.rml.jena.ref.impl;
 import java.util.Arrays;
 
 import org.aksw.rml.jena.impl.ReferenceFormulation;
-import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Function;
@@ -16,7 +16,7 @@ public class ReferenceFormulationJsonViaUrlText
     implements ReferenceFormulation
 {
     @Override
-    public Element source(LogicalSourceRml1 logicalSource, Var sourceVar) {
+    public Element source(ILogicalSource logicalSource, Var sourceVar) {
         String templateStr = String.join("\n",
             "BIND(<http://jsa.aksw.org/fn/url/text>(<URL>) AS ?SRC_text)",
             "BIND(STRDT(?SRC_text, <http://www.w3.org/2001/XMLSchema#json>) AS ?SRC_doc)",

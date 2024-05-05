@@ -9,6 +9,7 @@ import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationRdbViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationXmlViaService;
 import org.aksw.rml.model.QlTerms;
+import org.aksw.rml.model.RmlIoTerms;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.SystemARQ;
 import org.apache.jena.sparql.util.Context;
@@ -44,7 +45,12 @@ public class ReferenceFormulationRegistry
         registry.put(QlTerms.CSV, new ReferenceFormulationCsvViaService());
         registry.put(QlTerms.JSONPath, new ReferenceFormulationJsonViaService());
         registry.put(QlTerms.XPath, new ReferenceFormulationXmlViaService());
-        registry.put(QlTerms.RDB, new ReferenceFormulationRdbViaService());
+        registry.put(QlTerms.RDB, ReferenceFormulationRdbViaService.getInstance());
+
+        registry.put(RmlIoTerms.SQL2008Query, ReferenceFormulationRdbViaService.getInstance());
+        registry.put(RmlIoTerms.SQL2008Table, ReferenceFormulationRdbViaService.getInstance());
+        registry.put(RmlIoTerms.JSONPath, new ReferenceFormulationJsonViaService());
+        registry.put(RmlIoTerms.XPath, new ReferenceFormulationXmlViaService());
     }
 
 //    public static ReferenceFormulationRegistry getOrDefault(Context cxt) {

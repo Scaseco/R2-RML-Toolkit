@@ -1,10 +1,14 @@
 package org.aksw.rml.jena.ref.impl;
 
 
-import org.aksw.rml.jena.impl.ReferenceFormulation;
+import java.util.function.Consumer;
+
 import org.aksw.rml.jena.impl.NorseRmlTerms;
-import org.aksw.rml.model.LogicalSourceRml1;
-import org.apache.jena.graph.*;
+import org.aksw.rml.jena.impl.ReferenceFormulation;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
@@ -15,13 +19,11 @@ import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 
-import java.util.function.Consumer;
-
 public abstract class ReferenceFormulationViaServiceBase
     implements ReferenceFormulation
 {
     @Override
-    public Element source(LogicalSourceRml1 logicalSource, Var sourceVar) {
+    public Element source(ILogicalSource logicalSource, Var sourceVar) {
         BasicPattern bgp = new BasicPattern();
 
         // Replace the logical source with a constant in order to make

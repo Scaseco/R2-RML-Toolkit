@@ -23,6 +23,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 
 public class TestSuiteProcessorRmlKgcw2024 {
 
@@ -69,9 +70,11 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 try (InputStream in = Files.newInputStream(mappingTtl)) {
                     RDFDataMgr.read(model, in, Lang.TURTLE);
 
+                    RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+
                     List<ITriplesMapRml> tms = listAllTriplesMapsRml2(model);
                     for (ITriplesMapRml tm : tms) {
-                        System.out.println(tm);
+//                        System.out.println(tm);
                     }
 
                     RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()

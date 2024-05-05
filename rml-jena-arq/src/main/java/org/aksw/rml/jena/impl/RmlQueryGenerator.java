@@ -20,6 +20,8 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.common.IAbstractSource;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -44,7 +46,8 @@ public class RmlQueryGenerator {
             registry = ReferenceFormulationRegistry.get();
         }
 
-        LogicalSourceRml1 childSource = mapping.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
+        IAbstractSource abstractSource = mapping.getTriplesMap().getAbstractSource();
+        ILogicalSource childSource = (ILogicalSource)abstractSource;
         String childRfIri = childSource.getReferenceFormulationIri();
         ReferenceFormulation childRf = registry.getOrThrow(childRfIri);
         Element childElt = childRf.source(childSource, mapping.getMappingCxt().getTriplesMapVar());

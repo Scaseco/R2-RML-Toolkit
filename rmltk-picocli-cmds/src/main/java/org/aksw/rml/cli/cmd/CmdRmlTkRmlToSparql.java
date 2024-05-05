@@ -26,8 +26,8 @@ import org.aksw.rml.jena.impl.RmlQueryGenerator;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
-import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
@@ -123,7 +123,7 @@ public class CmdRmlTkRmlToSparql
                 ReferenceFormulation rf = tmp.getOrThrow(iri);
                 return new ReferenceFormulationWrapper(rf) {
                     @Override
-                    public Element source(LogicalSourceRml1 source, Var sourceVar) {
+                    public Element source(ILogicalSource source, Var sourceVar) {
                         Element baseElt = delegate.source(source, sourceVar);
                         Query q = new Query();
                         q.setQuerySelectType();

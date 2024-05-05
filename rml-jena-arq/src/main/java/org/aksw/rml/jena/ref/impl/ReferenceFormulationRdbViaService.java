@@ -14,6 +14,12 @@ import org.apache.jena.sparql.expr.NodeValue;
 public class ReferenceFormulationRdbViaService
     extends ReferenceFormulationViaServiceBase
 {
+    private static final ReferenceFormulationRdbViaService INSTANCE = new ReferenceFormulationRdbViaService();
+
+    public static ReferenceFormulationRdbViaService getInstance() {
+        return INSTANCE;
+    }
+
     @Override
     public Expr reference(Var itemVar, String expr) {
         return new E_Function(NorseJsonTerms.get, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));

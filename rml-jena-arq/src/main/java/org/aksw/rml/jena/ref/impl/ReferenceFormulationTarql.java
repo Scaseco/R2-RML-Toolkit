@@ -2,9 +2,9 @@ package org.aksw.rml.jena.ref.impl;
 
 import org.aksw.fno.model.Fno;
 import org.aksw.jenax.arq.util.var.VarUtils;
-import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
-import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rml.jena.impl.ReferenceFormulation;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -23,7 +23,7 @@ public class ReferenceFormulationTarql
     implements ReferenceFormulation
 {
     @Override
-    public Element source(LogicalSourceRml1 logicalSource, Var sourceVar) {
+    public Element source(ILogicalSource logicalSource, Var sourceVar) {
         BasicPattern bgp = new BasicPattern();
 
         // Replace the logical source with a constant in order to make

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
-import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
@@ -19,7 +19,7 @@ public class ReferenceFormulationCsvViaCsvParse
     implements ReferenceFormulation
 {
     @Override
-    public Element source(LogicalSourceRml1 logicalSource, Var sourceVar) {
+    public Element source(ILogicalSource logicalSource, Var sourceVar) {
         String source = logicalSource.getSourceAsString();
         Node csvParse = NodeFactory.createURI("http://jsa.aksw.org/fn/csv/parse");
         Element result = ElementUtils.createElementTriple(NodeFactory.createURI(source), csvParse, sourceVar);

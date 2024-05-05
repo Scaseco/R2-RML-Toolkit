@@ -1,6 +1,6 @@
 package org.aksw.rml.jena.impl;
 
-import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.Element;
@@ -19,7 +19,7 @@ public interface ReferenceFormulation {
      * @param sourceVar A SPARQL variable that represents the source.
      * @return A graph pattern for loading the source
      */
-    Element source(LogicalSourceRml1 logicalSource, Var sourceVar);
+    Element source(ILogicalSource logicalSource, Var sourceVar);
 
     /**
      * If true then the source is considered document, otherwise a stream of items.

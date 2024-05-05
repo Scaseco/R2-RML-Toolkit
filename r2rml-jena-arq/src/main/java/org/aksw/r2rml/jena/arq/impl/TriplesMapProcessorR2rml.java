@@ -269,6 +269,10 @@ public class TriplesMapProcessorR2rml {
                 throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);
             }
         }
+
+        if (result == null) {
+            throw new RuntimeException("Failed to translate term map into an expression. Term map: " + tm);
+        }
         // result = postProcessExpr(cxt, result);
         return result;
     }

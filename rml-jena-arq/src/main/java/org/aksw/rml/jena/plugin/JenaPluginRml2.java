@@ -7,18 +7,15 @@ import org.aksw.fnox.model.JavaFunction;
 import org.aksw.fnox.model.JavaMethodReference;
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.aksw.rml.jena.service.InitRmlService;
-import org.aksw.rml.rso.model.SourceOutput;
 import org.aksw.rml.v2.jena.domain.api.GraphMapRml2;
 import org.aksw.rml.v2.jena.domain.api.LogicalSourceRml2;
 import org.aksw.rml.v2.jena.domain.api.ObjectMapRml2;
 import org.aksw.rml.v2.jena.domain.api.PredicateMapRml2;
+import org.aksw.rml.v2.jena.domain.api.PredicateObjectMapRml2;
 import org.aksw.rml.v2.jena.domain.api.RefObjectMapRml2;
 import org.aksw.rml.v2.jena.domain.api.SubjectMapRml2;
 import org.aksw.rml.v2.jena.domain.api.TermMapRml2;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
-import org.aksw.rmlx.model.RmlAlias;
-import org.aksw.rmlx.model.RmlDefinitionBlock;
-import org.aksw.rmlx.model.RmlQualifiedBind;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
@@ -55,6 +52,7 @@ public class JenaPluginRml2
         JenaPluginUtils.registerResourceClasses(
             TriplesMapRml2.class,
             LogicalSourceRml2.class,
+            PredicateObjectMapRml2.class,
             TermMapRml2.class,
             GraphMapRml2.class,
             SubjectMapRml2.class,
@@ -64,16 +62,16 @@ public class JenaPluginRml2
         );
 
         // Rml Extensions
-        JenaPluginUtils.registerResourceClasses(
-            RmlAlias.class,
-            RmlQualifiedBind.class,
-            RmlDefinitionBlock.class
-        );
+//        JenaPluginUtils.registerResourceClasses(
+//            RmlAlias.class,
+//            RmlQualifiedBind.class,
+//            RmlDefinitionBlock.class
+//        );
 
         // JenaX
-        JenaPluginUtils.registerResourceClasses(
-            SourceOutput.class
-        );
+//        JenaPluginUtils.registerResourceClasses(
+//            SourceOutput.class
+//        );
 
         InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
     }
