@@ -46,15 +46,15 @@ public class Rml2Terms {
     public static final String tableName			= uri + "tableName";
     public static final String template 			= uri + "template";
     public static final String termType 			= uri + "termType";
-    public static final String BlankNode			= uri + "BlankNode";
 
     // Other R2RML Terms
 
     public static final String defaultGraph 		= uri + "defaultGraph";
     public static final String SQL2008 				= uri + "SQL2008";
-    public static final String IRI 					= uri + "IRI";
 
     public static final String Literal 				= uri + "Literal";
+    public static final String IRI 				    = uri + "IRI";
+    public static final String BlankNode 			= uri + "BlankNode";
 
     // RML-specific terms
 

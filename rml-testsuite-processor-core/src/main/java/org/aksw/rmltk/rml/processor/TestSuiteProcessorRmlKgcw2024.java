@@ -70,27 +70,33 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 try (InputStream in = Files.newInputStream(mappingTtl)) {
                     RDFDataMgr.read(model, in, Lang.TURTLE);
 
+                    System.out.println("PROCESSING: " + name);
+                    System.out.println("-------------------------------------------------------");
                     RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
 
-                    List<ITriplesMapRml> tms = listAllTriplesMapsRml2(model);
-                    for (ITriplesMapRml tm : tms) {
-//                        System.out.println(tm);
+                    try {
+                        List<ITriplesMapRml> tms = listAllTriplesMapsRml2(model);
+                        for (ITriplesMapRml tm : tms) {
+    //                        System.out.println(tm);
+                        }
+
+                        RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                                // .setCache(cache)
+                                // .addFnmlFiles(fnmlFiles)
+                                .addRmlModel(TriplesMapRml2.class, model)
+                                .setDenormalize(false)
+                                .setMerge(true)
+                                ;
+
+                        List<Entry<Query, String>> labeledQueries = builder.generate();
+
+                        for (Entry<Query, String> e : labeledQueries) {
+                            System.out.println(e);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("ERROR");
+                        e.printStackTrace();
                     }
-
-                    RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
-                            // .setCache(cache)
-                            // .addFnmlFiles(fnmlFiles)
-                            .addRmlModel(TriplesMapRml2.class, model)
-                            .setDenormalize(false)
-                            .setMerge(true)
-                            ;
-
-                    List<Entry<Query, String>> labeledQueries = builder.generate();
-
-                    for (Entry<Query, String> e : labeledQueries) {
-                        System.out.println(e);
-                    }
-
                     // RmlImporter rmlImporter = RmlImporter.from(model);
                     // rmlImporter.process();
                 }

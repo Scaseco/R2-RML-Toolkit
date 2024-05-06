@@ -4,7 +4,7 @@ import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.rml.v2.common.vocab.Rml2Terms;
 import org.aksw.rml2.vocab.jena.RML2;
-import org.aksw.rmltk.model.backbone.common.ITermMap;
+import org.aksw.rmltk.model.backbone.rml.ITermMapRml;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
@@ -16,7 +16,7 @@ import org.apache.jena.rdf.model.Resource;
  */
 @ResourceView
 public interface TermMapRml2
-    extends ITermMap, TermSpecRml2
+    extends ITermMapRml, TermSpecRml2
 {
     @Iri(Rml2Terms.termType)
     @Override Resource getTermType();
@@ -45,6 +45,10 @@ public interface TermMapRml2
     @Iri(Rml2Terms.inverseExpression)
     @Override String getInverseExpression();
     @Override TermMapRml2 setInverseExpression(String inverseExpression);
+
+    @Iri(Rml2Terms.reference)
+    @Override String getReference();
+    @Override TermMapRml2 setReference(String reference);
 
     /**
      *

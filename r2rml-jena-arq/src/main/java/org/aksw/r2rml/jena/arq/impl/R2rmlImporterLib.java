@@ -13,6 +13,7 @@ import org.aksw.jena_sparql_api.langtag.validator.api.LangTagValidator;
 import org.aksw.jena_sparql_api.langtag.validator.impl.LangTagValidators;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.vocab.RR;
+import org.aksw.rml.v2.common.vocab.Rml2Terms;
 import org.aksw.rmltk.model.r2rml.TriplesMap;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
@@ -437,6 +438,14 @@ public class R2rmlImporterLib {
      * @return
      */
     public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
+        Expr result = applyTermTypeRml1(column, termType, knownDatatype);
+        if (result == null) {
+            result = applyTermTypeRml2(column, termType, knownDatatype);
+        }
+        return result;
+    }
+
+    public static Expr applyTermTypeRml1(Expr column, Node termType, Node knownDatatype) {
         String termTypeIri = termType.getURI();
 
         Expr result;
@@ -446,6 +455,32 @@ public class R2rmlImporterLib {
                 : termTypeIri.equals(R2rmlTerms.BlankNode)
                     ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
                     : termTypeIri.equals(R2rmlTerms.Literal)
+                        ? knownDatatype == null
+                            ? column
+                            // So far only strdt(str(?column), dt) suceeds on R2RML and RML test cases
+                            : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            // Not every datatype has a function and term maps may create terms with incorrect lexical space - e.g. xsd:duration("abc")
+                            // : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            // : new E_Function(knownDatatype.getURI(), new ExprList(column))
+                        : null;
+
+//		if (result == column) {
+//			System.out.println("unknown term type - assuming literal");
+//		}
+
+        return result;
+    }
+
+    public static Expr applyTermTypeRml2(Expr column, Node termType, Node knownDatatype) {
+        String termTypeIri = termType.getURI();
+
+        Expr result;
+        result = termTypeIri.equals(Rml2Terms.IRI)
+                // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
+                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                : termTypeIri.equals(Rml2Terms.BlankNode)
+                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                    : termTypeIri.equals(Rml2Terms.Literal)
                         ? knownDatatype == null
                             ? column
                             // So far only strdt(str(?column), dt) suceeds on R2RML and RML test cases

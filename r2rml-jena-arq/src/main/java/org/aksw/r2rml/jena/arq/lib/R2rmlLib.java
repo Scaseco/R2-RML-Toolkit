@@ -408,25 +408,25 @@ public class R2rmlLib {
 
         // rr:graph on subject map
         ISubjectMap sm = tm.getSubjectMap();
-        Set<Resource> smgs = sm.getGraphs();
-        for (Resource smg : new ArrayList<>(smgs)) {
-            sm.addNewGraphMap().setConstant(smg);
-        }
-        smgs.clear();
+        if (sm != null) {
+            Set<Resource> smgs = sm.getGraphs();
+            for (Resource smg : new ArrayList<>(smgs)) {
+                sm.addNewGraphMap().setConstant(smg);
+            }
+            smgs.clear();
 
+            // Note: Classes are expanded here using short cuts that
+            // get expanded again in the immediately following code
+            List<Resource> classes = new ArrayList<>(sm.getClasses());
+            if (!classes.isEmpty()) {
+                IPredicateObjectMap typePom = tm.addNewPredicateObjectMap();
+                typePom.addPredicate(RDF.Nodes.type);
 
-        // Note: Classes are expanded here using short cuts that
-        // get expanded again in the immediately following code
-        List<Resource> classes = new ArrayList<>(sm.getClasses());
-        if (!classes.isEmpty()) {
-            IPredicateObjectMap typePom = tm.addNewPredicateObjectMap();
-            typePom.addPredicate(RDF.Nodes.type);
-
-            for (Resource c : classes) {
-                typePom.addObject(c);
+                for (Resource c : classes) {
+                    typePom.addObject(c);
+                }
             }
         }
-
 
         Set<? extends IPredicateObjectMap> poms = tm.getPredicateObjectMaps();
         for (IPredicateObjectMap pom : new ArrayList<>(poms)) {

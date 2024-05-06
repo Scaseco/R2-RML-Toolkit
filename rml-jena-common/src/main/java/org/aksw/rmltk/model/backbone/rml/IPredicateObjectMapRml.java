@@ -4,6 +4,7 @@ package org.aksw.rmltk.model.backbone.rml;
 import java.util.Set;
 
 import org.aksw.jenax.annotation.reprogen.ResourceView;
+import org.aksw.rmltk.model.backbone.common.IHasGraphMap;
 import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.RDFNode;
@@ -11,7 +12,7 @@ import org.apache.jena.rdf.model.Resource;
 
 @ResourceView
 public interface IPredicateObjectMapRml
-    extends IMappingComponentRml, IPredicateObjectMap, IHasGraphMapRml
+    extends IMappingComponentRml, IPredicateObjectMap, IHasGraphMap
 {
     /**
      * @return A mutable set view of the predicat maps. Never null.

@@ -20,6 +20,7 @@ import org.aksw.rmltk.model.backbone.common.IAbstractSource;
 import org.aksw.rmltk.model.backbone.common.ITermMap;
 import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.aksw.rmltk.model.backbone.rml.ITermMapRml;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.aksw.rmlx.model.RmlDefinitionBlock;
 import org.apache.jena.rdf.model.Model;
@@ -137,7 +138,8 @@ public class TriplesMapProcessorRml
         // We either need a context object or some form of worker
 
         // Check for whether we dealing with an RML term reference
-        TermMapRml1 rmlTm = tm.as(TermMapRml1.class);
+        // TermMapRml1 rmlTm = tm.as(TermMapRml1.class);
+        ITermMapRml rmlTm = (ITermMapRml)tm;
         String ref = rmlTm.getReference();
         if (ref != null) {
             result = referenceToExpr(cxt, ref);

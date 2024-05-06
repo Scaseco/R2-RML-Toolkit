@@ -34,15 +34,23 @@
 			<artifactId>jena-core</artifactId>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.jena</groupId> -->
-<!-- 			<artifactId>jena-arq</artifactId> -->
-<!-- 		</dependency> -->
-		
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-annotations-reprogen</artifactId>
 		</dependency>
+
+		<!-- 		<dependency> -->
+		<!-- 			<groupId>org.apache.jena</groupId> -->
+		<!-- 			<artifactId>jena-arq</artifactId> -->
+		<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-reprogen-core</artifactId>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.aksw.rmltk</groupId>-->
+<!--			<artifactId>rml-jena-arq</artifactId>-->
+<!--		</dependency>-->
 
 	</dependencies>
 </project>

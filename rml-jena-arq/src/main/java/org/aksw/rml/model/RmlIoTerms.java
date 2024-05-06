@@ -7,5 +7,6 @@ public class RmlIoTerms {
     public static final String SQL2008Query = Rml2Terms.uri + "SQL2008Query";
     public static final String SQL2008Table = Rml2Terms.uri + "SQL2008Table";
     public static final String JSONPath = Rml2Terms.uri + "JSONPath";
+    public static final String CSV = Rml2Terms.uri + "CSV";
     public static final String XPath = Rml2Terms.uri + "XPath";
 }

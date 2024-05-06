@@ -93,6 +93,10 @@ public class TriplesMapProcessorR2rml {
         initResolvers(childCxt);
 
         ISubjectMap sm = triplesMap.getSubjectMap();
+        if (sm == null) {
+            throw new RuntimeException("SubjectMap was null");
+        }
+
         Node s = allocateVarTracked(childCxt, sm, RR.IRI);
         Objects.requireNonNull(sm, "SubjectMap was null on " + triplesMap);
 
