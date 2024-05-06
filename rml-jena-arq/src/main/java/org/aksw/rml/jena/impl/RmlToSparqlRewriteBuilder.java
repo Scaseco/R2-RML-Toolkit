@@ -289,6 +289,7 @@ public class RmlToSparqlRewriteBuilder {
             }
         }
 
-        return labeledQueries;
+        return result;
+        // return labeledQueries;
     }
 }
