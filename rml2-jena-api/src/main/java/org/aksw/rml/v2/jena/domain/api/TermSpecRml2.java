@@ -46,7 +46,7 @@ public interface TermSpecRml2
      */
     @Override
     default boolean qualifiesAsTermMap() {
-        return hasProperty(RML2.constant) || hasProperty(RML2.column) || hasProperty(RML2.template);
+        return hasProperty(RML2.constant) || hasProperty(RML2.column) || hasProperty(RML2.template) || hasProperty(RML2.reference);
     }
 
     /**

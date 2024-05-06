@@ -46,6 +46,7 @@ public class Rml2Terms {
     public static final String tableName			= uri + "tableName";
     public static final String template 			= uri + "template";
     public static final String termType 			= uri + "termType";
+    public static final String logicalSource        = uri + "logicalSource";
 
     // Other R2RML Terms
 
@@ -58,10 +59,8 @@ public class Rml2Terms {
 
     // RML-specific terms
 
-    public static final String logicalSource        = uri + "logicalSource";
-    public static final String reference            = uri + "reference";
-
     public static final String source               = uri + "source";
+    public static final String reference            = uri + "reference";
     public static final String referenceFormulation = uri + "referenceFormulation";
     public static final String iterator             = uri + "iterator";
 

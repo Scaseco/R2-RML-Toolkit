@@ -1,5 +1,6 @@
 package org.aksw.rml.jena.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -112,9 +113,16 @@ public class RmlImporterLib {
             // TODO Integrate validation with shacl, as this gives us free reports of violations
 //		}
 
+
         List<TriplesMapToSparqlMapping> result = triplesMaps.stream()
                 .map(tm -> read(tm, fnmlModel))
                 .collect(Collectors.toList());
+
+//        List<TriplesMapToSparqlMapping> result = new ArrayList<>(triplesMaps.size());
+//        for (ITriplesMapRml triplesMap : triplesMaps) {
+//            TriplesMapToSparqlMapping contrib = read(triplesMap, fnmlModel);
+//            result.add(contrib);
+//        }
 
         return result;
     }

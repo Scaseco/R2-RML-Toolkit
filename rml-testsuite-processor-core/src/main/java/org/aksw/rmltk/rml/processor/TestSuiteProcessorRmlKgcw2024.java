@@ -89,6 +89,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
                                 ;
 
                         List<Entry<Query, String>> labeledQueries = builder.generate();
+                        System.out.println("Generated " + labeledQueries.size() + " queries");
 
                         for (Entry<Query, String> e : labeledQueries) {
                             System.out.println(e);

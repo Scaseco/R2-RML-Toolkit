@@ -33,7 +33,7 @@ public interface PredicateObjectMapRml2
      * @return A mutable set view of the object map types. Never null.
      */
     @Iri(Rml2Terms.objectMap)
-    Set<ObjectMapTypeRml2> getObjectMaps();
+    @Override Set<ObjectMapTypeRml2> getObjectMaps();
 
 
     default ObjectMapTypeRml2 getObjectMap() {
@@ -45,22 +45,23 @@ public interface PredicateObjectMapRml2
 
     /** Shorthands for constant objects */
     @Iri(Rml2Terms.object)
-    Set<RDFNode> getObjects();
+    @Override Set<RDFNode> getObjects();
 
     /** Shorthands for constant predicates */
     @Iri(Rml2Terms.predicate)
-    Set<Resource> getPredicates();
+    @Override Set<Resource> getPredicates();
 
     /** Shorthands for constant objects as strings*/
     @Iri(Rml2Terms.object)
     @IriType
-    Set<String> getObjectIris();
+    @Override Set<String> getObjectIris();
 
     /** Shorthands for constant predicates as strings */
     @Iri(Rml2Terms.predicate)
     @IriType
-    Set<String> getPredicateIris();
+    @Override Set<String> getPredicateIris();
 
+    @Override
     default String getPredicateIri() {
         return IterableUtils.expectZeroOrOneItems(getPredicateIris());
     }
@@ -68,13 +69,14 @@ public interface PredicateObjectMapRml2
     /** Shorthands for constant graphs as strings */
     @Iri(Rml2Terms.graph)
     @IriType
-    Set<Resource> getGraphIris();
+    @Override Set<Resource> getGraphIris();
 
     /**
      * Allocate a fresh blank node, add it to the set of predicate maps and return a view of it as a PredicateMap.
      *
      * @return
      */
+    @Override
     default PredicateMapRml2 addNewPredicateMap() {
         PredicateMapRml2 result = getModel().createResource().as(PredicateMapRml2.class);
         getPredicateMaps().add(result);
@@ -87,6 +89,7 @@ public interface PredicateObjectMapRml2
      *
      * @return
      */
+    @Override
     default ObjectMapRml2 addNewObjectMap() {
         ObjectMapRml2 result = getModel().createResource().as(ObjectMapRml2.class);
         getObjectMaps().add(result);
@@ -98,6 +101,7 @@ public interface PredicateObjectMapRml2
      *
      * @return
      */
+    @Override
     default RefObjectMapRml2 addNewRefObjectMap() {
         RefObjectMapRml2 result = getModel().createResource().as(RefObjectMapRml2.class);
         getObjectMaps().add(result);
@@ -115,42 +119,49 @@ public interface PredicateObjectMapRml2
 //	}
 
 
+    @Override
     default PredicateObjectMapRml2 addPredicate(String iri) {
         return addPredicate(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml2 addPredicate(Node node) {
         return addPredicate(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml2 addPredicate(Resource resource) {
         getPredicates().add(resource);
         return this;
     }
 
-
+    @Override
     default PredicateObjectMapRml2 addObject(String iri) {
         return addObject(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml2 addObject(Node node) {
         return addObject(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml2 addObject(Resource resource) {
         getObjects().add(resource);
         return this;
     }
 
-
+    @Override
     default PredicateObjectMapRml2 addGraph(String iri) {
         return addGraph(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml2 addGraph(Node node) {
         return addGraph(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml2 addGraph(Resource resource) {
         getGraphs().add(resource);
         return this;

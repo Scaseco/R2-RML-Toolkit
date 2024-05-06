@@ -3,6 +3,7 @@ package org.aksw.rml.jena.ref.impl;
 
 import java.util.function.Consumer;
 
+import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
@@ -29,6 +30,11 @@ public abstract class ReferenceFormulationViaServiceBase
         // Replace the logical source with a constant in order to make
         // equality checks easier
         Node s = NodeFactory.createURI(NorseRmlTerms.RML_SOURCE_SERVICE_IRI);
+
+        // TODO Include database config
+        RDFNode source = logicalSource.getSource();
+        D2rqDatabase db = source.as(D2rqDatabase.class);
+
 
         // Only add the immediate triples
         logicalSource.listProperties()

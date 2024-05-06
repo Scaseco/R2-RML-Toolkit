@@ -21,6 +21,7 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.TriplesMapRml1;
 import org.aksw.rmltk.model.backbone.common.IAbstractSource;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Quad;
@@ -214,10 +215,13 @@ public class RmlQueryGenerator {
     }
 
     public static Element createJoinGroup(ReferenceFormulationService registry, JoinDeclaration join, boolean preDistinct, MappingCxt cxt, Function<E_Equals, Expr> getConditions) {
-        LogicalSourceRml1 source = cxt.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
-        String rfIri = source.getReferenceFormulationIri();
+        // LogicalSourceRml1 source = cxt.getTriplesMap().as(TriplesMapRml1.class).getLogicalSource();
+        ITriplesMap triplesMap = cxt.getTriplesMap();
+        IAbstractSource abstractSource = triplesMap.getAbstractSource();
+        ILogicalSource logicalSource = (ILogicalSource)abstractSource;
+        String rfIri = logicalSource.getReferenceFormulationIri();
         ReferenceFormulation rf = registry.getOrThrow(rfIri);
-        Element sourceElt = rf.source(source, cxt.getTriplesMapVar());
+        Element sourceElt = rf.source(logicalSource, cxt.getTriplesMapVar());
         Var subjectVar = cxt.getSubjectVar();
         ExprVar subjectEv = new ExprVar(cxt.getSubjectVar());
 

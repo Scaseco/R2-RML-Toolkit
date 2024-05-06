@@ -13,8 +13,6 @@ import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
-import org.aksw.rml.model.LogicalSourceRml1;
-import org.aksw.rml.model.TermMapRml1;
 import org.aksw.rml.model.TriplesMapRml1;
 import org.aksw.rmltk.model.backbone.common.IAbstractSource;
 import org.aksw.rmltk.model.backbone.common.ITermMap;
@@ -104,8 +102,9 @@ public class TriplesMapProcessorRml
         });
 
         cxt.setSourceIdentityResolver(tm -> {
-            TriplesMapRml1 rtm = tm.as(TriplesMapRml1.class);
-            LogicalSourceRml1 ls = rtm.getLogicalSource();
+            // TriplesMapRml1 rtm = tm.as(TriplesMapRml1.class);
+            IAbstractSource _abstractSource = tm.getAbstractSource();
+            ILogicalSource ls = (ILogicalSource)_abstractSource;// rtm.getLogicalSource();
 
             // Create a copy of the logical source that has aliases/binds cleared
             // LogicalSource copy = RmlDefinitionBlockUtils.closureWithoutDefinitions(ls).as(LogicalSource.class);
