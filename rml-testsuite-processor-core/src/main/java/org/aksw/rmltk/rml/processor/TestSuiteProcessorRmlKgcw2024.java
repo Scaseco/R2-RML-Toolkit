@@ -67,7 +67,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
         try (MySQLContainer<?> dbContainer = new MySQLContainer<>("mysql:5.7.34")
                 .withUsername("root")
                 .withPassword("root")
-                .withExposedPorts(3306)
+                // .withExposedPorts(3306)
                 .withDatabaseName("db")
                 .withLogConsumer(of -> logger.info(of.getUtf8String()))) {
             dbContainer.start();
@@ -89,13 +89,14 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 
 
-    public static void run(JdbcDatabaseContainer jdbcContainer) throws Exception {
+    public static void run(JdbcDatabaseContainer<?> jdbcContainer) throws Exception {
         //dbContainer.getJdbcUrl()
 
+        String host = jdbcContainer.getContainerInfo().getNetworkSettings().getNetworks().values().iterator().next().getIpAddress();
 
         Consumer<D2rqDatabase> d2rqResolver = r -> {
             String before = r.getJdbcDSN();
-            String after = before.replace("MySQL", "localhost");
+            String after = before.replace("MySQL", host);
             r.setJdbcDSN(after);
             System.err.println("Connection Spec:" + r);
         };
@@ -124,94 +125,108 @@ public class TestSuiteProcessorRmlKgcw2024 {
                     continue;
                 }
 
-                Path data = testCase.resolve("data");
-                Path shared = data.resolve("shared");
-                Path mappingTtl = shared.resolve("mapping.ttl");
-
-                Path resourceSql = shared.resolve("resource.sql");
-                if (Files.exists(resourceSql)) {
-                    String str = MoreFiles.asCharSource(resourceSql, StandardCharsets.UTF_8).read();
-                    String[] strs = str.split(";");
-
-                    try (Connection conn = jdbcContainer.createConnection("")) {
-                        for (String s : strs) {
-                            s = s.replaceAll("^[\n\r]+", "").replaceAll("[\n\r]+$", "");
-                            if (!s.isEmpty()) {
-                                try (Statement stmt = conn.createStatement()) {
-                                    stmt.execute(s);
-                                }
-                            }
-                        }
-                    }
+                try {
+                    runTestCase(testCase, jdbcContainer, d2rqResolver);
+                } catch (Exception e) {
+                    logger.warn("Failure", e);
                 }
-
-                Model model = ModelFactory.createDefaultModel();
-                try (InputStream in = Files.newInputStream(mappingTtl)) {
-                    RDFDataMgr.read(model, in, Lang.TURTLE);
-
-                    System.out.println("PROCESSING: " + name);
-                    System.out.println("-------------------------------------------------------");
-                    RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
-
-                    try {
-                        List<ITriplesMapRml> tms = RmlImporterLib.listAllTriplesMaps(TriplesMapRml2.class, model);
-                        for (ITriplesMapRml tm : tms) {
-    //                        System.out.println(tm);
-                        }
-
-                        RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
-                            // .setCache(cache)
-                            // .addFnmlFiles(fnmlFiles)
-                            .addRmlModel(TriplesMapRml2.class, model)
-                            .setDenormalize(false)
-                            .setMerge(true)
-                            ;
-
-                        List<Entry<Query, String>> labeledQueries = builder.generate();
-                        System.out.println("Generated " + labeledQueries.size() + " queries");
-
-                        Model emptyModel = ModelFactory.createDefaultModel();
-                        for (Entry<Query, String> e : labeledQueries) {
-                            Query query = e.getKey();
-
-                            StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
-                            sink.start();
-
-                            try (QueryExecution qe = QueryExecutionDatasetBuilder.create()
-                                    .model(emptyModel)
-                                    .query(query)
-                                    .set(RmlSymbols.symMappingDirectory, shared)
-                                    .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
-                                    .build()) {
-                                Iterator<Quad> it = qe.execConstructQuads();
-                                while (it.hasNext()) {
-                                    sink.quad(it.next());
-                                }
-                            }
-                            sink.finish();
-
-                            // System.out.println(e);
-                        }
-
-//                        SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(null, null);
-//                        processor.process
-
-
-
-                    } catch (Exception e) {
-                        System.err.println("ERROR");
-                        e.printStackTrace();
-                    }
-                    // RmlImporter rmlImporter = RmlImporter.from(model);
-                    // rmlImporter.process();
-                }
-                // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             }
 
         }
 
         // Files.list(p).forEach(x -> System.out.println("x: " +x));
         // System.out.println(p);
+    }
+
+
+    public static void runTestCase(Path testCase, JdbcDatabaseContainer<?> jdbcContainer, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
+
+        String name = testCase.getFileName().toString();
+
+        Path data = testCase.resolve("data");
+        Path shared = data.resolve("shared");
+        Path mappingTtl = shared.resolve("mapping.ttl");
+
+        Path resourceSql = shared.resolve("resource.sql");
+        if (Files.exists(resourceSql)) {
+            String str = MoreFiles.asCharSource(resourceSql, StandardCharsets.UTF_8).read();
+            String[] strs = str.split(";");
+
+            try (Connection conn = jdbcContainer.createConnection("")) {
+                for (String s : strs) {
+                    s = s.replaceAll("^[\n\r ]+", "").replaceAll("[\n\r ]+$", "");
+                    if (!s.isEmpty()) {
+                        System.out.println("Executing:");
+                        System.out.println(s);
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.execute(s);
+                        }
+                    }
+                }
+            }
+        }
+
+        Model model = ModelFactory.createDefaultModel();
+        try (InputStream in = Files.newInputStream(mappingTtl)) {
+            RDFDataMgr.read(model, in, Lang.TURTLE);
+
+            System.out.println("PROCESSING: " + name);
+            System.out.println("-------------------------------------------------------");
+            RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+
+            try {
+                List<ITriplesMapRml> tms = RmlImporterLib.listAllTriplesMaps(TriplesMapRml2.class, model);
+                for (ITriplesMapRml tm : tms) {
+//                        System.out.println(tm);
+                }
+
+                RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                    // .setCache(cache)
+                    // .addFnmlFiles(fnmlFiles)
+                    .addRmlModel(TriplesMapRml2.class, model)
+                    .setDenormalize(false)
+                    .setMerge(true)
+                    ;
+
+                List<Entry<Query, String>> labeledQueries = builder.generate();
+                System.out.println("Generated " + labeledQueries.size() + " queries");
+
+                Model emptyModel = ModelFactory.createDefaultModel();
+                for (Entry<Query, String> e : labeledQueries) {
+                    Query query = e.getKey();
+
+                    StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
+                    sink.start();
+
+                    try (QueryExecution qe = QueryExecutionDatasetBuilder.create()
+                            .model(emptyModel)
+                            .query(query)
+                            .set(RmlSymbols.symMappingDirectory, shared)
+                            .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
+                            .build()) {
+                        Iterator<Quad> it = qe.execConstructQuads();
+                        while (it.hasNext()) {
+                            sink.quad(it.next());
+                        }
+                    }
+                    sink.finish();
+
+                    // System.out.println(e);
+                }
+
+//                SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(null, null);
+//                processor.process
+
+
+
+            } catch (Exception e) {
+                System.err.println("ERROR");
+                e.printStackTrace();
+            }
+            // RmlImporter rmlImporter = RmlImporter.from(model);
+            // rmlImporter.process();
+        }
+        // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
     }
 
 //    public static Path toFileSystem(URI uri) {
