@@ -3,9 +3,8 @@ package org.aksw.rml.rso.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aksw.fno.model.FnoTerms;
 import org.aksw.jenax.annotation.reprogen.Iri;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;

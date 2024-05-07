@@ -1,9 +1,10 @@
 package org.aksw.rml.jena.service;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -36,12 +37,14 @@ import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.aksw.r2rml.jena.jdbc.processor.R2rmlJdbcUtils;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.RmlLib;
-import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.aksw.rml.v2.common.vocab.RmlIoTerms;
+import org.aksw.rml.v2.io.RelativePathSource;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.r2rml.LogicalTable;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Graph;
@@ -50,6 +53,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
@@ -67,8 +71,13 @@ import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sparql.util.Symbol;
+import org.apache.jena.vocabulary.XSD;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteSource;
+import com.google.common.io.MoreFiles;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -89,7 +98,7 @@ public class InitRmlService {
                 ElementUtils.toGraph(elt, graph);
                 Model model = ModelFactory.createModelForGraph(graph);
                 // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
-                LogicalSourceRml1 logicalSource = RmlLib.getOnlyLogicalSource(model);
+                ILogicalSource logicalSource = RmlLib.getOnlyLogicalSource(model);
                 r = processSource(logicalSource, binding, execCxt);
             } else {
                 return chain.createExecution(opExecute, opOriginal, binding, execCxt);
@@ -108,12 +117,26 @@ public class InitRmlService {
 //        return QueryExecUtils.fromStream(stream, outVar, parentBinding, execCxt, RDFDatatypeJson::jsonToNode);
 //    }
 
-    public static QueryIterator processSource(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        Map<String, RmlSourceProcessor> registry = new HashMap<>();
+    public static void initRegistryRml1(Map<String, RmlSourceProcessor> registry) {
         registry.put(QlTerms.CSV, InitRmlService::processSourceAsCsv);
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
         registry.put(QlTerms.XPath, InitRmlService::processSourceAsXml);
-        registry.put(QlTerms.RDB, InitRmlService::processSourceAsJdbc);
+        registry.put(QlTerms.RDB, RmlSourceProcessorD2rqDatabase.getInstance());
+    }
+
+    public static void initRegistryRml2(Map<String, RmlSourceProcessor> registry) {
+        registry.put(RmlIoTerms.SQL2008Query, RmlSourceProcessorD2rqDatabase.getInstance());
+        registry.put(RmlIoTerms.SQL2008Table, RmlSourceProcessorD2rqDatabase.getInstance());
+        registry.put(RmlIoTerms.JSONPath, InitRmlService::processSourceAsJson);
+        registry.put(RmlIoTerms.XPath, InitRmlService::processSourceAsXml);
+        registry.put(RmlIoTerms.CSV, InitRmlService::processSourceAsCsv);
+    }
+
+
+    public static QueryIterator processSource(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        Map<String, RmlSourceProcessor> registry = new HashMap<>();
+        initRegistryRml1(registry);
+        initRegistryRml2(registry);
 
         String iri = logicalSource.getReferenceFormulationIri();
         Preconditions.checkArgument(iri != null, "Reference formulation not specified on source. " + logicalSource);
@@ -125,38 +148,72 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsJdbc(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        SourceOutput output = logicalSource.as(SourceOutput.class);
-        Var outVar = output.getOutputVar();
 
-        // TODO Register data source with execCxt and reuse if present
-        LogicalTable logicalTable = logicalSource.as(LogicalTable.class);
-        D2rqDatabase dataSourceSpec = logicalSource.getSource().as(D2rqDatabase.class);
 
-        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark(); // SqlCodecUtils.createSqlCodecDefault();
+    // TODO Resolve to an inputstream supplier?
+    public static ByteSource newByteSource(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        ByteSource result;
+        RDFNode source = logicalSource.getSource();
 
-        DataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec);
-        // Connection conn = dataSource.getConnection();
+        if (source == null) {
+            throw new NullPointerException("No source specified (got null)");
+        } else if (source.isLiteral()) {
+            Literal literal = source.asLiteral();
+            String datatypeUri = literal.getDatatypeURI();
+            if (datatypeUri.equals(XSD.xstring.getURI())) {
+                // String sourceStr = literal.getString();
+                // result = JenaUrlUtils.openInputStream(literal.asNode(), execCxt);
+                result = new ByteSource() {
+                    @Override
+                    public InputStream openStream() throws IOException {
+                        try {
+                            return JenaUrlUtils.openInputStream(NodeValue.makeNode(source.asNode()), execCxt);
+                        } catch (Exception e) {
+                            throw new IOException(e);
+                        }
+                    }
+                };
+            } else {
+                throw new RuntimeException("Unsupported literal type: " + datatypeUri + " - " + literal);
+            }
+        } else if (source.isResource()) {
+            RelativePathSource r = source.as(RelativePathSource.class);
 
-        NodeMapper nodeMapper = null; // create on demand TODO This is hacky
-        IteratorCloseable<Binding> it;
-        try {
-            it = R2rmlJdbcUtils.processR2rml(dataSource, logicalTable, nodeMapper, sqlCodec);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            // TODO Get some resolver from the context
+            Path basePath = null;
+            Context cxt = execCxt.getContext();
+            Object obj = cxt.get(RmlSymbols.symMappingDirectory);
+            if (obj == null) {
+                // Resolve to the current directory
+                basePath = Path.of("").toAbsolutePath();
+                // throw new NullPointerException("MappingDirectory is null in the context");
+            } else if (obj instanceof Path) {
+                basePath = (Path)obj;
+            } else if (obj instanceof String) {
+                String str = (String)obj;
+                basePath = Path.of(str);
+            } else {
+                throw new IllegalArgumentException("Don't know how to handle: " + obj);
+            }
+
+            String pathStr = r.getPath();
+            if (pathStr == null) {
+                throw new NullPointerException("No path provided");
+            }
+
+            Path finalPath = basePath.resolve(pathStr);
+            result = MoreFiles.asByteSource(finalPath);
+        } else {
+            throw new RuntimeException("Unsupported logical source: " + logicalSource);
         }
 
-        Iter<Binding> it2 = Iter.iter(it).map(b -> {
-            Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
-            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(bb).asNode());
-            return r;
-        });
-
-        return QueryIterPlainWrapper.create(it2, execCxt);
+        return result;
     }
 
-    public static QueryIterator processSourceAsJson(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSourceAsString();
+    public static QueryIterator processSourceAsJson(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        ByteSource byteSource = newByteSource(logicalSource, parentBinding, execCxt);
+
+        // String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -164,7 +221,8 @@ public class InitRmlService {
 
         Gson gson = RDFDatatypeJson.get().getGson();
         JsonElement jsonElement;
-        try (Reader reader = new InputStreamReader(JenaUrlUtils.openInputStream(NodeValue.makeString(source), execCxt), StandardCharsets.UTF_8)) {
+
+        try (Reader reader = byteSource.asCharSource(StandardCharsets.UTF_8).openStream()) {
             jsonElement = gson.fromJson(reader, JsonElement.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -184,8 +242,9 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsXml(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSourceAsString();
+    public static QueryIterator processSourceAsXml(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        ByteSource byteSource = newByteSource(logicalSource, parentBinding, execCxt);
+
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -194,18 +253,18 @@ public class InitRmlService {
 
         NodeValue xmlNv;
         try {
-            xmlNv = JenaXmlUtils.resolve(NodeValue.makeString(source), execCxt);
+            xmlNv = JenaXmlUtils.parse(byteSource::openStream);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         XPathFactory xPathFactory = XPathFactory.newInstance();
         QueryIterator result = JenaXmlUtils.evalXPath(xPathFactory, parentBinding, execCxt,
-                xmlNv.asNode(), NodeFactory.createLiteral(iterator), outVar);
+                xmlNv.asNode(), NodeFactory.createLiteralString(iterator), outVar);
 
         return result;
     }
 
-    public static QueryIterator processSourceAsCsv(LogicalSourceRml1 logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static QueryIterator processSourceAsCsv(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var[] headerVars = null;

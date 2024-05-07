@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.collections.SetUtils;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.fno.model.FnoTerms;
@@ -29,11 +28,15 @@ import org.aksw.rml.jena.impl.Clusters.Cluster;
 import org.aksw.rml.model.LogicalSourceRml1;
 import org.aksw.rml.model.Rml;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rml.v2.jena.domain.api.LogicalSourceRml2;
+import org.aksw.rml2.vocab.jena.RML2;
 import org.aksw.rmltk.model.backbone.common.IObjectMap;
 import org.aksw.rmltk.model.backbone.common.IObjectMapType;
 import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
 import org.aksw.rmltk.model.backbone.common.ITermSpec;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -63,9 +66,9 @@ import org.apache.jena.sparql.syntax.ElementWalker;
 import org.apache.jena.sparql.syntax.PatternVars;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst;
-import org.apache.jena.util.iterator.ExtendedIterator;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 
@@ -87,22 +90,37 @@ public class RmlLib {
      * Extract a logical source from a service node.
      * Attempts to collect the SPARQL expression's triples into an RDF graph.
      */
-    public static LogicalSourceRml1 getLogicalSource(OpService opService) {
+    public static ILogicalSource getLogicalSource(OpService opService) {
         Op subOp = opService.getSubOp();
         Query query = OpAsQuery.asQuery(subOp);
         Element elt = query.getQueryPattern();
         Graph graph = ElementUtils.toGraph(elt, new GraphVarImpl());
         Model model = ModelFactory.createModelForGraph(graph);
-        LogicalSourceRml1 result = RmlLib.getOnlyLogicalSource(model);
+        ILogicalSource result = RmlLib.getOnlyLogicalSource(model);
         return result;
     }
 
     /** Extract the only logical source from a given model. Null if none found; exception if more than one. */
-    public static LogicalSourceRml1 getOnlyLogicalSource(Model model) {
+    public static ILogicalSource getOnlyLogicalSource(Model model) {
+        ILogicalSource result = ObjectUtils.coalesce(
+                () -> getOnlyLogicalSourceRml1(model),
+                () -> getOnlyLogicalSourceRml2(model));
+        return result;
+    }
+
+    public static LogicalSourceRml1 getOnlyLogicalSourceRml1(Model model) {
         List<LogicalSourceRml1> matches = model.listResourcesWithProperty(Rml.source)
                 .mapWith(r -> r.as(LogicalSourceRml1.class))
                 .toList();
-        LogicalSourceRml1 result = IterableUtils.expectZeroOrOneItems(matches);
+        LogicalSourceRml1 result = Iterables.getOnlyElement(matches, null);
+        return result;
+    }
+
+    public static LogicalSourceRml2 getOnlyLogicalSourceRml2(Model model) {
+        List<LogicalSourceRml2> matches = model.listResourcesWithProperty(RML2.source)
+                .mapWith(r -> r.as(LogicalSourceRml2.class))
+                .toList();
+        LogicalSourceRml2 result = Iterables.getOnlyElement(matches, null);
         return result;
     }
 

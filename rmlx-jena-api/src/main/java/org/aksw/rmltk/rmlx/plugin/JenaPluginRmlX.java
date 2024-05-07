@@ -1,4 +1,4 @@
-package org.aksw.rml.jena.plugin;
+package org.aksw.rmltk.rmlx.plugin;
 
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.aksw.rml.rso.model.SourceOutput;

@@ -4,9 +4,9 @@ package org.aksw.rml.jena.ref.impl;
 import java.util.function.Consumer;
 
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;

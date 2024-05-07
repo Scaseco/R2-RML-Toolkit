@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.aksw.rmltk</groupId>
+		<artifactId>rmltk-parent</artifactId>
+		<version>5.1.0-1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>rmlx-jena-api</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+<!--		<dependency>-->
+<!--			<groupId>org.aksw.rmltk</groupId>-->
+<!--			<artifactId>r2rml-jena-api</artifactId>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-annotations-reprogen</artifactId>
+		</dependency>
+
+		<!-- 		<dependency> -->
+		<!-- 			<groupId>org.apache.jena</groupId> -->
+		<!-- 			<artifactId>jena-arq</artifactId> -->
+		<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-reprogen-core</artifactId>
+		</dependency>
+
+		<!-- Used only for NorseTerms; replace with a norse-specific dependency -->
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-plugins-datatypes</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-shacl</artifactId>
+		</dependency>
+
+	</dependencies>
+</project>
+

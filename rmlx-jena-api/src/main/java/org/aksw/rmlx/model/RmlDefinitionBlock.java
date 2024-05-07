@@ -5,7 +5,6 @@ import java.util.Set;
 import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.jenax.model.shacl.domain.ShHasPrefixes;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 
 @ResourceView
 public interface RmlDefinitionBlock

@@ -1,7 +1,6 @@
 package org.aksw.rmlx.model;
 
 import org.aksw.jenax.annotation.reprogen.Iri;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.apache.jena.rdf.model.Resource;
 
 public interface RmlDefinition

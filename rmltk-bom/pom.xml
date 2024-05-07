@@ -46,6 +46,7 @@
 		<jenax.version>5.1.0-1-SNAPSHOT</jenax.version>
 		<aksw-commons.version>0.9.9-SNAPSHOT</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
+		<testcontainers.version>1.19.7</testcontainers.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<!-- Project Settings -->
@@ -182,6 +183,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.aksw.rmltk</groupId>
+				<artifactId>rmlx-jena-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-core</artifactId>
 				<version>${jena.version}</version>
@@ -202,6 +208,15 @@
 				<version>${hikaricp.version}</version>
 				<!-- <type>bundle</type> -->
 			</dependency>
+
+			<!-- Used only for NorseTerms; replace with a norse-specific
+			dependency -->
+			<dependency>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-arq-plugins-datatypes</artifactId>
+				<version>${jenax.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
@@ -216,6 +231,25 @@
 				<artifactId>jsqlparser</artifactId>
 				<version>4.3</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers</artifactId>
+				<version>${testcontainers.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${testcontainers.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>mysql</artifactId>
+				<version>${testcontainers.version}</version>
+			</dependency>
+
 			<!-- <dependency> -->
 			<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
 			<!-- <artifactId>jena-sparql-api-algebra</artifactId> -->

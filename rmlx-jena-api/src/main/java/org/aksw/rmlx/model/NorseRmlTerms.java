@@ -1,4 +1,4 @@
-package org.aksw.rml.jena.impl;
+package org.aksw.rmlx.model;
 
 import org.aksw.jenax.norse.NorseTerms;
 

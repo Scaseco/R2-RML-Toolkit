@@ -9,7 +9,7 @@ import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationRdbViaService;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationXmlViaService;
 import org.aksw.rml.model.QlTerms;
-import org.aksw.rml.model.RmlIoTerms;
+import org.aksw.rml.v2.common.vocab.RmlIoTerms;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.SystemARQ;
 import org.apache.jena.sparql.util.Context;

@@ -1,6 +1,7 @@
 package org.aksw.rmltk.rml.v2.plugin;
 
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
+import org.aksw.rml.v2.io.RelativePathSource;
 import org.aksw.rml.v2.jena.domain.api.GraphMapRml2;
 import org.aksw.rml.v2.jena.domain.api.JoinConditionRml2;
 import org.aksw.rml.v2.jena.domain.api.LogicalSourceRml2;
@@ -56,6 +57,10 @@ public class JenaPluginRml2
             ObjectMapRml2.class,
             RefObjectMapRml2.class,
             JoinConditionRml2.class
+        );
+
+        JenaPluginUtils.registerResourceClasses(
+            RelativePathSource.class
         );
 
         // Rml Extensions

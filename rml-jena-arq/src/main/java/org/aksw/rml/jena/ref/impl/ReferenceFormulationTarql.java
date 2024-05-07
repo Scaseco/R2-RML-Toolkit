@@ -2,9 +2,9 @@ package org.aksw.rml.jena.ref.impl;
 
 import org.aksw.fno.model.Fno;
 import org.aksw.jenax.arq.util.var.VarUtils;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
