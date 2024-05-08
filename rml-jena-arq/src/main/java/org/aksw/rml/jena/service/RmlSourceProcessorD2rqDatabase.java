@@ -39,7 +39,7 @@ public class RmlSourceProcessorD2rqDatabase
         return INSTANCE;
     }
 
-    public LogicalTable toLogicalTable(ILogicalSource logicalSource) {
+    public static LogicalTable toLogicalTable(ILogicalSource logicalSource) {
         LogicalTable result;
         if (logicalSource instanceof LogicalTable || logicalSource instanceof LogicalSourceRml1) {
             result = logicalSource.as(LogicalTable.class);

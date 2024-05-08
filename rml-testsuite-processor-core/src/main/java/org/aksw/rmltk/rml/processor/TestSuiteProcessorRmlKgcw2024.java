@@ -195,9 +195,9 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 for (Entry<Query, String> e : labeledQueries) {
                     Query query = e.getKey();
 
+                    System.out.println("Begin of RDF Data:");
                     StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
                     sink.start();
-
                     try (QueryExecution qe = QueryExecutionDatasetBuilder.create()
                             .model(emptyModel)
                             .query(query)
@@ -210,6 +210,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
                         }
                     }
                     sink.finish();
+                    System.out.println("End of RDF Data");
 
                     // System.out.println(e);
                 }

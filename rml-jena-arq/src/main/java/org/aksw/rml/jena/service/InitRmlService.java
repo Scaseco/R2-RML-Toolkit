@@ -118,7 +118,7 @@ public class InitRmlService {
 //    }
 
     public static void initRegistryRml1(Map<String, RmlSourceProcessor> registry) {
-        registry.put(QlTerms.CSV, InitRmlService::processSourceAsCsv);
+        registry.put(QlTerms.CSV, RmlSourceProcessorCsv.getInstance());
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
         registry.put(QlTerms.XPath, InitRmlService::processSourceAsXml);
         registry.put(QlTerms.RDB, RmlSourceProcessorD2rqDatabase.getInstance());
@@ -129,7 +129,7 @@ public class InitRmlService {
         registry.put(RmlIoTerms.SQL2008Table, RmlSourceProcessorD2rqDatabase.getInstance());
         registry.put(RmlIoTerms.JSONPath, InitRmlService::processSourceAsJson);
         registry.put(RmlIoTerms.XPath, InitRmlService::processSourceAsXml);
-        registry.put(RmlIoTerms.CSV, InitRmlService::processSourceAsCsv);
+        registry.put(RmlIoTerms.CSV, RmlSourceProcessorCsv.getInstance());
     }
 
 
@@ -148,6 +148,33 @@ public class InitRmlService {
         return result;
     }
 
+    public static ByteSource asByteSource(RelativePathSource source, ExecutionContext execCxt) {
+        // TODO Get some resolver from the context
+        Path basePath = null;
+        Context cxt = execCxt.getContext();
+        Object obj = cxt.get(RmlSymbols.symMappingDirectory);
+        if (obj == null) {
+            // Resolve to the current directory
+            basePath = Path.of("").toAbsolutePath();
+            // throw new NullPointerException("MappingDirectory is null in the context");
+        } else if (obj instanceof Path) {
+            basePath = (Path)obj;
+        } else if (obj instanceof String) {
+            String str = (String)obj;
+            basePath = Path.of(str);
+        } else {
+            throw new IllegalArgumentException("Don't know how to handle: " + obj);
+        }
+
+        String pathStr = source.getPath();
+        if (pathStr == null) {
+            throw new NullPointerException("No path provided");
+        }
+
+        Path finalPath = basePath.resolve(pathStr);
+        ByteSource result = MoreFiles.asByteSource(finalPath);
+        return result;
+    }
 
 
     // TODO Resolve to an inputstream supplier?
@@ -178,31 +205,7 @@ public class InitRmlService {
             }
         } else if (source.isResource()) {
             RelativePathSource r = source.as(RelativePathSource.class);
-
-            // TODO Get some resolver from the context
-            Path basePath = null;
-            Context cxt = execCxt.getContext();
-            Object obj = cxt.get(RmlSymbols.symMappingDirectory);
-            if (obj == null) {
-                // Resolve to the current directory
-                basePath = Path.of("").toAbsolutePath();
-                // throw new NullPointerException("MappingDirectory is null in the context");
-            } else if (obj instanceof Path) {
-                basePath = (Path)obj;
-            } else if (obj instanceof String) {
-                String str = (String)obj;
-                basePath = Path.of(str);
-            } else {
-                throw new IllegalArgumentException("Don't know how to handle: " + obj);
-            }
-
-            String pathStr = r.getPath();
-            if (pathStr == null) {
-                throw new NullPointerException("No path provided");
-            }
-
-            Path finalPath = basePath.resolve(pathStr);
-            result = MoreFiles.asByteSource(finalPath);
+            result = asByteSource(r, execCxt);
         } else {
             throw new RuntimeException("Unsupported logical source: " + logicalSource);
         }
@@ -264,106 +267,6 @@ public class InitRmlService {
         return result;
     }
 
-    public static QueryIterator processSourceAsCsv(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        SourceOutput output = logicalSource.as(SourceOutput.class);
-
-        Var[] headerVars = null;
-        // Try to get the outputs as an RDF list (may raise an exception)
-        try {
-            List<Var> headerVarList = output.getOutputVars();
-            headerVars = headerVarList == null ? null : headerVarList.toArray(new Var[0]);
-        } catch (Throwable e) {
-            // Ignore
-        }
-        Var[] finalHeaderVars = headerVars;
-
-        Var jsonVar = output.getOutputVar();
-
-        if (jsonVar == null && headerVars == null) {
-            throw new RuntimeException("No output specified");
-        }
-
-        RDFNode source = logicalSource.getSource();
-        String sourceDoc;
-        DialectMutable effectiveDialect = new DialectMutableImpl();
-        String[] nullValues = null;
-        if (source.isLiteral()) {
-            sourceDoc = logicalSource.getSourceAsString();
-        } else {
-            Table csvwtSource = source.as(Table.class);
-
-            Dialect dialect = csvwtSource.getDialect();
-            if (dialect != null) {
-                dialect.copyInto(effectiveDialect, false);
-            }
-            Set<String> nullSet = csvwtSource.getNull();
-            if (nullSet != null && !nullSet.isEmpty()) {
-                nullValues = nullSet.toArray(new String[0]);
-            }
-            sourceDoc = csvwtSource.getUrl();
-        }
-        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
-
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
-        UnivocityParserFactory parserFactory = UnivocityParserFactory
-                .createDefault(true)
-                .configure(csvConf);
-        QueryIterator result;
-
-        // FIXME If the output var is bound to a constant then filter the source to that value
-
-        boolean jsonMode = finalHeaderVars == null;
-        if (jsonMode) {
-            Stream<JsonObject> stream = UnivocityUtils.readCsvElements(inSupp, parserFactory, parser -> {
-                String[] row = parser.parseNext();
-                JsonObject r = null;
-                if (row != null) {
-                    RecordMetaData meta = parser.getRecordMetadata();
-                    String[] headers = meta.headers();
-                    r = csvRecordToJsonObject(row, headers);
-                }
-                return r;
-            });
-            result = QueryExecUtils.fromStream(stream, jsonVar, parentBinding, execCxt, JenaJsonUtils::createLiteralByValue);
-        } else {
-            Stream<Binding> stream = UnivocityUtils.readCsvElements(inSupp, parserFactory, parser -> {
-                String[] row = parser.parseNext();
-                Binding r = csvRecordToBinding(parentBinding, row, finalHeaderVars);
-                return r;
-            });
-            result = QueryExecUtils.fromStream(stream, execCxt);
-        }
-        return result;
-    }
-
-    public static Binding csvRecordToBinding(Binding parent, String[] row, Var[] vars) {
-        BindingBuilder bb = Binding.builder(parent);
-        for(int i = 0; i < row.length; ++i) {
-            String value = row[i];
-            if (value != null) {
-                Node node = NodeFactory.createLiteral(value);
-                Var var = vars != null && i < vars.length ? vars[i] : null;
-                if (var == null) {
-                    var = Var.alloc("col" + i);
-                }
-                bb.add(var, node);
-            }
-        }
-        return bb.build();
-    }
-
-    public static JsonObject csvRecordToJsonObject(String[] row, String[] labels) {
-        JsonObject obj = new JsonObject();
-        for(int i = 0; i < row.length; ++i) {
-            String value = row[i];
-
-            String label = labels != null && i < labels.length ? labels[i] : null;
-            label = label == null ? "" + "col" + i : label;
-
-            obj.addProperty(label, value);
-        }
-        return obj;
-    }
 
     public static void main(String[] args) {
         try (QueryExec qe = QueryExec.newBuilder()
