@@ -12,12 +12,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import org.aksw.commons.util.exception.FinallyRunAll;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
@@ -41,8 +45,10 @@ import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class TestSuiteProcessorRmlKgcw2024 {
 
@@ -61,18 +67,59 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 //
 
+    /** start the container if needed and return its IP */
+    public static String startIfNeeded(GenericContainer<?> container) {
+        if (!container.isRunning()) {
+            container.start();
+        }
+        String result = container.getContainerInfo().getNetworkSettings().getNetworks().values().iterator().next().getIpAddress();
+        return result;
+    }
+
     public static void main(String[] args) throws Exception {
         InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
 
-        try (MySQLContainer<?> dbContainer = new MySQLContainer<>("mysql:5.7.34")
+        MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:5.7.34")
                 .withUsername("root")
                 .withPassword("root")
                 // .withExposedPorts(3306)
                 .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String()))) {
-            dbContainer.start();
-            run(dbContainer);
-            dbContainer.stop();
+                .withLogConsumer(of -> logger.info(of.getUtf8String()));
+
+        PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+                .withUsername("root")
+                .withPassword("root")
+                // .withExposedPorts(3306)
+                .withDatabaseName("db")
+                .withLogConsumer(of -> logger.info(of.getUtf8String()));
+
+        Map<String, JdbcDatabaseContainer<?>> containers = new HashMap<>();
+        containers.put("MySQL", mysqlContainer);
+        containers.put("PostgreSQL", postgresqlContainer);
+
+        Consumer<D2rqDatabase> d2rqResolver = r -> {
+            String before = r.getJdbcDSN();
+            String after = null;
+            for (Entry<String, JdbcDatabaseContainer<?>> c : containers.entrySet()) {
+                String name = c.getKey().toLowerCase();
+                if (before.contains(name)) {
+                    String host = startIfNeeded(mysqlContainer);
+                    after = before.replace(name, host);
+                }
+            }
+
+            if (after != null) {
+                r.setJdbcDSN(after);
+            }
+            System.err.println("Connection Spec:" + r);
+        };
+
+        try {
+            run(containers, d2rqResolver);
+        } finally {
+            FinallyRunAll runAll = FinallyRunAll.create();
+            containers.values().forEach(c -> runAll.add(c::stop));
+            runAll.run();
         }
     }
 
@@ -89,17 +136,8 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 
 
-    public static void run(JdbcDatabaseContainer<?> jdbcContainer) throws Exception {
+    public static void run(Map<String, JdbcDatabaseContainer<?>> containers, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
         //dbContainer.getJdbcUrl()
-
-        String host = jdbcContainer.getContainerInfo().getNetworkSettings().getNetworks().values().iterator().next().getIpAddress();
-
-        Consumer<D2rqDatabase> d2rqResolver = r -> {
-            String before = r.getJdbcDSN();
-            String after = before.replace("MySQL", host);
-            r.setJdbcDSN(after);
-            System.err.println("Connection Spec:" + r);
-        };
 
         List<String> suiteNames = List.of(
             "rml-core"
@@ -125,8 +163,12 @@ public class TestSuiteProcessorRmlKgcw2024 {
                     continue;
                 }
 
+                // Get last element of array after splitting by '-'
+                String suffix = Arrays.asList(name.split("-")).stream().reduce((a,  b) -> b).get();
+                JdbcDatabaseContainer<?> container = containers.get(suffix);
+
                 try {
-                    runTestCase(testCase, jdbcContainer, d2rqResolver);
+                    runTestCase(testCase, container, d2rqResolver);
                 } catch (Exception e) {
                     logger.warn("Failure", e);
                 }
