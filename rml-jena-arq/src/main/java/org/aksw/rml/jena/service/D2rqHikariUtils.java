@@ -1,5 +1,7 @@
 package org.aksw.rml.jena.service;
 
+import javax.sql.DataSource;
+
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -30,6 +32,18 @@ public class D2rqHikariUtils {
 
         if ((value = source.getPassword()) != null) {
             target.setPassword(value);
+        }
+    }
+
+    // TODO Should go to DataSource utils
+    public static void close(DataSource dataSource) {
+        if (dataSource instanceof AutoCloseable) {
+            AutoCloseable closeable = (AutoCloseable)dataSource;
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-import org.aksw.commons.util.exception.FinallyRunAll;
+import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
@@ -68,10 +69,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //
 
     /** start the container if needed and return its IP */
-    public static String startIfNeeded(GenericContainer<?> container) {
-        if (!container.isRunning()) {
-            container.start();
-        }
+    public static String getIp(GenericContainer<?> container) {
         String result = container.getContainerInfo().getNetworkSettings().getNetworks().values().iterator().next().getIpAddress();
         return result;
     }
@@ -79,19 +77,25 @@ public class TestSuiteProcessorRmlKgcw2024 {
     public static void main(String[] args) throws Exception {
         InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
 
-        MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:5.7.34")
-                .withUsername("root")
-                .withPassword("root")
-                // .withExposedPorts(3306)
-                .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String()));
+        try (ResourceMgr resourceManager = new ResourceMgr()) {
+            run(resourceManager);
+        }
+    }
 
-        PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+    public static void run(ResourceMgr resourceMgr) throws Exception {
+        MySQLContainer<?> mysqlContainer = resourceMgr.register(new MySQLContainer<>("mysql:5.7.34")
                 .withUsername("root")
                 .withPassword("root")
                 // .withExposedPorts(3306)
                 .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String()));
+                .withLogConsumer(of -> logger.info(of.getUtf8String())));
+
+        PostgreSQLContainer<?> postgresqlContainer = resourceMgr.register(new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+                .withUsername("root")
+                .withPassword("root")
+                // .withExposedPorts(3306)
+                .withDatabaseName("db")
+                .withLogConsumer(of -> logger.info(of.getUtf8String())));
 
         Map<String, JdbcDatabaseContainer<?>> containers = new HashMap<>();
         containers.put("MySQL", mysqlContainer);
@@ -101,9 +105,10 @@ public class TestSuiteProcessorRmlKgcw2024 {
             String before = r.getJdbcDSN();
             String after = null;
             for (Entry<String, JdbcDatabaseContainer<?>> c : containers.entrySet()) {
-                String name = c.getKey().toLowerCase();
+                // Case matters: jdbc:mysql://MySQL:3306/db - we want to replace the hostname not the scheme
+                String name = c.getKey();
                 if (before.contains(name)) {
-                    String host = startIfNeeded(mysqlContainer);
+                    String host = getIp(mysqlContainer);
                     after = before.replace(name, host);
                 }
             }
@@ -114,13 +119,16 @@ public class TestSuiteProcessorRmlKgcw2024 {
             System.err.println("Connection Spec:" + r);
         };
 
-        try {
-            run(containers, d2rqResolver);
-        } finally {
-            FinallyRunAll runAll = FinallyRunAll.create();
-            containers.values().forEach(c -> runAll.add(c::stop));
-            runAll.run();
-        }
+//        try {
+            run(resourceMgr, containers, d2rqResolver);
+//        } finally {
+//            FinallyRunAll runAll = FinallyRunAll.create();
+//            containers.values().forEach(c -> {
+//                runAll.add(c::stop);
+//                runAll.add(c::close);
+//            });
+//            runAll.run();
+//        }
     }
 
 
@@ -136,7 +144,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 
 
-    public static void run(Map<String, JdbcDatabaseContainer<?>> containers, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
+    public static void run(ResourceMgr resourceMgr, Map<String, JdbcDatabaseContainer<?>> containers, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
         //dbContainer.getJdbcUrl()
 
         List<String> suiteNames = List.of(
@@ -149,7 +157,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
 
         // RmlImporterLib.listAllTriplesMaps(null, null)
         // Path p = toPath(Object.class.getResource("Object.class").toURI());
-        Path basePath = toPath(TestSuiteProcessorRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
+        Path basePath = toPath(resourceMgr, TestSuiteProcessorRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
 
         for (String suiteName : suiteNames) {
             Path suitePath = basePath.resolve(suiteName);
@@ -165,6 +173,12 @@ public class TestSuiteProcessorRmlKgcw2024 {
 
                 // Get last element of array after splitting by '-'
                 String suffix = Arrays.asList(name.split("-")).stream().reduce((a,  b) -> b).get();
+
+                // For testing... only use mysql
+                if (!"MySQL".equals(suffix)) {
+                    continue;
+                }
+
                 JdbcDatabaseContainer<?> container = containers.get(suffix);
 
                 try {
@@ -183,7 +197,12 @@ public class TestSuiteProcessorRmlKgcw2024 {
 
     public static void runTestCase(Path testCase, JdbcDatabaseContainer<?> jdbcContainer, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
 
+        if (jdbcContainer != null && !jdbcContainer.isRunning()) {
+            jdbcContainer.start();
+        }
+
         String name = testCase.getFileName().toString();
+        System.out.println("Running: " + name);
 
         Path data = testCase.resolve("data");
         Path shared = data.resolve("shared");
@@ -192,10 +211,12 @@ public class TestSuiteProcessorRmlKgcw2024 {
         Path resourceSql = shared.resolve("resource.sql");
         if (Files.exists(resourceSql)) {
             String str = MoreFiles.asCharSource(resourceSql, StandardCharsets.UTF_8).read();
+            // Splitting by ';' is brittle but a common best-effort approach
             String[] strs = str.split(";");
 
             try (Connection conn = jdbcContainer.createConnection("")) {
                 for (String s : strs) {
+                    // Remove leading and trailing whitespaces _and_ newlines
                     s = s.replaceAll("^[\n\r ]+", "").replaceAll("[\n\r ]+$", "");
                     if (!s.isEmpty()) {
                         System.out.println("Executing:");
@@ -216,7 +237,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
             System.out.println("-------------------------------------------------------");
             RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
 
-            try {
+            try (ResourceMgr qExecResMgr = new ResourceMgr()) {
                 List<ITriplesMapRml> tms = RmlImporterLib.listAllTriplesMaps(TriplesMapRml2.class, model);
                 for (ITriplesMapRml tm : tms) {
 //                        System.out.println(tm);
@@ -245,6 +266,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
                             .query(query)
                             .set(RmlSymbols.symMappingDirectory, shared)
                             .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
+                            .set(JenaXSymbols.symResourceMgr, qExecResMgr)
                             .build()) {
                         Iterator<Quad> it = qe.execConstructQuads();
                         while (it.hasNext()) {
@@ -278,7 +300,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 
     // https://stackoverflow.com/a/36021165/160790
-    public static Path toPath(URI uri) throws IOException{
+    public static Path toPath(ResourceMgr resourceMgr, URI uri) throws IOException{
         Path result;
         try {
             Path rawPath = Paths.get(uri);
@@ -287,6 +309,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
         catch(FileSystemNotFoundException ex) {
             // TODO FileSystem needs to be closed
             FileSystem fs = FileSystems.newFileSystem(uri, Collections.<String,Object>emptyMap());
+            resourceMgr.register(fs);
             result = fs.provider().getPath(uri);
         }
         return result;

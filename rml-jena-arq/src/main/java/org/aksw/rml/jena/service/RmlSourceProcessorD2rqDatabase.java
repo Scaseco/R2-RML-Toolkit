@@ -1,15 +1,22 @@
 package org.aksw.rml.jena.service;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
+import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jena_sparql_api.sparql.ext.binding.NodeValueBinding;
+import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.jenax.reprogen.util.Skolemize;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.aksw.r2rml.jena.jdbc.processor.R2rmlJdbcUtils;
 import org.aksw.rml.model.LogicalSourceRml1;
@@ -29,11 +36,14 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sparql.util.Symbol;
 
 public class RmlSourceProcessorD2rqDatabase
     implements RmlSourceProcessor
 {
     private static final RmlSourceProcessorD2rqDatabase INSTANCE = new RmlSourceProcessorD2rqDatabase();
+
+    public static final Symbol symJdbcDataSources = Symbol.create("JdbcDataSources");
 
     public static RmlSourceProcessorD2rqDatabase getInstance() {
         return INSTANCE;
@@ -93,6 +103,18 @@ public class RmlSourceProcessorD2rqDatabase
         D2rqDatabase dataSourceSpecRaw = logicalSource.getSource().as(D2rqDatabase.class);
 
         Context cxt = execCxt.getContext();
+
+        ResourceMgr resourceMgr = cxt.get(JenaXSymbols.symResourceMgr);
+        if (resourceMgr == null) {
+            throw new RuntimeException("No resource manager configured for query execution.");
+        }
+
+        Map<D2rqDatabase, DataSource> configToDataSource = cxt.get(symJdbcDataSources);
+        if (configToDataSource == null) {
+            configToDataSource = new ConcurrentHashMap<>();
+            cxt.set(symJdbcDataSources, configToDataSource);
+        }
+
         Consumer<D2rqDatabase> d2rqDatabaseResolver = cxt.get(RmlSymbols.symD2rqDatabaseResolver);
 
         D2rqDatabase dataSourceSpec = dataSourceSpecRaw;
@@ -103,9 +125,22 @@ public class RmlSourceProcessorD2rqDatabase
             d2rqDatabaseResolver.accept(dataSourceSpec);
         }
 
-        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark(); // SqlCodecUtils.createSqlCodecDefault();
+        D2rqDatabase finalSpec = Skolemize.skolemize(dataSourceSpec, "urn:", D2rqDatabase.class, null);
+        DataSource dataSource = configToDataSource.computeIfAbsent(finalSpec, k -> {
+            DataSource r = D2rqHikariUtils.configureDataSource(finalSpec);
+            resourceMgr.register(r, ds -> D2rqHikariUtils.close(ds));
+            return r;
+        });
 
-        DataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec);
+        SqlCodec sqlCodec;
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String quoteChar = metaData.getIdentifierQuoteString();
+            sqlCodec = SqlCodecUtils.createSqlCodec("'", "\"", quoteChar, "'");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         // Connection conn = dataSource.getConnection();
 
         NodeMapper nodeMapper = null; // create on demand TODO This is hacky
