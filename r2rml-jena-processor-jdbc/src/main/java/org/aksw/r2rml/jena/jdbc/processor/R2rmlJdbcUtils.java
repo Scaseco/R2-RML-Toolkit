@@ -17,8 +17,12 @@ import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class R2rmlJdbcUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(R2rmlJdbcUtils.class);
 
     public static IteratorCloseable<Binding> processR2rml(DataSource dataSource, LogicalTable logicalTable,
             NodeMapper nodeMapper, SqlCodec sqlCodec) throws SQLException {
@@ -46,6 +50,11 @@ public class R2rmlJdbcUtils {
         } else {
             throw new IllegalArgumentException("No logical table present");
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending SQL Query: " + sqlQuery);
+        }
+
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sqlQuery);
