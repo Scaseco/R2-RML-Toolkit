@@ -125,7 +125,12 @@ public class RmlSourceProcessorD2rqDatabase
             d2rqDatabaseResolver.accept(dataSourceSpec);
         }
 
+        // Create an ID for the database config
+        // XXX Code should be enhanced to use proper equality check
         D2rqDatabase finalSpec = Skolemize.skolemize(dataSourceSpec, "urn:", D2rqDatabase.class, null);
+
+        // Get or create the data source. If it needs to be created then also register
+        // the close action with the resource manager
         DataSource dataSource = configToDataSource.computeIfAbsent(finalSpec, k -> {
             DataSource r = D2rqHikariUtils.configureDataSource(finalSpec);
             resourceMgr.register(r, ds -> D2rqHikariUtils.close(ds));

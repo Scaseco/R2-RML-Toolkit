@@ -23,6 +23,8 @@ import java.util.function.Consumer;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
+import org.aksw.jenax.arq.util.quad.DatasetCmp;
+import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
@@ -31,6 +33,8 @@ import org.aksw.rml.jena.service.RmlSymbols;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.curator.shaded.com.google.common.io.MoreFiles;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionDatasetBuilder;
@@ -44,12 +48,14 @@ import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSystem;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 
 public class TestSuiteProcessorRmlKgcw2024 {
 
@@ -209,6 +215,15 @@ public class TestSuiteProcessorRmlKgcw2024 {
         Path mappingTtl = shared.resolve("mapping.ttl");
 
         Path resourceSql = shared.resolve("resource.sql");
+
+        Path expectedPath = shared.resolve("expected");
+        Path outputNq = expectedPath.resolve("output.nq");
+
+        Dataset expectedDs = DatasetFactory.create();
+        try (InputStream in = Files.newInputStream(outputNq)) {
+            RDFDataMgr.read(expectedDs, in, Lang.TRIG);
+        }
+
         if (Files.exists(resourceSql)) {
             String str = MoreFiles.asCharSource(resourceSql, StandardCharsets.UTF_8).read();
             // Splitting by ';' is brittle but a common best-effort approach
@@ -255,6 +270,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 System.out.println("Generated " + labeledQueries.size() + " queries");
 
                 Model emptyModel = ModelFactory.createDefaultModel();
+                Dataset actualDs = DatasetFactory.create();
                 for (Entry<Query, String> e : labeledQueries) {
                     Query query = e.getKey();
 
@@ -270,12 +286,20 @@ public class TestSuiteProcessorRmlKgcw2024 {
                             .build()) {
                         Iterator<Quad> it = qe.execConstructQuads();
                         while (it.hasNext()) {
-                            sink.quad(it.next());
+                            Quad quad = it.next();
+                            sink.quad(quad);
+                            actualDs.asDatasetGraph().add(quad);
                         }
                     }
                     sink.finish();
                     System.out.println("End of RDF Data");
 
+                    Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedDs, actualDs);
+                    boolean isIsomorphic = report.isIsomorphic();
+                    if (!isIsomorphic) {
+                        logger.error(report.toString());
+                    }
+                    Assert.assertTrue(isIsomorphic);
                     // System.out.println(e);
                 }
 
