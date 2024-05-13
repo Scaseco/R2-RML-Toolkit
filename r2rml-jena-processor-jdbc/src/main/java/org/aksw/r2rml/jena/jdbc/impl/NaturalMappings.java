@@ -132,7 +132,7 @@ public class NaturalMappings {
         putValue(sqlToXsd, XsdTerms.xdouble,
                 Types.FLOAT, Types.REAL, Types.DOUBLE);
 
-        putValue(sqlToXsd, XsdTerms.xboolean, Types.BOOLEAN);
+        putValue(sqlToXsd, XsdTerms.xboolean, Types.BIT, Types.BOOLEAN);
         putValue(sqlToXsd, XsdTerms.date, Types.DATE);
         putValue(sqlToXsd, XsdTerms.time, Types.TIME);
         putValue(sqlToXsd, XsdTerms.dateTime, Types.TIMESTAMP);

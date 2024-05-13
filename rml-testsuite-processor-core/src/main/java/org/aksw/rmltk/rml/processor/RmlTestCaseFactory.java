@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
@@ -54,14 +54,16 @@ public class RmlTestCaseFactory {
                 .withPassword("root")
                 // .withExposedPorts(3306)
                 .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String())));
+                //.withLogConsumer(outputFrame -> logger.info(outputFrame.getUtf8String()))
+            );
 
         PostgreSQLContainer<?> postgresqlContainer = resourceMgr.register(new PostgreSQLContainer<>("pgvector/pgvector:pg16")
                 .withUsername("root")
                 .withPassword("root")
                 // .withExposedPorts(3306)
                 .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String())));
+                // .withLogConsumer(of -> logger.info(of.getUtf8String()))
+            );
 
         containers.put("MySQL", mysqlContainer);
         containers.put("PostgreSQL", postgresqlContainer);
@@ -105,7 +107,7 @@ public class RmlTestCaseFactory {
     protected RmlTestCase loadTestCase(Path testCase, JdbcDatabaseContainer<?> container) throws Exception {
 
         String name = testCase.getFileName().toString();
-        logger.info("Loading test case: " + name);
+        // logger.info("Loading test case: " + name);
 
         Path data = testCase.resolve("data");
         Path shared = data.resolve("shared");
@@ -116,9 +118,15 @@ public class RmlTestCaseFactory {
         Path expectedPath = shared.resolve("expected");
         Path outputNq = expectedPath.resolve("output.nq");
 
-        Dataset expectedDs = DatasetFactory.create();
-        try (InputStream in = Files.newInputStream(outputNq)) {
-            RDFDataMgr.read(expectedDs, in, Lang.TRIG);
+        Dataset expectedDs = null;
+        boolean expectedFailure = false;
+        if (Files.exists(outputNq)) {
+            expectedDs = DatasetFactory.create();
+            try (InputStream in = Files.newInputStream(outputNq)) {
+                RDFDataMgr.read(expectedDs, in, Lang.NQUADS);
+            }
+        } else {
+            expectedFailure = true;
         }
 
         Model mappingModel = ModelFactory.createDefaultModel();
@@ -131,6 +139,6 @@ public class RmlTestCaseFactory {
 //                System.out.println(tm);
         }
 
-        return new RmlTestCase(name, mappingModel, shared, expectedDs, d2rqResolver, container, resourceSql);
+        return new RmlTestCase(name, mappingModel, shared, expectedDs, expectedFailure, d2rqResolver, container, resourceSql);
     }
 }

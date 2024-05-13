@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
+import org.apache.jena.datatypes.xsd.impl.XSDDouble;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,16 +56,27 @@ public class TestRunnerRmlKgcw2024 {
 
     @Test
     public void run() {
+        // System.out.println("GOT: " + XSDDouble.XSDdouble.unparse(Double.valueOf(123)));
+
         Report report;
         try {
             report = testCase.call();
+
+            // Were we expected to fail?
+            Assert.assertFalse(testCase.isExpectedFailure());
+
+            boolean isIsomorphic = report.isIsomorphic();
+            if (!isIsomorphic) {
+                logger.error(report.toString());
+            }
+            Assert.assertTrue(isIsomorphic);
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (testCase.isExpectedFailure()) {
+                // Ignore
+            } else {
+                throw new RuntimeException(e);
+            }
         }
-        boolean isIsomorphic = report.isIsomorphic();
-        if (!isIsomorphic) {
-            logger.error(report.toString());
-        }
-        Assert.assertTrue(isIsomorphic);
     }
 }

@@ -6,12 +6,16 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+
+import com.google.common.collect.Iterators;
 
 public class ResultSetState {
     protected ResultSet resultSet;
@@ -49,19 +53,38 @@ public class ResultSetState {
     }
 
     public int getVarCount() {
-        return getVars().size();
+        int result = Iterators.size(getVarIterator());
+        return result;
+        // return getVars().size();
     }
 
+    /** Return an iterator over all bound variables */
     public Iterator<Var> getVarIterator() {
-        return getVars().iterator();
+        return Iter.iter(varToIdx.entrySet())
+            .filter(e -> getNode(e.getValue().intValue()) != null)
+            .map(Entry::getKey);
+        // return getVars().iterator();
     }
 
-    public Set<Var> getVars() {
+    public Set<Var> getVarsIternal() {
         return varToIdx.keySet();
     }
 
-    public boolean containsVar(Var var) {
+//    public Set<Var> getVars() {
+//        return varToIdx.keySet();
+//    }
+
+
+    public boolean containsVarInternal(Var var) {
         boolean result = varToIdx.get(var) != null;
+        return result;
+    }
+
+    /** Returns true if the variable's value is bound */
+    public boolean containsVar(Var var) {
+        Integer idx = varToIdx.get(var);
+        Node node = idx == null ? null : getNode(idx.intValue());
+        boolean result = node != null;
         return result;
     }
 

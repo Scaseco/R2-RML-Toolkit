@@ -27,6 +27,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionDatasetBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
@@ -46,18 +47,20 @@ public class RmlTestCase
     protected Path rmlMappingDirectory;
 
     protected Dataset expectedResult;
+    protected boolean expectedFailure;
 
     protected Consumer<D2rqDatabase> d2rqResolver;
 
     protected JdbcDatabaseContainer<?> jdbcContainer;
     protected Path resourceSql;
 
-    public RmlTestCase(String name, Model rmlMapping, Path rmlMappingDirectory, Dataset expectedResult, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
+    public RmlTestCase(String name, Model rmlMapping, Path rmlMappingDirectory, Dataset expectedResult, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
         super();
         this.name = name;
         this.rmlMapping = rmlMapping;
         this.rmlMappingDirectory = rmlMappingDirectory;
         this.expectedResult = expectedResult;
+        this.expectedFailure = expectedFailure;
         this.d2rqResolver = d2rqResolver;
         this.jdbcContainer = jdbcContainer;
         this.resourceSql = resourceSql;
@@ -65,6 +68,10 @@ public class RmlTestCase
 
     public String getName() {
         return name;
+    }
+
+    public boolean isExpectedFailure() {
+        return expectedFailure;
     }
 
     public Report call() throws Exception {
@@ -120,10 +127,6 @@ public class RmlTestCase
         Model emptyModel = ModelFactory.createDefaultModel();
         Dataset actualDs = DatasetFactory.create();
 
-        System.out.println("Begin of RDF Data:");
-        StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
-        sink.start();
-
         for (Entry<Query, String> e : labeledQueries) {
             Query query = e.getKey();
             logger.info("Executing SPARQL Query: " + query);
@@ -135,18 +138,30 @@ public class RmlTestCase
                      .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
                      .set(JenaXSymbols.symResourceMgr, qExecResMgr)
                      .build()) {
+
+                logger.info("Begin of RDF data Contribution:");
+                StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
+                sink.start();
+
                 Iterator<Quad> it = qe.execConstructQuads();
                 while (it.hasNext()) {
                     Quad quad = it.next();
                     sink.quad(quad);
                     actualDs.asDatasetGraph().add(quad);
                 }
+
+                sink.finish();
+                logger.info("End of RDF data contribution");
             }
         }
-        sink.finish();
-        System.out.println("End of RDF Data");
 
         Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult, actualDs);
+
+        if (!report.isIsomorphic()) {
+            System.out.println("Expected result: ");
+            RDFDataMgr.write(System.out, expectedResult, RDFFormat.TRIG_BLOCKS);
+        }
+
         return report;
     }
 }
