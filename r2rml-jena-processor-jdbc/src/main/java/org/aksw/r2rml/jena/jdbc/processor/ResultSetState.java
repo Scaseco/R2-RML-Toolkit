@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
@@ -36,7 +37,10 @@ public class ResultSetState {
         varToIdx = new LinkedHashMap<>();
         int n = metaData.getColumnCount();
         for (int i = 1; i <= n; i++) {
-            varToIdx.put(Var.alloc(metaData.getColumnName(i)), i);
+            String colNameRaw = metaData.getColumnName(i);
+            String colName = VarUtils.safeVarName(colNameRaw);
+            Var colVar = Var.alloc(colName);
+            varToIdx.put(colVar, i);
         }
     }
 

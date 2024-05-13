@@ -57,11 +57,11 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 
-public class TestSuiteProcessorRmlKgcw2024 {
+public class TestGeneratorRmlKgcw2024 {
 
     static { JenaSystem.init(); }
 
-    private static final Logger logger = LoggerFactory.getLogger(TestSuiteProcessorRmlKgcw2024.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestGeneratorRmlKgcw2024.class);
 
     // TODO Consolidate
 //    public static List<ITriplesMapRml> listAllTriplesMapsRml2(Model model) {
@@ -74,68 +74,62 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 //
 
-    /** start the container if needed and return its IP */
-    public static String getIp(GenericContainer<?> container) {
-        String result = container.getContainerInfo().getNetworkSettings().getNetworks().values().iterator().next().getIpAddress();
-        return result;
-    }
-
-    public static void main(String[] args) throws Exception {
-        InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
-
-        try (ResourceMgr resourceManager = new ResourceMgr()) {
-            run(resourceManager);
-        }
-    }
-
-    public static void run(ResourceMgr resourceMgr) throws Exception {
-        MySQLContainer<?> mysqlContainer = resourceMgr.register(new MySQLContainer<>("mysql:5.7.34")
-                .withUsername("root")
-                .withPassword("root")
-                // .withExposedPorts(3306)
-                .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String())));
-
-        PostgreSQLContainer<?> postgresqlContainer = resourceMgr.register(new PostgreSQLContainer<>("pgvector/pgvector:pg16")
-                .withUsername("root")
-                .withPassword("root")
-                // .withExposedPorts(3306)
-                .withDatabaseName("db")
-                .withLogConsumer(of -> logger.info(of.getUtf8String())));
-
-        Map<String, JdbcDatabaseContainer<?>> containers = new HashMap<>();
-        containers.put("MySQL", mysqlContainer);
-        containers.put("PostgreSQL", postgresqlContainer);
-
-        Consumer<D2rqDatabase> d2rqResolver = r -> {
-            String before = r.getJdbcDSN();
-            String after = null;
-            for (Entry<String, JdbcDatabaseContainer<?>> c : containers.entrySet()) {
-                // Case matters: jdbc:mysql://MySQL:3306/db - we want to replace the hostname not the scheme
-                String name = c.getKey();
-                if (before.contains(name)) {
-                    String host = getIp(mysqlContainer);
-                    after = before.replace(name, host);
-                }
-            }
-
-            if (after != null) {
-                r.setJdbcDSN(after);
-            }
-            System.err.println("Connection Spec:" + r);
-        };
-
-//        try {
-            run(resourceMgr, containers, d2rqResolver);
-//        } finally {
-//            FinallyRunAll runAll = FinallyRunAll.create();
-//            containers.values().forEach(c -> {
-//                runAll.add(c::stop);
-//                runAll.add(c::close);
-//            });
-//            runAll.run();
+//    public static void main(String[] args) throws Exception {
+//        InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
+//
+//        try (ResourceMgr resourceManager = new ResourceMgr()) {
+//            run(resourceManager);
 //        }
-    }
+//    }
+
+//    public static void run(ResourceMgr resourceMgr) throws Exception {
+//        MySQLContainer<?> mysqlContainer = resourceMgr.register(new MySQLContainer<>("mysql:5.7.34")
+//                .withUsername("root")
+//                .withPassword("root")
+//                // .withExposedPorts(3306)
+//                .withDatabaseName("db")
+//                .withLogConsumer(of -> logger.info(of.getUtf8String())));
+//
+//        PostgreSQLContainer<?> postgresqlContainer = resourceMgr.register(new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+//                .withUsername("root")
+//                .withPassword("root")
+//                // .withExposedPorts(3306)
+//                .withDatabaseName("db")
+//                .withLogConsumer(of -> logger.info(of.getUtf8String())));
+//
+//        Map<String, JdbcDatabaseContainer<?>> containers = new HashMap<>();
+//        containers.put("MySQL", mysqlContainer);
+//        containers.put("PostgreSQL", postgresqlContainer);
+//
+//        Consumer<D2rqDatabase> d2rqResolver = r -> {
+//            String before = r.getJdbcDSN();
+//            String after = null;
+//            for (Entry<String, JdbcDatabaseContainer<?>> c : containers.entrySet()) {
+//                // Case matters: jdbc:mysql://MySQL:3306/db - we want to replace the hostname not the scheme
+//                String name = c.getKey();
+//                if (before.contains(name)) {
+//                    String host = getIp(mysqlContainer);
+//                    after = before.replace(name, host);
+//                }
+//            }
+//
+//            if (after != null) {
+//                r.setJdbcDSN(after);
+//            }
+//            System.err.println("Connection Spec:" + r);
+//        };
+//
+////        try {
+//            run(resourceMgr, containers, d2rqResolver);
+////        } finally {
+////            FinallyRunAll runAll = FinallyRunAll.create();
+////            containers.values().forEach(c -> {
+////                runAll.add(c::stop);
+////                runAll.add(c::close);
+////            });
+////            runAll.run();
+////        }
+//    }
 
 
 //    public static void main(String[] args) throws URISyntaxException, IOException {
@@ -150,55 +144,55 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //    }
 
 
-    public static void run(ResourceMgr resourceMgr, Map<String, JdbcDatabaseContainer<?>> containers, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
-        //dbContainer.getJdbcUrl()
-
-        List<String> suiteNames = List.of(
-            "rml-core"
-            // "rml-fnml",
-            // "rml-cc", //collections
-            // "rml-io",
-            // "rml-star"
-        );
-
-        // RmlImporterLib.listAllTriplesMaps(null, null)
-        // Path p = toPath(Object.class.getResource("Object.class").toURI());
-        Path basePath = toPath(resourceMgr, TestSuiteProcessorRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
-
-        for (String suiteName : suiteNames) {
-            Path suitePath = basePath.resolve(suiteName);
-
-            List<Path> testCases = Files.list(suitePath).toList();
-            for (Path testCase : testCases) {
-                String name = testCase.getFileName().toString();
-
-                // Skip non-test case folders
-                if (!name.startsWith("RMLTC")) {
-                    continue;
-                }
-
-                // Get last element of array after splitting by '-'
-                String suffix = Arrays.asList(name.split("-")).stream().reduce((a,  b) -> b).get();
-
-                // For testing... only use mysql
-                if (!"MySQL".equals(suffix)) {
-                    continue;
-                }
-
-                JdbcDatabaseContainer<?> container = containers.get(suffix);
-
-                try {
-                    runTestCase(testCase, container, d2rqResolver);
-                } catch (Exception e) {
-                    logger.warn("Failure", e);
-                }
-            }
-
-        }
-
-        // Files.list(p).forEach(x -> System.out.println("x: " +x));
-        // System.out.println(p);
-    }
+//    public static void run(ResourceMgr resourceMgr, Map<String, JdbcDatabaseContainer<?>> containers, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
+//        //dbContainer.getJdbcUrl()
+//
+//        List<String> suiteNames = List.of(
+//            "rml-core"
+//            // "rml-fnml",
+//            // "rml-cc", //collections
+//            // "rml-io",
+//            // "rml-star"
+//        );
+//
+//        // RmlImporterLib.listAllTriplesMaps(null, null)
+//        // Path p = toPath(Object.class.getResource("Object.class").toURI());
+//        Path basePath = toPath(resourceMgr, TestGeneratorRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
+//
+//        for (String suiteName : suiteNames) {
+//            Path suitePath = basePath.resolve(suiteName);
+//
+//            List<Path> testCases = Files.list(suitePath).toList();
+//            for (Path testCase : testCases) {
+//                String name = testCase.getFileName().toString();
+//
+//                // Skip non-test case folders
+//                if (!name.startsWith("RMLTC")) {
+//                    continue;
+//                }
+//
+//                // Get last element of array after splitting by '-'
+//                String suffix = Arrays.asList(name.split("-")).stream().reduce((a,  b) -> b).get();
+//
+//                // For testing... only use mysql
+//                if (!"MySQL".equals(suffix)) {
+//                    continue;
+//                }
+//
+//                JdbcDatabaseContainer<?> container = containers.get(suffix);
+//
+//                try {
+//                    runTestCase(testCase, container, d2rqResolver);
+//                } catch (Exception e) {
+//                    logger.warn("Failure", e);
+//                }
+//            }
+//
+//        }
+//
+//        // Files.list(p).forEach(x -> System.out.println("x: " +x));
+//        // System.out.println(p);
+//    }
 
 
     public static void runTestCase(Path testCase, JdbcDatabaseContainer<?> jdbcContainer, Consumer<D2rqDatabase> d2rqResolver) throws Exception {
@@ -273,6 +267,7 @@ public class TestSuiteProcessorRmlKgcw2024 {
                 Dataset actualDs = DatasetFactory.create();
                 for (Entry<Query, String> e : labeledQueries) {
                     Query query = e.getKey();
+                    System.out.println("Executing query: " + query);
 
                     System.out.println("Begin of RDF Data:");
                     StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
@@ -322,30 +317,4 @@ public class TestSuiteProcessorRmlKgcw2024 {
 //        // FileSystem fs = FileSystems.getFileSystem(uri);
 //
 //    }
-
-    // https://stackoverflow.com/a/36021165/160790
-    public static Path toPath(ResourceMgr resourceMgr, URI uri) throws IOException{
-        Path result;
-        try {
-            Path rawPath = Paths.get(uri);
-            result = fixPath(rawPath);
-        }
-        catch(FileSystemNotFoundException ex) {
-            // TODO FileSystem needs to be closed
-            FileSystem fs = FileSystems.newFileSystem(uri, Collections.<String,Object>emptyMap());
-            resourceMgr.register(fs);
-            result = fs.provider().getPath(uri);
-        }
-        return result;
-    }
-
-    public static Path fixPath(Path path) {
-        Path result = path;
-        Path parentPath = path.getParent();
-        if(parentPath != null && !Files.exists(parentPath)) {
-            Path fixedCandidatePath = path.resolve("/modules").resolve(path.getRoot().relativize(path));
-            result = Files.exists(fixedCandidatePath) ? fixedCandidatePath : path;
-        }
-        return result;
-    }
 }

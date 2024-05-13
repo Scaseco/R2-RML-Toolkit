@@ -51,7 +51,6 @@ public class JdbcUtils {
 
     /** Creates node mapper for every column */
     public static NodeMapper createNodeMapper(ResultSetMetaData rsmd, SqlTypeMapper sqlTypeMapper) throws SQLException {
-
         int columnCount = rsmd.getColumnCount();
         NodeMapper[] targets = new NodeMapper[columnCount + 1];
         for (int i = 1; i <= columnCount; ++i) {

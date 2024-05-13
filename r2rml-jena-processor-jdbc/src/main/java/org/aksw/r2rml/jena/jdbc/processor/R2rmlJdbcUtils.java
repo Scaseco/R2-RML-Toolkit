@@ -38,31 +38,34 @@ public class R2rmlJdbcUtils {
         });
     }
 
+    public static String reEncodeTableName(String tableName, SqlCodec sqlCodec) {
+        // Revised logic: If the table name is not escaped then don't escape it.
+        // 1. Try to parse the table name into components.
+        // 2. For each component determine whether it is quoted or not
+        // 3. Re-encode each quoted component with the configured quote char
+        // 4. Combine the component strings to form the final table expression string.
+
+        String[] parts = tableName.split("\\.");
+        EntityCodec<String> tableNameCodec = sqlCodec.forTableName();
+        for (int i = 0; i < parts.length; ++i) {
+            String part = parts[i];
+            if (tableNameCodec.canDecode(part)) {
+                String tmp = tableNameCodec.decode(part);
+                parts[i] = tableNameCodec.encode(tmp);
+            }
+        }
+
+        String result = String.join(".", parts);
+        return result;
+    }
+
     public static IteratorCloseable<Binding> processR2rml(Connection conn, LogicalTable logicalTable,
             NodeMapper nodeMapper, SqlCodec sqlCodec) throws SQLException {
 
         String sqlQuery;
         if (logicalTable.qualifiesAsBaseTableOrView()) {
             String tableName = logicalTable.asBaseTableOrView().getTableName();
-
-            // FIXME Revise logic: If the table name is not escaped then don't escape it.
-            // 1. Try to parse the table name into components.
-            // 2. For each component determine whether it is quoted or not
-            // 3. Re-encode each quoted component with the configured quote char
-            // 4. Combine the component strings to form the final table expression string.
-
-            String[] parts = tableName.split("\\.");
-            EntityCodec<String> tableNameCodec = sqlCodec.forTableName();
-            for (int i = 0; i < parts.length; ++i) {
-                String part = parts[i];
-                if (tableNameCodec.canDecode(part)) {
-                    String tmp = tableNameCodec.decode(part);
-                    parts[i] = tableNameCodec.encode(tmp);
-                }
-            }
-
-            // String encodedTableName = sqlCodec.forTableName().encode(tableName);
-            String tableExpressionStr = String.join(".", parts);
+            String tableExpressionStr = reEncodeTableName(tableName, sqlCodec);
             sqlQuery = "SELECT * FROM " + tableExpressionStr;
         } else if (logicalTable.qualifiesAsR2rmlView()) {
             sqlQuery = logicalTable.asR2rmlView().getSqlQuery();
