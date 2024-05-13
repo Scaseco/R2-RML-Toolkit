@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.slf4j.Logger;
@@ -61,6 +62,7 @@ public class RmlTestCaseLister {
 //                }
             }
         }
+        Collections.sort(result, (a, b) -> Objects.compare(a.getName(), b.getName(), String::compareTo));
         return result;
     }
 
