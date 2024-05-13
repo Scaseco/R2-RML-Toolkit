@@ -37,7 +37,7 @@ public class TestRunnerRmlKgcw2024 {
     public static Collection<Object[]> data()
             throws Exception
     {
-        Path basePath = RmlTestCaseLister.toPath(resourceMgr, TestGeneratorRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
+        Path basePath = RmlTestCaseLister.toPath(resourceMgr, TestRunnerRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
         List<RmlTestCase> testCases = RmlTestCaseLister.list(basePath, resourceMgr);
 
         List<Object[]> params = testCases.stream()
