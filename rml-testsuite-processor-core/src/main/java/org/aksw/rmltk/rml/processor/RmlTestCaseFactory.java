@@ -85,7 +85,7 @@ public class RmlTestCaseFactory {
         };
     }
 
-    public RmlTestCase generateTestCase(Path testCasePath) {
+    public RmlTestCase loadTestCase(Path testCasePath) {
         RmlTestCase result = null;
         String name = testCasePath.getFileName().toString();
 
@@ -95,17 +95,17 @@ public class RmlTestCaseFactory {
         JdbcDatabaseContainer<?> container = containers.get(suffix);
 
         try {
-            result = generateTestCase(testCasePath, container);
+            result = loadTestCase(testCasePath, container);
         } catch (Exception e) {
             logger.warn("Failure", e);
         }
         return result;
     }
 
-    protected RmlTestCase generateTestCase(Path testCase, JdbcDatabaseContainer<?> container) throws Exception {
+    protected RmlTestCase loadTestCase(Path testCase, JdbcDatabaseContainer<?> container) throws Exception {
 
         String name = testCase.getFileName().toString();
-        System.out.println("Running: " + name);
+        logger.info("Loading test case: " + name);
 
         Path data = testCase.resolve("data");
         Path shared = data.resolve("shared");

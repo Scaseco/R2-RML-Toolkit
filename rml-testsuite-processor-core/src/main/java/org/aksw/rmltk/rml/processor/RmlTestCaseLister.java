@@ -50,7 +50,7 @@ public class RmlTestCaseLister {
                     continue;
                 }
 
-                RmlTestCase testCase = factory.generateTestCase(testCasePath);
+                RmlTestCase testCase = factory.loadTestCase(testCasePath);
                 if (testCase != null) {
                     result.add(testCase);
                 }
