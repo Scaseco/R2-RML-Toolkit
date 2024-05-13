@@ -147,13 +147,6 @@ public class RmlTestCase
         System.out.println("End of RDF Data");
 
         Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult, actualDs);
-        boolean isIsomorphic = report.isIsomorphic();
-        if (!isIsomorphic) {
-            logger.error(report.toString());
-        }
-        // Assert.assertTrue(isIsomorphic);
-        // System.out.println(e);
         return report;
-
     }
 }
