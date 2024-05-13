@@ -157,8 +157,8 @@ public class RmlSourceProcessorD2rqDatabase
         }
 
         Iter<Binding> it2 = Iter.iter(it).map(b -> {
-            Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
-            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(bb).asNode());
+            // Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
+            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(b).asNode());
             return r;
         });
 

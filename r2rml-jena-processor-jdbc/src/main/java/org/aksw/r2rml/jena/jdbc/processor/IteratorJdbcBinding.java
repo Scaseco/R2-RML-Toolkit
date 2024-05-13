@@ -6,6 +6,7 @@ import java.sql.Statement;
 import org.aksw.commons.util.exception.FinallyRunAll;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 
 import com.google.common.collect.AbstractIterator;
 
@@ -24,7 +25,9 @@ public class IteratorJdbcBinding extends AbstractIterator<Binding> implements It
     protected Binding computeNext() {
         Binding result;
         try {
-            result = state.next() ? new BindingOverJdbcResultSet(state) : endOfData();
+            result = state.next()
+                ? BindingFactory.copy(new BindingOverJdbcResultSet(state))
+                : endOfData();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

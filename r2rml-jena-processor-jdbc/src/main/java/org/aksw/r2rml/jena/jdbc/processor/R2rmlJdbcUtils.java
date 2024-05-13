@@ -77,7 +77,6 @@ public class R2rmlJdbcUtils {
             logger.debug("Sending SQL Query: " + sqlQuery);
         }
 
-
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sqlQuery);
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -88,7 +87,6 @@ public class R2rmlJdbcUtils {
 
         ResultSetState state = new ResultSetState(rs, rsmd, 0, nodeMapper);
         IteratorJdbcBinding result = new IteratorJdbcBinding(stmt, state);
-
         return result;
     }
 }
