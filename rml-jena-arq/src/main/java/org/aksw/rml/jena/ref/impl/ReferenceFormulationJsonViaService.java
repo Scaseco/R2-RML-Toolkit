@@ -16,6 +16,18 @@ public class ReferenceFormulationJsonViaService
 {
     @Override
     public Expr reference(Var itemVar, String expr) {
-        return new E_Function(NorseJsonTerms.path, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString("$['" + expr.replaceAll("'", "\\'") + "']"))));
+        String column;
+        if (expr.startsWith("$")) {
+            column = expr;
+        } else {
+            column = "$['" + expr.replaceAll("'", "\\'") + "']";
+        }
+        return new E_Function(
+                NorseJsonTerms.path,
+                ExprList.create(Arrays.asList(
+                        new ExprVar(itemVar),
+                        NodeValue.makeString(column))
+                )
+        );
     }
 }
