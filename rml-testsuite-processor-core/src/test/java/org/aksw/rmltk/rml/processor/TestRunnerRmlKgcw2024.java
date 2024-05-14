@@ -5,8 +5,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.aksw.jenax.arq.util.quad.DatasetCmp;
 import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
-import org.apache.jena.datatypes.xsd.impl.XSDDouble;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.resultset.ResultSetLang;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,17 +63,29 @@ public class TestRunnerRmlKgcw2024 {
     public void run() {
         // System.out.println("GOT: " + XSDDouble.XSDdouble.unparse(Double.valueOf(123)));
 
-        Report report;
+        Dataset expectedResult = testCase.getExpectedResult();
         try {
-            report = testCase.call();
+            Dataset actualDs = testCase.call();
 
+            if (testCase.isExpectedFailure()) {
+                return;
+            }
             // Were we expected to fail?
             Assert.assertFalse(testCase.isExpectedFailure());
 
-            boolean isIsomorphic = report.isIsomorphic();
-            if (!isIsomorphic) {
-                logger.error(report.toString());
+            boolean isIsomorphic;
+            if (false) {
+                Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult, actualDs);
+
+                isIsomorphic = report.isIsomorphic();
+                if (!isIsomorphic) {
+                    System.out.println("Expected result: ");
+                    RDFDataMgr.write(System.out, expectedResult, RDFFormat.TRIG_BLOCKS);
+                }
+            } else {
+                isIsomorphic = DatasetCmp.isIsomorphic(expectedResult, actualDs, true, System.err, ResultSetLang.RS_CSV);
             }
+
             Assert.assertTrue(isIsomorphic);
 
         } catch (Exception e) {

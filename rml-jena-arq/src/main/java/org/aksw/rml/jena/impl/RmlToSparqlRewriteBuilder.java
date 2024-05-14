@@ -16,8 +16,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven.ExprTransformBNodeToBNodeAsGiven;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
@@ -57,6 +59,8 @@ public class RmlToSparqlRewriteBuilder {
     protected boolean cache = false;
     protected boolean distinct = false;
     protected boolean preDistinct = false;
+    protected boolean useBnodeExtension = true;
+
     protected List<String> triplesMapIds = new ArrayList<>();
     // protected List<String> inputFiles = new ArrayList<>();
     protected List<RmlToSparqlRewriteBuilder.Input> modelAndBaseIriList = new ArrayList<>();
@@ -118,6 +122,15 @@ public class RmlToSparqlRewriteBuilder {
     public RmlToSparqlRewriteBuilder setDistinct(boolean distinct) {
         this.distinct = distinct;
         return this;
+    }
+
+    public RmlToSparqlRewriteBuilder setUseBnodeExtension(boolean useBnodeExtension) {
+        this.useBnodeExtension = useBnodeExtension;
+        return this;
+    }
+
+    public boolean isUseBnodeExtension() {
+        return useBnodeExtension;
     }
 
     public boolean isPreDistinct() {
@@ -264,6 +277,11 @@ public class RmlToSparqlRewriteBuilder {
                 // Query query = RmlQueryGenerator.createQuery(item, null);
                 int queryIdInTriplesMap = 1;
                 for (Query query : queries) {
+
+                    if (useBnodeExtension) {
+                        query = QueryUtils.applyElementTransform(query, ExprTransformBNodeToBNodeAsGiven::transformElt);
+                    }
+
                     if (base != null) {
                         query.setBaseURI(base);
                     }

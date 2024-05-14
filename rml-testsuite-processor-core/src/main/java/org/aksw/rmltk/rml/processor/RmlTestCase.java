@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 public class RmlTestCase
-    implements Callable<Report>
+    implements Callable<Dataset>
 {
     private static final Logger logger = LoggerFactory.getLogger(RmlTestCase.class);
 
@@ -67,6 +67,10 @@ public class RmlTestCase
         this.resourceSql = resourceSql;
     }
 
+    public Dataset getExpectedResult() {
+        return expectedResult;
+    }
+
     public String getName() {
         return name;
     }
@@ -75,7 +79,7 @@ public class RmlTestCase
         return expectedFailure;
     }
 
-    public Report call() throws Exception {
+    public Dataset call() throws Exception {
         List<Entry<Query, String>> labeledQueries = generateQueries();
 
         if (jdbcContainer != null && !jdbcContainer.isRunning()) {
@@ -84,7 +88,7 @@ public class RmlTestCase
 
         setupDatabase();
 
-        Report result = execute(labeledQueries);
+        Dataset result = execute(labeledQueries);
         return result;
     }
 
@@ -125,7 +129,7 @@ public class RmlTestCase
         }
     }
 
-    public Report execute(List<Entry<Query, String>> labeledQueries) {
+    public Dataset execute(List<Entry<Query, String>> labeledQueries) {
         Model emptyModel = ModelFactory.createDefaultModel();
         Dataset actualDs = DatasetFactory.create();
 
@@ -157,13 +161,6 @@ public class RmlTestCase
             }
         }
 
-        Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult, actualDs);
-
-        if (!report.isIsomorphic()) {
-            System.out.println("Expected result: ");
-            RDFDataMgr.write(System.out, expectedResult, RDFFormat.TRIG_BLOCKS);
-        }
-
-        return report;
+        return actualDs;
     }
 }
