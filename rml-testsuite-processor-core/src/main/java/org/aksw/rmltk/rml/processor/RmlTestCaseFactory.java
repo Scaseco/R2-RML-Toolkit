@@ -70,6 +70,7 @@ public class RmlTestCaseFactory {
 
         d2rqResolver = r -> {
             String before = r.getJdbcDSN();
+
             String after = null;
             for (Entry<String, JdbcDatabaseContainer<?>> c : containers.entrySet()) {
                 // Case matters: jdbc:mysql://MySQL:3306/db - we want to replace the hostname not the scheme
@@ -77,12 +78,16 @@ public class RmlTestCaseFactory {
                 if (before.contains(name)) {
                     String host = getIp(c.getValue());
                     after = before.replace(name, host);
+                    r.setJdbcDSN(after);
+
+                    if (name.equals("PostgreSQL")) {
+                        r.setPassword("root");
+                    }
+
+                    break;
                 }
             }
 
-            if (after != null) {
-                r.setJdbcDSN(after);
-            }
             System.err.println("Connection Spec:" + r);
         };
     }
