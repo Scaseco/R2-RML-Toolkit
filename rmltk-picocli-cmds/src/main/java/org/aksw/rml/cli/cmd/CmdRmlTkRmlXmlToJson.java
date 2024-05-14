@@ -6,7 +6,6 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.update.UpdateAction;
@@ -15,13 +14,12 @@ import picocli.CommandLine;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "xmltojson", description = "Convert XML sources to JSON sources")
+@CommandLine.Command(name = "json", description = "Convert XML sources to JSON sources")
 public class CmdRmlTkRmlXmlToJson
         implements Callable<Integer> {
 
@@ -44,7 +42,7 @@ public class CmdRmlTkRmlXmlToJson
             "bind(concat(" +
             "       replace(?file,\".xml$\",\"\")," +
             "       replace(encode_for_uri(?xpath),\"%\",\"x\")," +
-            "       \".json\") as ?newfile)";
+            "       \".json\") as ?newFile)";
 
     final static String xml_pattern = "" +
             " ?source rml:referenceFormulation ql:XPath" +
@@ -60,19 +58,19 @@ public class CmdRmlTkRmlXmlToJson
 
             try (QueryExecution qe = QueryExecutionFactory.create(
                     sparql_prefixes +
-                            "select distinct ?file ?xpath ?newfile where { " +
+                            "select distinct ?file ?xpath ?newFile where { " +
                             xml_pattern +
                             filename_generation +
                             "}", model)) {
                 ResultSet rs = qe.execSelect();
                 while (rs.hasNext()) {
                     QuerySolution qs = rs.next();
-                    XpathSpec spec = new XpathSpec(qs.get("file").toString(), qs.get("xpath").toString(), qs.get("newfile").toString());
+                    XpathSpec spec = new XpathSpec(qs.get("file").toString(), qs.get("xpath").toString(), qs.get("newFile").toString());
                     System.err.println(spec);
                     // stax exception mit hadoop:
                     /// Null InputStream is not a valid argument
                     //	at org.apache.hadoop.shaded.com.ctc.wstx.stax.WstxInputFactory.createSR(WstxInputFactory.java:643)
-                    new Converter(spec.file, spec.xpath, spec.newfile, false).convert();
+                    new Converter(spec.file, spec.xpath, spec.newFile, false).convert();
                 }
             }
 
@@ -82,7 +80,7 @@ public class CmdRmlTkRmlXmlToJson
                                 xml_pattern +
                             "}" +
                             "insert { " +
-                                "?source rml:source ?newfile ; " +
+                                "?source rml:source ?newFile ; " +
                                 "rml:referenceFormulation ql:JSONPath . " +
                             "}" +
                             "where { " +
@@ -103,12 +101,12 @@ public class CmdRmlTkRmlXmlToJson
     public static class XpathSpec {
         protected final String file;
         protected final String xpath;
-        protected final String newfile;
+        protected final String newFile;
 
-        public XpathSpec(String file, String xpath, String newfile) {
+        public XpathSpec(String file, String xpath, String newFile) {
             this.file = file;
             this.xpath = xpath;
-            this.newfile = newfile;
+            this.newFile = newFile;
         }
 
         @Override
@@ -116,7 +114,7 @@ public class CmdRmlTkRmlXmlToJson
             return "XpathSpec{" +
                     "file='" + file + '\'' +
                     ", xpath='" + xpath + '\'' +
-                    ", newfile='" + newfile + '\'' +
+                    ", newFile='" + newFile + '\'' +
                     '}';
         }
 

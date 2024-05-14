@@ -75,7 +75,7 @@ public class RmlTestCaseFactory {
                 // Case matters: jdbc:mysql://MySQL:3306/db - we want to replace the hostname not the scheme
                 String name = c.getKey();
                 if (before.contains(name)) {
-                    String host = getIp(mysqlContainer);
+                    String host = getIp(c.getValue());
                     after = before.replace(name, host);
                 }
             }
