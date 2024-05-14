@@ -8,12 +8,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.XSDDouble;
 import org.apache.jena.graph.Node;
@@ -69,7 +67,7 @@ public class RmlTestCaseLister {
                     continue;
                 }
 
-                RmlTestCase testCase = factory.loadTestCase(testCasePath);
+                RmlTestCase testCase = factory.loadTestCase(suiteName, testCasePath);
                 if (testCase != null) {
                     result.add(testCase);
                 }
@@ -80,7 +78,11 @@ public class RmlTestCaseLister {
 //                }
             }
         }
-        Collections.sort(result, (a, b) -> Objects.compare(a.getName(), b.getName(), String::compareTo));
+        Collections.sort(result, new ComparatorChain<>(List.of(
+                Comparator.comparingInt(a -> suiteNames.indexOf(a.getSuiteName())),
+                (a, b) -> Objects.compare(a.getName(), b.getName(), String::compareTo)
+        )
+        ));
         return result;
     }
 

@@ -139,4 +139,12 @@ public class RmlTestCaseFactory {
 
         return new RmlTestCase(name, mappingTtl, shared, expectedDses, expectedFailure, d2rqResolver, container, resourceSql);
     }
+
+    public RmlTestCase loadTestCase(String suiteName, Path testCasePath) {
+        RmlTestCase result = loadTestCase(testCasePath);
+        if (result != null) {
+            result.suiteName = suiteName;
+        }
+        return result;
+    }
 }

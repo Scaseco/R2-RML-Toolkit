@@ -43,6 +43,7 @@ public class RmlTestCase
     private static final Logger logger = LoggerFactory.getLogger(RmlTestCase.class);
 
     protected String name;
+    protected String suiteName;
 
     // protected Model rmlMapping;
     protected Path rmlMapping;
@@ -164,5 +165,9 @@ public class RmlTestCase
         }
 
         return actualDs;
+    }
+
+    public String getSuiteName() {
+        return suiteName;
     }
 }

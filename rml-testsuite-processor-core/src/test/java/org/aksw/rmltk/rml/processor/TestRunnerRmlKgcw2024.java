@@ -49,7 +49,7 @@ public class TestRunnerRmlKgcw2024 {
         List<RmlTestCase> testCases = RmlTestCaseLister.list(basePath, resourceMgr);
 
         List<Object[]> params = testCases.stream()
-                .map(testCase -> new Object[] {testCase.getName(), testCase})
+                .map(testCase -> new Object[] {testCase.getSuiteName() + "::" + testCase.getName(), testCase})
                 .toList();
 
         return params;
