@@ -51,7 +51,7 @@ public class ReferenceFormulationRegistry
         registry.put(RmlIoTerms.SQL2008Table, ReferenceFormulationRdbViaService.getInstance());
         registry.put(RmlIoTerms.JSONPath, new ReferenceFormulationJsonViaService());
         registry.put(RmlIoTerms.XPath, new ReferenceFormulationXmlViaService());
-        registry.put(RmlIoTerms.CSV, new ReferenceFormulationXmlViaService());
+        registry.put(RmlIoTerms.CSV, new ReferenceFormulationCsvViaService());
     }
 
 //    public static ReferenceFormulationRegistry getOrDefault(Context cxt) {
