@@ -41,7 +41,8 @@ public class ResultSetState {
         varToIdx = new LinkedHashMap<>();
         int n = metaData.getColumnCount();
         for (int i = 1; i <= n; i++) {
-            String colNameRaw = metaData.getColumnName(i);
+            // String colNameRaw = metaData.getColumnName(i);
+            String colNameRaw = metaData.getColumnLabel(i);
             String colName = VarUtils.safeVarName(colNameRaw);
             Var colVar = Var.alloc(colName);
             varToIdx.put(colVar, i);

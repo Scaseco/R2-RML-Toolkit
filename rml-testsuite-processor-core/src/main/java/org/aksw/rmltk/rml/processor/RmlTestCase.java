@@ -102,7 +102,8 @@ public class RmlTestCase
                 .addRmlFile(TriplesMapRml2.class, rmlMapping)
                 // .addRmlModel(TriplesMapRml2.class, rmlMapping)
                 .setDenormalize(false)
-                .setMerge(true)
+                .setDistinct(true)
+                // .setMerge(true)
                 ;
 
         List<Entry<Query, String>> labeledQueries = builder.generate();
