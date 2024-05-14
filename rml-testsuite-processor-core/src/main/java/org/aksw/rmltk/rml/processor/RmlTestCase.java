@@ -79,6 +79,7 @@ public class RmlTestCase
         return expectedFailure;
     }
 
+    @Override
     public Dataset call() throws Exception {
         List<Entry<Query, String>> labeledQueries = generateQueries();
 

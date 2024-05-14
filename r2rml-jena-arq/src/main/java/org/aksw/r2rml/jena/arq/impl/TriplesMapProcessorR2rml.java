@@ -398,8 +398,12 @@ public class TriplesMapProcessorR2rml {
 //        return tm;
 //    }
 
+    protected boolean isDefaultGraph(Node g) {
+        return RR.defaultGraph.asNode().equals(g);
+    }
+
     protected Quad createQuad(Node g, Node s, Node p, Node o) {
-        Node finalG = RR.defaultGraph.asNode().equals(g)
+        Node finalG = isDefaultGraph(g)
                 ? Quad.defaultGraphNodeGenerated
                 : g;
 

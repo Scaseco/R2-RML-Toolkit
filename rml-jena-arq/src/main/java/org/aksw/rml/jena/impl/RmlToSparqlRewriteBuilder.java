@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven.ExprTransformBNodeToBNodeAsGiven;
+import org.aksw.jena_sparql_api.sparql.ext.url.F_RmlIri.ExprTransformIriToRmlIri;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.stmt.util.SparqlStmtUtils;
@@ -59,7 +60,9 @@ public class RmlToSparqlRewriteBuilder {
     protected boolean cache = false;
     protected boolean distinct = false;
     protected boolean preDistinct = false;
-    protected boolean useBnodeExtension = true;
+
+    protected boolean useSparqlIri = false;
+    protected boolean useSparqlBnode = false;
 
     protected List<String> triplesMapIds = new ArrayList<>();
     // protected List<String> inputFiles = new ArrayList<>();
@@ -124,13 +127,24 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder setUseBnodeExtension(boolean useBnodeExtension) {
-        this.useBnodeExtension = useBnodeExtension;
+    /** If true, use standand SPARQL IRI() methods rather than norse:bnode.asGiven */
+    public RmlToSparqlRewriteBuilder setUseSparqlBnode(boolean useSparqlBnode) {
+        this.useSparqlBnode = useSparqlBnode;
         return this;
     }
 
-    public boolean isUseBnodeExtension() {
-        return useBnodeExtension;
+    public boolean isUseSparqlBnode() {
+        return useSparqlBnode;
+    }
+
+    /** If true, use standand SPARQL IRI() methods rather than norse:rml.iri */
+    public RmlToSparqlRewriteBuilder setUseSparqlIri(boolean useSparqlIri) {
+        this.useSparqlIri = useSparqlIri;
+        return this;
+    }
+
+    public boolean isUseSparqlIri() {
+        return useSparqlIri;
     }
 
     public boolean isPreDistinct() {
@@ -278,8 +292,12 @@ public class RmlToSparqlRewriteBuilder {
                 int queryIdInTriplesMap = 1;
                 for (Query query : queries) {
 
-                    if (useBnodeExtension) {
+                    if (!useSparqlBnode) {
                         query = QueryUtils.applyElementTransform(query, ExprTransformBNodeToBNodeAsGiven::transformElt);
+                    }
+
+                    if (!useSparqlIri) {
+                        query = QueryUtils.applyElementTransform(query, ExprTransformIriToRmlIri::transformElt);
                     }
 
                     if (base != null) {

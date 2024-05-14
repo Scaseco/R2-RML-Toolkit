@@ -14,6 +14,7 @@ import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.aksw.rml2.vocab.jena.RML2;
 import org.aksw.rmltk.model.backbone.common.IAbstractSource;
 import org.aksw.rmltk.model.backbone.common.ITermMap;
 import org.aksw.rmltk.model.backbone.common.ITriplesMap;
@@ -21,6 +22,7 @@ import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.backbone.rml.ITermMapRml;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.aksw.rmlx.model.RmlDefinitionBlock;
+import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
@@ -154,6 +156,12 @@ public class TriplesMapProcessorRml
                 result = super.termMapToExpr(cxt, tm, fallbackTermType);
             }
         }
+        return result;
+    }
+
+    @Override
+    protected boolean isDefaultGraph(Node g) {
+        boolean result = RML2.defaultGraph.asNode().equals(g) || super.isDefaultGraph(g);
         return result;
     }
 
