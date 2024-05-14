@@ -63,9 +63,9 @@ public class RmlTestCaseLister {
                     continue;
                 }
                 // For testing... only use mysql
-                if (!name.endsWith("MySQL")) {
-                    continue;
-                }
+//                if (!name.endsWith("MySQL")) {
+//                    continue;
+//                }
 
                 RmlTestCase testCase = factory.loadTestCase(suiteName, testCasePath);
                 if (testCase != null) {
