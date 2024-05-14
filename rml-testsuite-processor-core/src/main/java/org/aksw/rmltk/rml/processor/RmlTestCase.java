@@ -43,7 +43,8 @@ public class RmlTestCase
 
     protected String name;
 
-    protected Model rmlMapping;
+    // protected Model rmlMapping;
+    protected Path rmlMapping;
     protected Path rmlMappingDirectory;
 
     protected Dataset expectedResult;
@@ -54,7 +55,7 @@ public class RmlTestCase
     protected JdbcDatabaseContainer<?> jdbcContainer;
     protected Path resourceSql;
 
-    public RmlTestCase(String name, Model rmlMapping, Path rmlMappingDirectory, Dataset expectedResult, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
+    public RmlTestCase(String name, Path rmlMapping, Path rmlMappingDirectory, Dataset expectedResult, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
         super();
         this.name = name;
         this.rmlMapping = rmlMapping;
@@ -91,7 +92,8 @@ public class RmlTestCase
         RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
                 // .setCache(cache)
                 // .addFnmlFiles(fnmlFiles)
-                .addRmlModel(TriplesMapRml2.class, rmlMapping)
+                .addRmlFile(TriplesMapRml2.class, rmlMapping)
+                // .addRmlModel(TriplesMapRml2.class, rmlMapping)
                 .setDenormalize(false)
                 .setMerge(true)
                 ;

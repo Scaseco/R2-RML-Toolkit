@@ -1,6 +1,10 @@
 package org.aksw.rml.jena.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,9 +22,11 @@ import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
+import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.rdf.model.Model;
@@ -162,6 +168,18 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
+    public RmlToSparqlRewriteBuilder addRmlFile(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Path rmlFile) {
+        // Model model = RDFDataMgr.loadModel(rmlFile);
+        try (InputStream in = Files.newInputStream(rmlFile)) {
+            Lang lang = RDFDataMgr.determineLang(rmlFile.toString(), null, null);
+            Input input = processInput(rmlTriplesMapClass, rmlFile.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
+            modelAndBaseIriList.add(input);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return this;
+    }
+
     public RmlToSparqlRewriteBuilder addRmlModel(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model contrib) {
         modelAndBaseIriList.add(new Input(null, rmlTriplesMapClass, contrib, null));
         return this;
@@ -191,7 +209,6 @@ public class RmlToSparqlRewriteBuilder {
         // modelAndBaseIriList.add(new Input(inputFile, model, base));
         return new Input(inputLabel, rmlTriplesMapClass, model, base);
     }
-
 
     public List<Entry<Query, String>> generate() {
 
@@ -233,7 +250,10 @@ public class RmlToSparqlRewriteBuilder {
 
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {
-                String tmId = NodeFmtLib.strNT(item.getTriplesMap().asNode());
+                ITriplesMap triplesMap = item.getTriplesMap();
+                Node triplesMapNode = triplesMap.asNode();
+
+                String tmId = NodeFmtLib.strNT(triplesMapNode);
                 List<Query> queries;
                 if (denormalize) {
                     queries = List.of(RmlQueryGenerator.createQuery(item, finalRegistry));
@@ -246,6 +266,10 @@ public class RmlToSparqlRewriteBuilder {
                 for (Query query : queries) {
                     if (base != null) {
                         query.setBaseURI(base);
+                    }
+
+                    if (triplesMapNode.isURI()) {
+                        query.setBaseURI(triplesMapNode.getURI());
                     }
 
                     // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)

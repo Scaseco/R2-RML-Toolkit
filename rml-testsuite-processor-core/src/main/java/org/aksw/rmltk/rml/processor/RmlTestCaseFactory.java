@@ -129,16 +129,6 @@ public class RmlTestCaseFactory {
             expectedFailure = true;
         }
 
-        Model mappingModel = ModelFactory.createDefaultModel();
-        try (InputStream in = Files.newInputStream(mappingTtl)) {
-            RDFDataMgr.read(mappingModel, in, Lang.TURTLE);
-        }
-
-        List<ITriplesMapRml> tms = RmlImporterLib.listAllTriplesMaps(TriplesMapRml2.class, mappingModel);
-        for (ITriplesMapRml tm : tms) {
-//                System.out.println(tm);
-        }
-
-        return new RmlTestCase(name, mappingModel, shared, expectedDs, expectedFailure, d2rqResolver, container, resourceSql);
+        return new RmlTestCase(name, mappingTtl, shared, expectedDs, expectedFailure, d2rqResolver, container, resourceSql);
     }
 }

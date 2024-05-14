@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -429,7 +430,17 @@ public class RmlLib {
             Set<Var> staticVars = SetUtils.asSet(PatternVars.vars(sourceElt));
 
             int memberId = 0;
+
+            // TODO Handle the case where base IRIs differ between grouped queries
+            // In that case either prevent grouping (bad) or use a custom IRI function
+
+            Set<String> baseIris = new LinkedHashSet<>();
             for (Query query : e.getValue()) {
+                String baseIri = query.getBaseURI();
+                if (baseIri != null) {
+                    baseIris.add(baseIri);
+                }
+
                 Element memberElt = query.getQueryPattern();
                 Set<Var> mentionedVars = SetUtils.asSet(PatternVars.vars(memberElt));
                 Set<Var> toRename = Sets.difference(mentionedVars, staticVars);
@@ -451,7 +462,17 @@ public class RmlLib {
 
             // Element union = ElementUtils.unionIfNeeded(lateralUnionMembers);
 
+            if (baseIris.size() > 1) {
+                throw new RuntimeException("Multiple base IRIs after grouping: " + baseIris);
+            }
+            String baseIri = baseIris.isEmpty() ? null : baseIris.iterator().next();
+
             Query q = new Query();
+
+            if (baseIri != null) {
+                q.setBaseURI(baseIri);
+            }
+
             q.setQueryConstructType();
             q.setConstructTemplate(new Template(newQuads));
             ElementGroup elt = new ElementGroup();

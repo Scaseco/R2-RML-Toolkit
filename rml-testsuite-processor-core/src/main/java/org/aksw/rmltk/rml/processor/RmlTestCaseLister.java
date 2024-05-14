@@ -14,6 +14,11 @@ import java.util.List;
 import java.util.Objects;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.impl.XSDDouble;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.sparql.expr.NodeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +26,19 @@ public class RmlTestCaseLister {
     private static final Logger logger = LoggerFactory.getLogger(RmlTestCaseLister.class);
 
     public static List<RmlTestCase> list(Path basePath, ResourceMgr resourceMgr) throws Exception {
+        if (false) {
+            Node node = NodeFactory.createLiteral("123.456", XSDDatatype.XSDdouble);
+            System.out.println("Node: " + node);
+
+            Object normalized = XSDDatatype.XSDdouble.cannonicalise(node.getLiteralValue());
+            System.out.println("Normalized: " + normalized);
+
+            NodeValue nv = NodeValue.makeNode(node);
+            System.out.println("NodeValue: " + nv.toString());
+
+            return null;
+        }
+
         RmlTestCaseFactory factory = new RmlTestCaseFactory(resourceMgr);
 
         List<String> suiteNames = List.of(
