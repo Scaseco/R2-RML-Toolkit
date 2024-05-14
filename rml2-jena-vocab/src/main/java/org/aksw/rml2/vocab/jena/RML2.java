@@ -86,4 +86,6 @@ public class RML2 {
     public static final Property source               = property(Rml2Terms.source);
     public static final Property referenceFormulation = property(Rml2Terms.referenceFormulation);
     public static final Property iterator             = property(Rml2Terms.iterator);
+
+    public static final Property datatypeMap          = property(Rml2Terms.datatypeMap);
 }

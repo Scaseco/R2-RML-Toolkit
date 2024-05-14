@@ -13,6 +13,7 @@ import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.vocab.RR;
+import org.aksw.rmltk.model.backbone.common.IDatatypeMap;
 import org.aksw.rmltk.model.backbone.common.IGraphMap;
 import org.aksw.rmltk.model.backbone.common.IJoinCondition;
 import org.aksw.rmltk.model.backbone.common.IObjectMapType;
@@ -202,6 +203,26 @@ public class TriplesMapProcessorR2rml {
         return Optional.ofNullable(tm.getProperty(languageColumn)).map(Statement::getString).orElse(null);
     }
 
+    protected Expr getDatatypeExpr(MappingCxt cxt, ITermMap tm) {
+        Expr result = null;
+
+        Node datatypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getDatatype());
+        if (datatypeNode != null) {
+            result = NodeValue.makeNode(datatypeNode);
+        }
+
+        IDatatypeMap datatypeMap = tm.getDatatypeMap();
+        if (datatypeMap != null) {
+            if (datatypeNode != null) {
+                throw new RuntimeException("Both datatype and datatypeMap specified.");
+            }
+
+            result = termMapToExpr(this.childCxt, datatypeMap, RR.IRI);
+        }
+
+        return result;
+    }
+
     /**
      * Convert a term map into a corresponding SPARQL expression
      *
@@ -218,7 +239,8 @@ public class TriplesMapProcessorR2rml {
         // and validate that its an IRI
         String template = tm.getTemplate();
         RDFNode constant = tm.getConstant();
-        Node datatypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getDatatype());
+        // Node datatypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getDatatype());
+        Expr datatypeExpr = getDatatypeExpr(cxt, tm);
         Node termTypeNode = R2rmlImporterLib.getIriNodeOrNull(tm.getTermType());
         String langValue = Optional.ofNullable(tm.getLanguage()).map(String::trim).orElse(null);
 
@@ -254,7 +276,7 @@ public class TriplesMapProcessorR2rml {
             // to resolve all variable names (=references) against the reference formulation.
             Expr arg = resolveColumnReferences(cxt, rawArg);
 
-            result = R2rmlImporterLib.applyTermType(arg, effectiveTermType, XSD.xstring.asNode());
+            result = R2rmlImporterLib.applyTermType(arg, effectiveTermType, NodeValue.makeNode(XSD.xstring.asNode()));
         } else if((constant = tm.getConstant()) != null) {
             result = NodeValue.makeNode(constant.asNode());
         } else {
@@ -267,7 +289,7 @@ public class TriplesMapProcessorR2rml {
                     Expr langColumnExpr = resolveColumnReferences(cxt, langColumnExprVar);
                     result = new E_StrLang(columnLikeExpr, langColumnExpr);
                 } else {
-                    result = R2rmlImporterLib.applyTermType(columnLikeExpr, effectiveTermType, datatypeNode);
+                    result = R2rmlImporterLib.applyTermType(columnLikeExpr, effectiveTermType, datatypeExpr);
                 }
             } else {
                 throw new RuntimeException("TermMap does neither define rr:template, rr:constant nor rr:column " + tm);

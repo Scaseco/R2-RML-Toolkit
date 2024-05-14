@@ -68,6 +68,10 @@ public class RmlTestCaseLister {
 //                }
 
                 RmlTestCase testCase = factory.loadTestCase(suiteName, testCasePath);
+//                if (!name.endsWith("PostgreSQL")) {
+//                    continue;
+//                }
+
                 if (testCase != null) {
                     result.add(testCase);
                 }

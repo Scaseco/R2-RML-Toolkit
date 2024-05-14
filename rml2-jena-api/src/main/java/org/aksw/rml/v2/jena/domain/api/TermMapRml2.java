@@ -4,6 +4,7 @@ import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.rml.v2.common.vocab.Rml2Terms;
 import org.aksw.rml2.vocab.jena.RML2;
+import org.aksw.rmltk.model.backbone.common.IDatatypeMap;
 import org.aksw.rmltk.model.backbone.rml.ITermMapRml;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -33,6 +34,10 @@ public interface TermMapRml2
     @Iri(Rml2Terms.datatype)
     @Override Resource getDatatype();
     @Override TermMapRml2 setDatatype(Resource datatype);
+
+    @Iri(Rml2Terms.datatypeMap)
+    @Override DatatypeMapRml2 getDatatypeMap();
+    @Override TermMapRml2 setDatatypeMap(IDatatypeMap datatypeMap);
 
     @Iri(Rml2Terms.constant)
     @Override RDFNode getConstant();

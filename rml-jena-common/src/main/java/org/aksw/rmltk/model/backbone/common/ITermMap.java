@@ -25,6 +25,9 @@ public interface ITermMap
     Resource getDatatype();
     ITermMap setDatatype(Resource datatype);
 
+    IDatatypeMap getDatatypeMap();
+    ITermMap     setDatatypeMap(IDatatypeMap datatypeMap);
+
     RDFNode getConstant();
     ITermMap setConstant(RDFNode constant);
 

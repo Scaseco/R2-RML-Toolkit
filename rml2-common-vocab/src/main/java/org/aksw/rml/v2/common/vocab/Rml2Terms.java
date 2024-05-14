@@ -64,4 +64,5 @@ public class Rml2Terms {
     public static final String referenceFormulation = uri + "referenceFormulation";
     public static final String iterator             = uri + "iterator";
 
+    public static final String datatypeMap          = uri + "datatypeMap";
 }

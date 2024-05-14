@@ -437,28 +437,28 @@ public class R2rmlImporterLib {
      * @param knownDatatype The datatype specified via rr:datatype (null if it has not been specified)
      * @return
      */
-    public static Expr applyTermType(Expr column, Node termType, Node knownDatatype) {
-        Expr result = applyTermTypeRml1(column, termType, knownDatatype);
+    public static Expr applyTermType(Expr column, Node termType, Expr knownDatatypeExpr) {
+        Expr result = applyTermTypeRml1(column, termType, knownDatatypeExpr);
         if (result == null) {
-            result = applyTermTypeRml2(column, termType, knownDatatype);
+            result = applyTermTypeRml2(column, termType, knownDatatypeExpr);
         }
         return result;
     }
 
-    public static Expr applyTermTypeRml1(Expr column, Node termType, Node knownDatatype) {
+    public static Expr applyTermTypeRml1(Expr column, Node termType, Expr knownDatatypeExpr) {
         String termTypeIri = termType.getURI();
 
         Expr result;
         result = termTypeIri.equals(R2rmlTerms.IRI)
                 // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
-                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatypeExpr))
                 : termTypeIri.equals(R2rmlTerms.BlankNode)
-                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatypeExpr))
                     : termTypeIri.equals(R2rmlTerms.Literal)
-                        ? knownDatatype == null
+                        ? knownDatatypeExpr == null
                             ? column
                             // So far only strdt(str(?column), dt) suceeds on R2RML and RML test cases
-                            : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            : new E_StrDatatype(new E_Str(column), knownDatatypeExpr)
                             // Not every datatype has a function and term maps may create terms with incorrect lexical space - e.g. xsd:duration("abc")
                             // : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
                             // : new E_Function(knownDatatype.getURI(), new ExprList(column))
@@ -471,20 +471,20 @@ public class R2rmlImporterLib {
         return result;
     }
 
-    public static Expr applyTermTypeRml2(Expr column, Node termType, Node knownDatatype) {
+    public static Expr applyTermTypeRml2(Expr column, Node termType, Expr knownDatatypeExpr) {
         String termTypeIri = termType.getURI();
 
         Expr result;
         result = termTypeIri.equals(Rml2Terms.IRI)
                 // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
-                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatypeExpr))
                 : termTypeIri.equals(Rml2Terms.BlankNode)
-                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatype))
+                    ? E_BNode.create(applyDatatype(column, XSD.xstring.asNode(), knownDatatypeExpr))
                     : termTypeIri.equals(Rml2Terms.Literal)
-                        ? knownDatatype == null
+                        ? knownDatatypeExpr == null
                             ? column
                             // So far only strdt(str(?column), dt) suceeds on R2RML and RML test cases
-                            : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
+                            : new E_StrDatatype(new E_Str(column), knownDatatypeExpr)
                             // Not every datatype has a function and term maps may create terms with incorrect lexical space - e.g. xsd:duration("abc")
                             // : new E_StrDatatype(new E_Str(column), NodeValue.makeNode(knownDatatype))
                             // : new E_Function(knownDatatype.getURI(), new ExprList(column))
@@ -497,14 +497,19 @@ public class R2rmlImporterLib {
         return result;
     }
 
-    public static Expr applyDatatype(Expr column, Node expectedDatatype, Node knownDatatype) {
+    public static Expr applyDatatype(Expr column, Node expectedDatatype, Expr knownDatatypeExpr) {
         Objects.requireNonNull(expectedDatatype, "Need an expected datatype");
+
+        Node knownDatatype = knownDatatypeExpr != null && knownDatatypeExpr.isConstant()
+                ? knownDatatypeExpr.getConstant().asNode()
+                : null;
 
         Expr result = expectedDatatype.equals(knownDatatype)
                 ? column
                 : expectedDatatype.equals(XSD.xstring.asNode())
                     ? new E_Str(column)
-                    : new E_Function(knownDatatype.getURI(), new ExprList(column));
+                    // FIXME Shouldn't this be a cast to the expected datatype?! - knownDatatype.getURI()
+                    : new E_Function(expectedDatatype.getURI(), new ExprList(column));
 
         return result;
     }
