@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -47,7 +48,7 @@ public class RmlTestCase
     protected Path rmlMapping;
     protected Path rmlMappingDirectory;
 
-    protected Dataset expectedResult;
+    protected Map<String, Dataset> expectedResult;
     protected boolean expectedFailure;
 
     protected Consumer<D2rqDatabase> d2rqResolver;
@@ -55,19 +56,19 @@ public class RmlTestCase
     protected JdbcDatabaseContainer<?> jdbcContainer;
     protected Path resourceSql;
 
-    public RmlTestCase(String name, Path rmlMapping, Path rmlMappingDirectory, Dataset expectedResult, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
+    public RmlTestCase(String name, Path rmlMapping, Path rmlMappingDirectory, Map<String, Dataset> expectedResultDses, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
         super();
         this.name = name;
         this.rmlMapping = rmlMapping;
         this.rmlMappingDirectory = rmlMappingDirectory;
-        this.expectedResult = expectedResult;
+        this.expectedResult = expectedResultDses;
         this.expectedFailure = expectedFailure;
         this.d2rqResolver = d2rqResolver;
         this.jdbcContainer = jdbcContainer;
         this.resourceSql = resourceSql;
     }
 
-    public Dataset getExpectedResult() {
+    public Map<String, Dataset> getExpectedResultDses() {
         return expectedResult;
     }
 

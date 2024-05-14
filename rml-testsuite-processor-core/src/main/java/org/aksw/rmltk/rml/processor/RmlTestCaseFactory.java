@@ -3,12 +3,8 @@ package org.aksw.rmltk.rml.processor;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
@@ -121,19 +117,26 @@ public class RmlTestCaseFactory {
         Path resourceSql = shared.resolve("resource.sql");
 
         Path expectedPath = shared.resolve("expected");
-        Path outputNq = expectedPath.resolve("output.nq");
 
-        Dataset expectedDs = null;
+        List<String> outputFiles = Arrays.asList("default.nq", "dump1.n3", "dump1.nq", "dump1.nt", "dump1.rdfjson", "dump1.rdfxml",
+                "dump1.ttl", "dump2.nq", "dump3.nq", "output.nq", "output.nt");
+        Map<String, Dataset> expectedDses = new LinkedHashMap<>();
+
         boolean expectedFailure = false;
-        if (Files.exists(outputNq)) {
-            expectedDs = DatasetFactory.create();
-            try (InputStream in = Files.newInputStream(outputNq)) {
-                RDFDataMgr.read(expectedDs, in, Lang.NQUADS);
-            }
-        } else {
-            expectedFailure = true;
-        }
+        for (String file : outputFiles) {
+            Path outputPath = expectedPath.resolve(file);
 
-        return new RmlTestCase(name, mappingTtl, shared, expectedDs, expectedFailure, d2rqResolver, container, resourceSql);
+            Dataset expectedDs = null;
+            if (Files.exists(outputPath)) {
+                expectedDs = DatasetFactory.create();
+                try (InputStream in = Files.newInputStream(outputPath)) {
+                    RDFDataMgr.read(expectedDs, in, Lang.NQUADS);
+                }
+                expectedDses.put(file, expectedDs);
+            }
+        }
+        expectedFailure = expectedDses.isEmpty();
+
+        return new RmlTestCase(name, mappingTtl, shared, expectedDses, expectedFailure, d2rqResolver, container, resourceSql);
     }
 }

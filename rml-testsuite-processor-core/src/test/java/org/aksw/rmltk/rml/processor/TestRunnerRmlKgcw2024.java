@@ -3,7 +3,9 @@ package org.aksw.rmltk.rml.processor;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.primitives.Ints;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.quad.DatasetCmp;
 import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
@@ -63,7 +65,12 @@ public class TestRunnerRmlKgcw2024 {
     public void run() {
         // System.out.println("GOT: " + XSDDouble.XSDdouble.unparse(Double.valueOf(123)));
 
-        Dataset expectedResult = testCase.getExpectedResult();
+        Map<String, Dataset> expectedResultDses = testCase.getExpectedResultDses();
+        // TODO: support multiple output files
+        Map.Entry<String, Dataset> expectedResult = expectedResultDses.entrySet()
+                .stream().min((a, b) -> Ints.saturatedCast(
+                        b.getValue().asDatasetGraph().stream().count() - a.getValue().asDatasetGraph().stream().count()))
+                .orElse(null);
         try {
             Dataset actualDs = testCase.call();
 
@@ -75,15 +82,15 @@ public class TestRunnerRmlKgcw2024 {
 
             boolean isIsomorphic;
             if (false) {
-                Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult, actualDs);
+                Report report = DatasetCmp.assessIsIsomorphicByGraph(expectedResult.getValue(), actualDs);
 
                 isIsomorphic = report.isIsomorphic();
                 if (!isIsomorphic) {
                     System.out.println("Expected result: ");
-                    RDFDataMgr.write(System.out, expectedResult, RDFFormat.TRIG_BLOCKS);
+                    RDFDataMgr.write(System.out, expectedResult.getValue(), RDFFormat.TRIG_BLOCKS);
                 }
             } else {
-                isIsomorphic = DatasetCmp.isIsomorphic(expectedResult, actualDs, true, System.err, ResultSetLang.RS_CSV);
+                isIsomorphic = DatasetCmp.isIsomorphic(expectedResult.getValue(), actualDs, true, System.err, ResultSetLang.RS_TSV);
             }
 
             Assert.assertTrue(isIsomorphic);
