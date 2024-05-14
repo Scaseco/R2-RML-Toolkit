@@ -59,7 +59,7 @@ public class RmlTestCaseLister {
                 String name = testCasePath.getFileName().toString();
 
                 // Skip non-test case folders
-                if (!name.startsWith("RMLTC")) {
+                if (!name.startsWith("RML")) {
                     continue;
                 }
                 // For testing... only use mysql
