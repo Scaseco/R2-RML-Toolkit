@@ -438,6 +438,12 @@ public class RmlLib {
             for (Query query : e.getValue()) {
                 String baseIri = query.getBaseURI();
                 if (baseIri != null) {
+                    int slashIndex = baseIri.lastIndexOf("/");
+                    int hashIndex = baseIri.lastIndexOf("#");
+                    int cutIndex = Math.max(slashIndex, hashIndex);
+                    if (cutIndex >= 0) {
+                        baseIri = baseIri.substring(0, cutIndex + 1);
+                    }
                     baseIris.add(baseIri);
                 }
 
