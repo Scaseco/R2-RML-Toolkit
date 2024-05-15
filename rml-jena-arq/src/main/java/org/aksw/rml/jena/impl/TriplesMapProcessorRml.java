@@ -13,6 +13,7 @@ import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.r2rml.jena.arq.impl.MappingCxt;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapProcessorR2rml;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.TriplesMapRml1;
 import org.aksw.rml2.vocab.jena.RML2;
 import org.aksw.rmltk.model.backbone.common.IAbstractSource;
@@ -49,14 +50,14 @@ public class TriplesMapProcessorRml
     // Initialized on call()
     // protected ReferenceFormulation referenceFormulation;
     // protected Var itemVar; // Variable for an item of the source document
-    protected ReferenceFormulationRegistry registry;
+    protected ReferenceFormulationService registry;
     // protected ReferenceFormulation referenceFormulation;
 
     public TriplesMapProcessorRml(ITriplesMapRml triplesMap,  Model fnmlModel) {
         this(triplesMap, null, fnmlModel, null);
     }
 
-    public TriplesMapProcessorRml(ITriplesMapRml triplesMap, String baseIri, Model fnmlModel, ReferenceFormulationRegistry registry) {
+    public TriplesMapProcessorRml(ITriplesMapRml triplesMap, String baseIri, Model fnmlModel, ReferenceFormulationService registry) {
         super(triplesMap, baseIri);
         this.fnmlModel = fnmlModel;
 

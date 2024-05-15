@@ -1,6 +1,5 @@
 package org.aksw.rml.jena.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.stream.Collectors;
 import org.aksw.jenax.arq.util.node.RDFNodeMatcher;
 import org.aksw.jenax.arq.util.node.RDFNodeMatchers;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
-import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.Rml;
 import org.aksw.rml.model.TriplesMapRml1;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
@@ -44,12 +43,12 @@ public class RmlImporterLib {
      * Otherwise only process those with the given ids.
      * Mainly useful for CLI tooling.
      */
-    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, Model fnmlModel, Collection<String> triplesMapIds, ReferenceFormulationRegistry registry) {
+    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, Model fnmlModel, Collection<String> triplesMapIds, ReferenceFormulationService registry) {
         RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher = getOrThrow(rmlTriplesMapClass);
         return readSpecificOrAll(nodeMatcher, rmlTriplesMapClass, model, fnmlModel, triplesMapIds, registry);
     }
 
-    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, Model fnmlModel, Collection<String> triplesMapIds, ReferenceFormulationRegistry registry) {
+    public static Collection<TriplesMapToSparqlMapping> readSpecificOrAll(RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, Model fnmlModel, Collection<String> triplesMapIds, ReferenceFormulationService registry) {
         Collection<TriplesMapToSparqlMapping> result;
         if (triplesMapIds != null && !triplesMapIds.isEmpty()) {
             result = triplesMapIds.stream()
@@ -57,12 +56,12 @@ public class RmlImporterLib {
                 .map(tm -> RmlImporterLib.read(tm, fnmlModel, registry))
                 .collect(Collectors.toList());
         } else {
-            result = RmlImporterLib.read(nodeMatcher, model, fnmlModel);
+            result = RmlImporterLib.read(nodeMatcher, model, fnmlModel, registry);
         }
         return result;
     }
 
-    public static TriplesMapToSparqlMapping read(ITriplesMapRml tm, Model fnmlModel, ReferenceFormulationRegistry registry) {
+    public static TriplesMapToSparqlMapping read(ITriplesMapRml tm, Model fnmlModel, ReferenceFormulationService registry) {
         TriplesMapToSparqlMapping result = new TriplesMapProcessorRml(tm, null, fnmlModel, registry).call();
         return result;
     }
@@ -97,12 +96,12 @@ public class RmlImporterLib {
         return result;
     }
 
-    public static Collection<TriplesMapToSparqlMapping> read(Class<? extends ITriplesMapRml> triplesMapClass, Model rawModel, Model fnmlModel) {
+    public static Collection<TriplesMapToSparqlMapping> read(Class<? extends ITriplesMapRml> triplesMapClass, Model rawModel, Model fnmlModel, ReferenceFormulationService registry) {
         RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher = getOrThrow(triplesMapClass);
-        return read(nodeMatcher, rawModel, fnmlModel);
+        return read(nodeMatcher, rawModel, fnmlModel, registry);
     }
 
-    public static Collection<TriplesMapToSparqlMapping> read(RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher, Model rawModel, Model fnmlModel) {
+    public static Collection<TriplesMapToSparqlMapping> read(RDFNodeMatcher<? extends ITriplesMapRml> nodeMatcher, Model rawModel, Model fnmlModel, ReferenceFormulationService registry) {
 
         Model model = ModelFactory.createDefaultModel();
         model.add(rawModel);
@@ -115,7 +114,7 @@ public class RmlImporterLib {
 
 
         List<TriplesMapToSparqlMapping> result = triplesMaps.stream()
-                .map(tm -> read(tm, fnmlModel))
+                .map(tm -> read(tm, fnmlModel, registry))
                 .collect(Collectors.toList());
 
 //        List<TriplesMapToSparqlMapping> result = new ArrayList<>(triplesMaps.size());

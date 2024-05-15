@@ -5,12 +5,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.primitives.Ints;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.quad.DatasetCmp;
 import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
+import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
+import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonStrViaService;
+import org.aksw.rml.v2.common.vocab.RmlIoTerms;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.resultset.ResultSetLang;
@@ -22,6 +24,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.primitives.Ints;
 
 
 
@@ -46,7 +50,15 @@ public class TestRunnerRmlKgcw2024 {
             throws Exception
     {
         Path basePath = RmlTestCaseLister.toPath(resourceMgr, TestRunnerRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
-        List<RmlTestCase> testCases = RmlTestCaseLister.list(basePath, resourceMgr);
+
+        ReferenceFormulationRegistry rfRegistry = new ReferenceFormulationRegistry();
+        ReferenceFormulationRegistry.registryDefaults(rfRegistry);
+
+        // Override registration for JSON to *not* use natural mappings
+        rfRegistry.put(RmlIoTerms.JSONPath, new ReferenceFormulationJsonStrViaService());
+
+
+        List<RmlTestCase> testCases = RmlTestCaseLister.list(basePath, resourceMgr, rfRegistry);
 
         List<Object[]> params = testCases.stream()
                 .map(testCase -> new Object[] {testCase.getSuiteName() + "::" + testCase.getName(), testCase})

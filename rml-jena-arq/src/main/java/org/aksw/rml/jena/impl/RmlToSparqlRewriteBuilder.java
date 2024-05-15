@@ -273,7 +273,7 @@ public class RmlToSparqlRewriteBuilder {
             Class<? extends ITriplesMapRml> rmlTriplesMapClass = input.rmlTriplesMapClass();
 
             // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(rmlTriplesMapClass, model, fnmlModel, triplesMapIds, null);
+            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(rmlTriplesMapClass, model, fnmlModel, triplesMapIds, finalRegistry);
 
             // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
             for (TriplesMapToSparqlMapping item : maps) {

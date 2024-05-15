@@ -8,12 +8,16 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.impl.XSDDouble;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.expr.NodeValue;
@@ -23,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class RmlTestCaseLister {
     private static final Logger logger = LoggerFactory.getLogger(RmlTestCaseLister.class);
 
-    public static List<RmlTestCase> list(Path basePath, ResourceMgr resourceMgr) throws Exception {
+    public static List<RmlTestCase> list(Path basePath, ResourceMgr resourceMgr, ReferenceFormulationService rfRegistry) throws Exception {
         if (false) {
             Node node = NodeFactory.createLiteral("123.456", XSDDatatype.XSDdouble);
             System.out.println("Node: " + node);
@@ -37,7 +41,7 @@ public class RmlTestCaseLister {
             return null;
         }
 
-        RmlTestCaseFactory factory = new RmlTestCaseFactory(resourceMgr);
+        RmlTestCaseFactory factory = new RmlTestCaseFactory(resourceMgr, rfRegistry);
 
         List<String> suiteNames = List.of(
             "rml-core"

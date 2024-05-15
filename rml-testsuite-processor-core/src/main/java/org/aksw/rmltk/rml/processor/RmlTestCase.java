@@ -14,10 +14,9 @@ import java.util.function.Consumer;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
-import org.aksw.jenax.arq.util.quad.DatasetCmp;
-import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.jena.service.RmlSymbols;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
 import org.apache.curator.shaded.com.google.common.io.MoreFiles;
@@ -28,7 +27,6 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionDatasetBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
@@ -52,18 +50,21 @@ public class RmlTestCase
     protected Map<String, Dataset> expectedResult;
     protected boolean expectedFailure;
 
+    protected ReferenceFormulationService referenceFormulationRegistry;
     protected Consumer<D2rqDatabase> d2rqResolver;
 
     protected JdbcDatabaseContainer<?> jdbcContainer;
     protected Path resourceSql;
 
-    public RmlTestCase(String name, Path rmlMapping, Path rmlMappingDirectory, Map<String, Dataset> expectedResultDses, boolean expectedFailure, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
+    public RmlTestCase(String name, Path rmlMapping, Path rmlMappingDirectory, Map<String, Dataset> expectedResultDses, boolean expectedFailure,
+            ReferenceFormulationService referenceFormulationRegistry, Consumer<D2rqDatabase> d2rqResolver, JdbcDatabaseContainer<?> jdbcContainer, Path resourceSql) {
         super();
         this.name = name;
         this.rmlMapping = rmlMapping;
         this.rmlMappingDirectory = rmlMappingDirectory;
         this.expectedResult = expectedResultDses;
         this.expectedFailure = expectedFailure;
+        this.referenceFormulationRegistry = referenceFormulationRegistry;
         this.d2rqResolver = d2rqResolver;
         this.jdbcContainer = jdbcContainer;
         this.resourceSql = resourceSql;
@@ -97,6 +98,7 @@ public class RmlTestCase
 
     protected List<Entry<Query, String>> generateQueries() {
         RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                .setRegistry(referenceFormulationRegistry)
                 // .setCache(cache)
                 // .addFnmlFiles(fnmlFiles)
                 .addRmlFile(TriplesMapRml2.class, rmlMapping)

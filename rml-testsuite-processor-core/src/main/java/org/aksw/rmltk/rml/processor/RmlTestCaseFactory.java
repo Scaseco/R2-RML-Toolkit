@@ -3,19 +3,20 @@ package org.aksw.rmltk.rml.processor;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
-import org.aksw.rml.jena.impl.RmlImporterLib;
-import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
-import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
+import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
@@ -32,9 +33,11 @@ public class RmlTestCaseFactory {
     protected Consumer<D2rqDatabase> d2rqResolver;
 
     protected ResourceMgr resourceMgr;
+    protected ReferenceFormulationService referenceFormulationRegistry;
 
-    public RmlTestCaseFactory(ResourceMgr resourceMgr) {
+    public RmlTestCaseFactory(ResourceMgr resourceMgr, ReferenceFormulationService referenceFormulationRegistry) {
         this.resourceMgr = Objects.requireNonNull(resourceMgr);
+        this.referenceFormulationRegistry = referenceFormulationRegistry;
         init();
     }
 
@@ -111,12 +114,12 @@ public class RmlTestCaseFactory {
         // logger.info("Loading test case: " + name);
 
         Path data = testCase.resolve("data");
-        Path shared = data.resolve("shared");
-        Path mappingTtl = shared.resolve("mapping.ttl");
+        Path mappingFolder = data.resolve("shared");
+        Path mappingTtl = mappingFolder.resolve("mapping.ttl");
 
-        Path resourceSql = shared.resolve("resource.sql");
+        Path resourceSql = mappingFolder.resolve("resource.sql");
 
-        Path expectedPath = shared.resolve("expected");
+        Path expectedPath = mappingFolder.resolve("expected");
 
         List<String> outputFiles = Arrays.asList("default.nq", "dump1.n3", "dump1.nq", "dump1.nt", "dump1.rdfjson", "dump1.rdfxml",
                 "dump1.ttl", "dump2.nq", "dump3.nq", "output.nq", "output.nt");
@@ -137,7 +140,8 @@ public class RmlTestCaseFactory {
         }
         expectedFailure = expectedDses.isEmpty();
 
-        return new RmlTestCase(name, mappingTtl, shared, expectedDses, expectedFailure, d2rqResolver, container, resourceSql);
+        return new RmlTestCase(name, mappingTtl, mappingFolder, expectedDses, expectedFailure,
+                referenceFormulationRegistry, d2rqResolver, container, resourceSql);
     }
 
     public RmlTestCase loadTestCase(String suiteName, Path testCasePath) {
