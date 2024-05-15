@@ -86,11 +86,12 @@ public class RmlTestCaseLister {
 //                }
             }
         }
-        Collections.sort(result, new ComparatorChain<>(List.of(
+        Collections.sort(result, new ComparatorChain<RmlTestCase>(List.of(
                 Comparator.comparingInt(a -> suiteNames.indexOf(a.getSuiteName())),
+        		//(a, b) -> suiteNames.indexOf(a.getSuiteName()) - suiteNames.indexOf(b.getSuiteName()),
                 (a, b) -> Objects.compare(a.getName(), b.getName(), String::compareTo)
-        )
-        ));
+        	)));
+
         return result;
     }
 

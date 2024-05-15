@@ -11,7 +11,6 @@ import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonStrViaService;
-import org.aksw.rml.jena.service.InitRmlService;
 import org.aksw.rml.v2.common.vocab.RmlIoTerms;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.query.Dataset;
@@ -19,7 +18,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.resultset.ResultSetLang;
-import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -31,8 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.primitives.Ints;
-
-
 
 @RunWith(Parameterized.class)
 public class TestRunnerRmlKgcw2024 {
