@@ -92,7 +92,7 @@ public class RmlTestCase
         Model result;
         try (InputStream in = Files.newInputStream(rmlMapping)) {
             Lang lang = RDFDataMgr.determineLang(rmlMapping.toString(), null, null);
-            Input input = RmlToSparqlRewriteBuilder.processInput(TriplesMapRml2.class, rmlMapping.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
+            Input input = new RmlToSparqlRewriteBuilder().processInput(TriplesMapRml2.class, rmlMapping.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
             result = input.model();
         } catch (IOException e) {
             throw new RuntimeException(e);
