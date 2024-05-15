@@ -63,6 +63,9 @@ public class RmlToSparqlRewriteBuilder {
     protected boolean useSparqlIri = false;
     protected boolean useSparqlBnode = false;
 
+    protected boolean isValidationRml2Enabled = false;
+
+
     protected List<String> triplesMapIds = new ArrayList<>();
     // protected List<String> inputFiles = new ArrayList<>();
     protected List<RmlToSparqlRewriteBuilder.Input> modelAndBaseIriList = new ArrayList<>();
@@ -150,6 +153,22 @@ public class RmlToSparqlRewriteBuilder {
         return preDistinct;
     }
 
+    /**
+     * Enable validation for all subsequent RML files that are added to this builder.
+     * Already added RML files are not affected by this.
+     *
+     * @param isValidationRml2Enabled
+     * @return
+     */
+    public RmlToSparqlRewriteBuilder setValidationRml2Enabled(boolean isValidationRml2Enabled) {
+        this.isValidationRml2Enabled = isValidationRml2Enabled;
+        return this;
+    }
+
+    public boolean isValidationRml2Enabled() {
+        return isValidationRml2Enabled;
+    }
+
     public RmlToSparqlRewriteBuilder setPreDistinct(boolean preDistinct) {
         this.preDistinct = preDistinct;
         return this;
@@ -218,7 +237,18 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
-    public static Input processInput(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
+    public Input processInput(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
+        Input result = processInputCore(rmlTriplesMapClass, inputLabel, streamSupplier);
+
+        if (isValidationRml2Enabled) {
+            Model model = result.model();
+            RmlImporterLib.validateRml2(model);
+        }
+
+        return result;
+    }
+
+    public static Input processInputCore(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
 
         // Extract the base IRI needed to succeed on test cases such as RMLTC0020a-CSV and RMLTC0020b-CSV
         String base = null;
