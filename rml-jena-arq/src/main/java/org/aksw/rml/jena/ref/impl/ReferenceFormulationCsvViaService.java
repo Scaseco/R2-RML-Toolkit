@@ -14,6 +14,6 @@ public class ReferenceFormulationCsvViaService
     extends ReferenceFormulationJsonViaService {
     @Override
     public Expr reference(Var itemVar, String expr) {
-        return new E_Function(NorseJsonTerms.get, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
+        return new E_Function(NorseJsonTerms.getStrict, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
     }
 }
