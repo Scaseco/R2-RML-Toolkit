@@ -106,10 +106,16 @@ public class RmlSourceProcessorCsv
         Objects.requireNonNull(byteSource, "Could not create a byte source from the model");
         // Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
+        UnivocityCsvwConf csvwConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
-                .createDefault(true)
-                .configure(csvConf);
+                .createDefault(true);
+
+        parserFactory.getCsvSettings().setDelimiterDetectionEnabled(true, ',', ';', '|');
+
+        // FIXME Configuring from csvwConf may yet need to disable auto detection (delimiters, terminators, quotes)
+        //       if explicit values are provided via csvw
+        parserFactory.configure(csvwConf);
+
         QueryIterator result;
 
         // FIXME If the output var is bound to a constant then filter the source to that value
