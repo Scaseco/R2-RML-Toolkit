@@ -154,6 +154,15 @@ public class RmlTestCase
     }
 
     public Dataset execute(List<Entry<Query, String>> labeledQueries) {
+        Dataset result = execute(labeledQueries, rmlMappingDirectory, d2rqResolver);
+        return result;
+//    	Dataset result = DatasetFactory.create();
+//    	new SinkQuadsToDataset(true, ds);
+//    	execute(labele)
+    }
+
+    // FIXME Migrate to StringRDF rather than returning a Dataset directly
+    public static Dataset execute(List<Entry<Query, String>> labeledQueries, Path rmlMappingDirectory, Consumer<D2rqDatabase> d2rqResolver) {
         Model emptyModel = ModelFactory.createDefaultModel();
         Dataset actualDs = DatasetFactory.create();
 
@@ -170,7 +179,7 @@ public class RmlTestCase
                      .build()) {
 
                 logger.info("Begin of RDF data Contribution:");
-                StreamRDF sink = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS);
+                StreamRDF sink = StreamRDFWriter.getWriterStream(System.err, RDFFormat.TRIG_BLOCKS);
                 sink.start();
 
                 Iterator<Quad> it = qe.execConstructQuads();

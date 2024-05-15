@@ -187,6 +187,13 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
+    public RmlToSparqlRewriteBuilder addRmlPaths(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Collection<Path> rmlFiles) {
+        for (Path rmlFile : rmlFiles) {
+            addRmlFile(rmlTriplesMapClass, rmlFile);
+        }
+        return this;
+    }
+
     public RmlToSparqlRewriteBuilder addRmlFile(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String rmlFile) {
         // Model model = RDFDataMgr.loadModel(rmlFile);
         Input input = processInput(rmlTriplesMapClass, rmlFile, () -> AsyncParser.of(rmlFile).streamElements());

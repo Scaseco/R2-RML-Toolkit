@@ -136,6 +136,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.aksw.rmltk</groupId>
+				<artifactId>rml-testsuite-processor-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aksw.rmltk</groupId>
 				<artifactId>r2rml-jena-sql-transforms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
