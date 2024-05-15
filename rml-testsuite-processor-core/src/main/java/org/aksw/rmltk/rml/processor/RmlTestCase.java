@@ -1,5 +1,7 @@
 package org.aksw.rmltk.rml.processor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +18,7 @@ import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
+import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder.Input;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.jena.service.RmlSymbols;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
@@ -27,7 +30,10 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionDatasetBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.system.AsyncParser;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.sparql.core.Quad;
@@ -80,6 +86,18 @@ public class RmlTestCase
 
     public boolean isExpectedFailure() {
         return expectedFailure;
+    }
+
+    public Model loadModel() {
+        Model result;
+        try (InputStream in = Files.newInputStream(rmlMapping)) {
+            Lang lang = RDFDataMgr.determineLang(rmlMapping.toString(), null, null);
+            Input input = RmlToSparqlRewriteBuilder.processInput(TriplesMapRml2.class, rmlMapping.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
+            result = input.model();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override

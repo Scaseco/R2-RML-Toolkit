@@ -20,7 +20,6 @@ import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven.ExprTransformBNode
 import org.aksw.jena_sparql_api.sparql.ext.url.F_RmlIri.ExprTransformIriToRmlIri;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
-import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
@@ -51,7 +50,7 @@ import org.apache.jena.sparql.syntax.ElementSubQuery;
  */
 public class RmlToSparqlRewriteBuilder {
 
-    protected static record Input(String file, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, String baseIri) {}
+    public static record Input(String file, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, String baseIri) {}
 
     // protected List<String> fnmlFiles = new ArrayList<>();
     protected ReferenceFormulationService registry = null;

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.aksw.jenax.arq.util.node.RDFNodeMatcher;
 import org.aksw.jenax.arq.util.node.RDFNodeMatchers;
+import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.model.Rml;
@@ -36,6 +37,10 @@ public class RmlImporterLib {
     static {
         register(TriplesMapRml1.class, RDFNodeMatchers.matchSubjectsWithProperty(TriplesMapRml1.class, Rml.logicalSource));
         register(TriplesMapRml2.class, RDFNodeMatchers.matchSubjectsWithProperty(TriplesMapRml2.class, RML2.logicalSource));
+    }
+
+    public static void validateRml2Language(Model model) {
+        R2rmlImporterLib.validateLangTagsOfProperty(model, RML2.language);
     }
 
     /**

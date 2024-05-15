@@ -20,6 +20,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
@@ -34,7 +35,6 @@ import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrDatatype;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.apache.jena.vocabulary.XSD;
 
@@ -111,13 +111,17 @@ public class R2rmlImporterLib {
     }
 
     public static void validateR2rmlLanguage(Model model) {
+        validateLangTagsOfProperty(model, RR.language);
+    }
+
+    public static void validateLangTagsOfProperty(Model model, Property property) {
 //		Set<String> usedLangTags = model.listObjects()
 //			.filterKeep(RDFNode::isLiteral)
 //			.mapWith(RDFNode::asLiteral)
 //			.mapWith(Literal::getLanguage)
 //			.filterDrop(String::isEmpty)
 //			.toSet();
-        Set<String> usedLangTags = model.listObjectsOfProperty(RR.language)
+        Set<String> usedLangTags = model.listObjectsOfProperty(property)
                 .filterKeep(RDFNode::isLiteral)
                 .mapWith(RDFNode::asLiteral)
                 .mapWith(Literal::getLexicalForm)
