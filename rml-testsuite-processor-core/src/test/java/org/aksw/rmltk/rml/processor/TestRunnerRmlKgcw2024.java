@@ -8,16 +8,18 @@ import java.util.Map;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.quad.DatasetCmp;
 import org.aksw.jenax.arq.util.quad.DatasetCmp.Report;
-import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
 import org.aksw.rml.jena.impl.RmlImporterLib;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonStrViaService;
+import org.aksw.rml.jena.service.InitRmlService;
 import org.aksw.rml.v2.common.vocab.RmlIoTerms;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.resultset.ResultSetLang;
+import org.apache.jena.sparql.service.ServiceExecutorRegistry;
+import org.apache.jena.sys.JenaSystem;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,10 +53,14 @@ public class TestRunnerRmlKgcw2024 {
     public static Collection<Object[]> data()
             throws Exception
     {
+        JenaSystem.init();
+//        InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
+
         Path basePath = RmlTestCaseLister.toPath(resourceMgr, TestRunnerRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
 
         ReferenceFormulationRegistry rfRegistry = new ReferenceFormulationRegistry();
         ReferenceFormulationRegistry.registryDefaults(rfRegistry);
+
 
         // Override registration for JSON to *not* use natural mappings
         rfRegistry.put(RmlIoTerms.JSONPath, new ReferenceFormulationJsonStrViaService());
@@ -87,7 +93,7 @@ public class TestRunnerRmlKgcw2024 {
                 .orElse(null);
         try {
             Model rmlModel = testCase.loadModel();
-            RmlImporterLib.validateRml2Language(rmlModel);
+            RmlImporterLib.validateRml2(rmlModel);
 
             Dataset actualDs = testCase.call();
 

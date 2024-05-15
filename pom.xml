@@ -33,6 +33,7 @@
 		<module>rml2-common-vocab</module>
 		<module>rml2-jena-vocab</module>
 		<module>rml2-jena-api</module>
+		<module>rml2-resource-shacl</module>
 
 		<module>rmlx-jena-api</module>
 

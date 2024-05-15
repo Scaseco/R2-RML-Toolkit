@@ -42,7 +42,8 @@
 			<groupId>org.aksw.commons</groupId>
 			<artifactId>aksw-commons-models-csvw-univocity</artifactId>
 		</dependency>
-		<!-- Needed for JenaUrlUtils ; that class should better go to jenax-arq-utils -->
+		<!-- Needed for JenaUrlUtils ; that class should better go to
+		jenax-arq-utils -->
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-arq-plugins-bundle</artifactId>
@@ -105,11 +106,11 @@
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-models-d2rq</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>rml-jena-common</artifactId>
-		</dependency>		
+		</dependency>
 
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
@@ -119,6 +120,11 @@
 		<dependency>
 			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>rmlx-jena-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.rmltk</groupId>
+			<artifactId>rml2-resource-shacl</artifactId>
 		</dependency>
 	</dependencies>
 </project>
