@@ -13,6 +13,7 @@ import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.ref.impl.ReferenceFormulationJsonStrViaService;
 import org.aksw.rml.jena.service.InitRmlService;
 import org.aksw.rml.v2.common.vocab.RmlIoTerms;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -120,6 +121,7 @@ public class TestRunnerRmlKgcw2024 {
 
         } catch (Exception e) {
             if (testCase.isExpectedFailure()) {
+                logger.error("Expected failure: " + ExceptionUtils.getRootCauseMessage(e));
                 // Ignore
             } else {
                 throw new RuntimeException(e);
