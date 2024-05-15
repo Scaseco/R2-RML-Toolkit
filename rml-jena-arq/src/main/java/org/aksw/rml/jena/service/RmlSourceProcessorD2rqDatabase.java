@@ -13,8 +13,9 @@ import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.commons.util.obj.ObjectUtils;
-import org.aksw.jena_sparql_api.sparql.ext.binding.NodeValueBinding;
+import org.aksw.jena_sparql_api.sparql.ext.nodemap.NodeValueNodeMap;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
+import org.aksw.jenax.arq.util.node.NodeMap;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.jenax.reprogen.util.Skolemize;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
@@ -149,7 +150,7 @@ public class RmlSourceProcessorD2rqDatabase
         // Connection conn = dataSource.getConnection();
 
         NodeMapper nodeMapper = null; // create on demand TODO This is hacky
-        IteratorCloseable<Binding> it;
+        IteratorCloseable<NodeMap> it;
         try {
             it = R2rmlJdbcUtils.processR2rml(dataSource, logicalTable, nodeMapper, sqlCodec);
         } catch (SQLException e) {
@@ -158,7 +159,8 @@ public class RmlSourceProcessorD2rqDatabase
 
         Iter<Binding> it2 = Iter.iter(it).map(b -> {
             // Binding bb = BindingFactory.copy(b); // The binding is just a view over the SQL result set - better copy
-            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(b).asNode());
+            // Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(b).asNode());
+            Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueNodeMap(b).asNode());
             return r;
         });
 

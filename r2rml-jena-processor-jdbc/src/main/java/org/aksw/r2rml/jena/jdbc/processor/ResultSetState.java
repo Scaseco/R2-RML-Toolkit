@@ -3,12 +3,15 @@ package org.aksw.r2rml.jena.jdbc.processor;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.aksw.jenax.arq.util.node.NodeMap;
+import org.aksw.jenax.arq.util.node.NodeMapImpl;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.apache.jena.atlas.iterator.Iter;
@@ -43,8 +46,8 @@ public class ResultSetState {
         for (int i = 1; i <= n; i++) {
             // String colNameRaw = metaData.getColumnName(i);
             String colNameRaw = metaData.getColumnLabel(i);
-            String colName = VarUtils.safeVarName(colNameRaw);
-            Var colVar = Var.alloc(colName);
+            // String colName = VarUtils.safeVarName(colNameRaw);
+            Var colVar = Var.alloc(colNameRaw);
             varToIdx.put(colVar, i);
         }
     }
@@ -79,6 +82,16 @@ public class ResultSetState {
     public boolean containsVarInternal(Var var) {
         boolean result = varToIdx.get(var) != null;
         return result;
+    }
+
+    public NodeMap toNodeMap() {
+        Map<String, Node> map = new LinkedHashMap<>();
+        for (Var var : getVarsIternal()) {
+            String k = var.getName();
+            Node v = getNode(var);
+            map.put(k, v);
+        }
+        return new NodeMapImpl(Collections.unmodifiableMap(map));
     }
 
     /** Returns true if the variable's value is bound */

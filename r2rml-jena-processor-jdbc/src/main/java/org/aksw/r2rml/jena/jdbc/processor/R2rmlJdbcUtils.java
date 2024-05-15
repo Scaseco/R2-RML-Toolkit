@@ -11,13 +11,13 @@ import javax.sql.DataSource;
 
 import org.aksw.commons.codec.entity.api.EntityCodec;
 import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.jenax.arq.util.node.NodeMap;
 import org.aksw.r2rml.jena.jdbc.api.NodeMapper;
 import org.aksw.r2rml.jena.jdbc.impl.SqlTypeMapper;
 import org.aksw.r2rml.jena.jdbc.util.JdbcUtils;
 import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.IteratorCloseable;
-import org.apache.jena.sparql.engine.binding.Binding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +25,10 @@ public class R2rmlJdbcUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(R2rmlJdbcUtils.class);
 
-    public static IteratorCloseable<Binding> processR2rml(DataSource dataSource, LogicalTable logicalTable,
+    public static IteratorCloseable<NodeMap> processR2rml(DataSource dataSource, LogicalTable logicalTable,
             NodeMapper nodeMapper, SqlCodec sqlCodec) throws SQLException {
         Connection conn = dataSource.getConnection();
-        IteratorCloseable<Binding> it = processR2rml(conn, logicalTable, nodeMapper, sqlCodec);
+        IteratorCloseable<NodeMap> it = processR2rml(conn, logicalTable, nodeMapper, sqlCodec);
         return Iter.onCloseIO(it, () -> {
             try {
                 conn.close();
@@ -59,7 +59,7 @@ public class R2rmlJdbcUtils {
         return result;
     }
 
-    public static IteratorCloseable<Binding> processR2rml(Connection conn, LogicalTable logicalTable,
+    public static IteratorCloseable<NodeMap> processR2rml(Connection conn, LogicalTable logicalTable,
             NodeMapper nodeMapper, SqlCodec sqlCodec) throws SQLException {
 
         String sqlQuery;
@@ -86,7 +86,8 @@ public class R2rmlJdbcUtils {
         }
 
         ResultSetState state = new ResultSetState(rs, rsmd, 0, nodeMapper);
-        IteratorJdbcBinding result = new IteratorJdbcBinding(stmt, state);
+        // IteratorJdbcBinding result = new IteratorJdbcBinding(stmt, state);
+        IteratorCloseable<NodeMap> result = IteratorJdbcBinding.forNodeMap(stmt, state);
         return result;
     }
 }
