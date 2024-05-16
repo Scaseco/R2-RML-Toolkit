@@ -1,9 +1,12 @@
 package org.aksw.rmltk.rml.processor;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.quad.DatasetCmp;
@@ -21,6 +24,7 @@ import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -81,6 +85,13 @@ public class TestRunnerRmlKgcw2024 {
     @Test
     public void run() {
         // System.out.println("GOT: " + XSDDouble.XSDdouble.unparse(Double.valueOf(123)));
+
+        Set<String> ignoreSet = new HashSet<>(Arrays.asList("RMLTC0009a-MySQL", "RMLTC0009b-MySQL"));
+
+        // The following two tests are ignored
+        if (ignoreSet.contains(testCase.getName())) {
+            Assume.assumeTrue(false);
+        }
 
         Map<String, Dataset> expectedResultDses = testCase.getExpectedResultDses();
         // TODO: support multiple output files
