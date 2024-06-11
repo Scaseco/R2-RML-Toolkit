@@ -1,6 +1,6 @@
 package org.aksw.rmlx.model;
 
-import org.aksw.jenax.norse.NorseTerms;
+import org.aksw.jenax.norse.term.core.NorseTerms;
 
 /** Terms for the norse extensions of RML */
 public class NorseRmlTerms {

@@ -2,7 +2,7 @@ package org.aksw.rml.jena.ref.impl;
 
 import java.util.Arrays;
 
-import org.aksw.jena_sparql_api.sparql.ext.nodemap.NorseTermsNodeMap;
+import org.aksw.jenax.norse.term.rdf.NorseTermsNodeMap;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
@@ -22,6 +22,6 @@ public class ReferenceFormulationRdbViaService
 
     @Override
     public Expr reference(Var itemVar, String expr) {
-        return new E_Function(NorseTermsNodeMap.strictGet, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
+        return new E_Function(NorseTermsNodeMap.getStrict, ExprList.create(Arrays.asList(new ExprVar(itemVar), NodeValue.makeString(expr))));
     }
 }
