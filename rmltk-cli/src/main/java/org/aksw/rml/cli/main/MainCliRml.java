@@ -8,6 +8,6 @@ public class MainCliRml {
     static { DerbyUtils.disableDerbyLog(); } // Seems to come from Jena GeoSPARQL
 
     public static void main(String[] args) {
-        CmdUtils.callCmdObject(new CmdRmlTkParent(), args);
+        CmdUtils.execCmd(CmdRmlTkParent.class, args);
     }
 }
