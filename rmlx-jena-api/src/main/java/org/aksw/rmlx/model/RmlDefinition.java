@@ -13,7 +13,7 @@ public interface RmlDefinition
     /**
      * An RML reference (expression) string which to alias by the label
      */
-    @Iri(NorseRmlTerms.definition)
+    @Iri(RmlXTerms.definition)
     String getDefinition();
     RmlDefinition setDefinition(String definition);
 }

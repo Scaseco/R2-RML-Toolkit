@@ -22,6 +22,7 @@ public interface TermSpec
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsRefObjectMap() {
         return hasProperty(RR.parentTriplesMap);
     }
@@ -32,6 +33,7 @@ public interface TermSpec
      *
      * @return
      */
+    @Override
     default RefObjectMap asRefObjectMap() {
         return as(RefObjectMap.class);
     }
@@ -42,6 +44,7 @@ public interface TermSpec
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsTermMap() {
         return hasProperty(RR.constant) || hasProperty(RR.column) || hasProperty(RR.template);
     }
@@ -52,6 +55,7 @@ public interface TermSpec
      *
      * @return
      */
+    @Override
     default TermMap asTermMap() {
         return as(TermMap.class);
     }

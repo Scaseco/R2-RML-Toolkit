@@ -15,7 +15,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 
 public interface PredicateObjectMapRml1
@@ -37,14 +36,6 @@ public interface PredicateObjectMapRml1
     @Iri(R2rmlTerms.objectMap)
     @Override Set<IObjectMapType> getObjectMaps();
 
-
-    default IObjectMapType getObjectMap() {
-        Set<IObjectMapType> oms = getObjectMaps();
-        Preconditions.checkState(oms.size() <= 1);
-        IObjectMapType result = oms.isEmpty() ? null : oms.iterator().next();
-        return result;
-    }
-
     /** Shorthands for constant objects */
     @Iri(R2rmlTerms.object)
     @Override Set<RDFNode> getObjects();
@@ -63,11 +54,6 @@ public interface PredicateObjectMapRml1
     @IriType
     @Override Set<String> getPredicateIris();
 
-    @Override
-    default String getPredicateIri() {
-        return Iterables.getOnlyElement(getPredicateIris(), null);
-    }
-
     /** Shorthands for constant graphs as strings */
     @Iri(R2rmlTerms.graph)
     @IriType
@@ -79,6 +65,7 @@ public interface PredicateObjectMapRml1
      *
      * @return
      */
+    @Override
     default PredicateMap addNewPredicateMap() {
         PredicateMap result = getModel().createResource().as(PredicateMap.class);
         getPredicateMaps().add(result);
@@ -91,6 +78,7 @@ public interface PredicateObjectMapRml1
      *
      * @return
      */
+    @Override
     default ObjectMap addNewObjectMap() {
         ObjectMap result = getModel().createResource().as(ObjectMap.class);
         getObjectMaps().add(result);
@@ -102,6 +90,7 @@ public interface PredicateObjectMapRml1
      *
      * @return
      */
+    @Override
     default RefObjectMapRml1 addNewRefObjectMap() {
         RefObjectMapRml1 result = getModel().createResource().as(RefObjectMapRml1.class);
         getObjectMaps().add(result);
@@ -119,40 +108,49 @@ public interface PredicateObjectMapRml1
 //	}
 
 
+    @Override
     default PredicateObjectMapRml1 addPredicate(String iri) {
         return addPredicate(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml1 addPredicate(Node node) {
         return addPredicate(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml1 addPredicate(Resource resource) {
         getPredicates().add(resource);
         return this;
     }
 
+    @Override
     default PredicateObjectMapRml1 addObject(String iri) {
         return addObject(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml1 addObject(Node node) {
         return addObject(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml1 addObject(Resource resource) {
         getObjects().add(resource);
         return this;
     }
 
+    @Override
     default PredicateObjectMapRml1 addGraph(String iri) {
         return addGraph(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMapRml1 addGraph(Node node) {
         return addGraph(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMapRml1 addGraph(Resource resource) {
         getGraphs().add(resource);
         return this;

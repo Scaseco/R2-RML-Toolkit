@@ -4,9 +4,6 @@ package org.aksw.r2rml.common.vocab;
  * The terms of the R2RML vocabulary as strings.
  * The Jena adaption is the class {@link org.aksw.r2rml.jena.vocab.RR} in the r2rm-jena-vocab module
  *
- *
- * TODO Rename to R2RMLTerms
- *
  * @author sherif
  * @author Claus Stadler
  *

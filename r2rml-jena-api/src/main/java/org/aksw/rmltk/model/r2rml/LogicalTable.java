@@ -2,7 +2,6 @@ package org.aksw.rmltk.model.r2rml;
 
 import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.aksw.r2rml.jena.vocab.RR;
-import org.aksw.rmltk.model.backbone.common.IAbstractSource;
 import org.aksw.rmltk.model.backbone.r2rml.ILogicalTableR2rml;
 
 /**
@@ -12,10 +11,7 @@ import org.aksw.rmltk.model.backbone.r2rml.ILogicalTableR2rml;
  * {@link org.aksw.PlainLogicalTable.domain.api.LogicalTable}, deriving from it should be
  * safe.
  *
- *
- *
  * @author raven Apr 1, 2018
- *
  */
 @ResourceView
 public interface LogicalTable
@@ -27,6 +23,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsBaseTableOrView() {
         return hasProperty(RR.tableName);
     }
@@ -37,6 +34,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default BaseTableOrView asBaseTableOrView() {
         return as(BaseTableOrView.class);
     }
@@ -47,6 +45,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default boolean qualifiesAsR2rmlView() {
         return hasProperty(RR.sqlQuery);
     }
@@ -57,6 +56,7 @@ public interface LogicalTable
      *
      * @return
      */
+    @Override
     default R2rmlView asR2rmlView() {
         return as(R2rmlView.class);
     }

@@ -9,6 +9,8 @@ import org.aksw.rmltk.model.backbone.common.ISubjectMap;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.rdf.model.Resource;
 
+
+
 public interface TriplesMapRml2
     extends ITriplesMapRml, MappingComponentRml2
 {

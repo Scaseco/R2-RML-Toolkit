@@ -14,11 +14,11 @@ public interface R2rmlView
     extends IR2rmlView, LogicalTable
 {
     @Iri(R2rmlTerms.sqlQuery)
-    String getSqlQuery();
-    R2rmlView setSqlQuery(String queryString);
+    @Override String getSqlQuery();
+    @Override R2rmlView setSqlQuery(String queryString);
 
     @Iri(R2rmlTerms.sqlVersion)
-    Set<Resource> getSqlVersions();
+    @Override Set<Resource> getSqlVersions();
 
     /**
      * Convenience view of the resource IRIs as strings
@@ -27,5 +27,5 @@ public interface R2rmlView
      */
     @Iri(R2rmlTerms.sqlVersion)
     @IriType
-    Set<String> getSqlVersionIris();
+    @Override Set<String> getSqlVersionIris();
 }

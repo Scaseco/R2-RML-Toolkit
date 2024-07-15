@@ -2,7 +2,7 @@ package org.aksw.rml.jena.ref.impl;
 
 import java.util.Arrays;
 
-import org.aksw.jena_sparql_api.sparql.ext.json.NorseJsonTerms;
+import org.aksw.jenax.norse.term.json.NorseTermsJson;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
@@ -23,7 +23,7 @@ public class ReferenceFormulationJsonViaService
             column = "$['" + expr.replaceAll("'", "\\'") + "']";
         }
         return new E_Function(
-                NorseJsonTerms.path,
+                NorseTermsJson.path,
                 ExprList.create(Arrays.asList(
                         new ExprVar(itemVar),
                         NodeValue.makeString(column))

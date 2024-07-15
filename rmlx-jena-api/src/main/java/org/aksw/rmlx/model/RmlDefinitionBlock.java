@@ -10,14 +10,14 @@ import org.aksw.jenax.model.shacl.domain.ShHasPrefixes;
 public interface RmlDefinitionBlock
     extends ShHasPrefixes
 {
-    @Iri(NorseRmlTerms.alias)
+    @Iri(RmlXTerms.alias)
     Set<RmlAlias> getAliases();
 
-    @Iri(NorseRmlTerms.bind)
+    @Iri(RmlXTerms.bind)
     Set<String> getBinds();
 
     /** A more verbose variant of bind */
-    @Iri(NorseRmlTerms.qualifiedBind)
+    @Iri(RmlXTerms.qualifiedBind)
     Set<RmlQualifiedBind> getQualifiedBinds();
 
     /**
@@ -30,6 +30,6 @@ public interface RmlDefinitionBlock
      * The expression can make use of any alias (or column in the case of tabular data).
      * A term map can introduce 'local' aliases for use in filters.
      */
-    @Iri(NorseRmlTerms.filter)
+    @Iri(RmlXTerms.filter)
     Set<String> getFilters();
 }

@@ -22,11 +22,11 @@ public interface TriplesMap
     @Iri(R2rmlTerms.subject)
     @IriType
     @Override String getSubjectIri();
-    @Override  TriplesMap setSubjectIri(String subjectIri);
+    @Override TriplesMap setSubjectIri(String subjectIri);
 
     @Iri(R2rmlTerms.subjectMap)
-    @Override  SubjectMap getSubjectMap();
-    @Override  TriplesMap setSubjectMap(ISubjectMap subjectMap);
+    @Override SubjectMap getSubjectMap();
+    @Override TriplesMap setSubjectMap(ISubjectMap subjectMap);
 
     @Iri(R2rmlTerms.predicateObjectMap)
     @Override Set<PredicateObjectMap> getPredicateObjectMaps();

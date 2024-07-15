@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
-import org.aksw.rmlx.model.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -27,7 +27,7 @@ public abstract class ReferenceFormulationViaServiceBase
 
         // Replace the logical source with a constant in order to make
         // equality checks easier
-        Node s = NodeFactory.createURI(NorseRmlTerms.RML_SOURCE_SERVICE_IRI);
+        Node s = NodeFactory.createURI(RmlXTerms.RML_SOURCE_SERVICE_IRI);
 
         // TODO Include database config if present
         RDFNode source = logicalSource.getSource();
@@ -37,8 +37,8 @@ public abstract class ReferenceFormulationViaServiceBase
         logicalSource.listProperties()
             .mapWith(t -> Triple.create(s, t.getPredicate().asNode(), addObject(t.getObject(), bgp::add)))
             .forEach(bgp::add);
-        bgp.add(Triple.create(s, NodeFactory.createURI(NorseRmlTerms.output), sourceVar));
-        ElementService result = new ElementService(NorseRmlTerms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
+        bgp.add(Triple.create(s, NodeFactory.createURI(RmlXTerms.output), sourceVar));
+        ElementService result = new ElementService(RmlXTerms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
         return result;
     }
 

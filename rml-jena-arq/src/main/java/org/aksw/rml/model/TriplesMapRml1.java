@@ -26,11 +26,11 @@ public interface TriplesMapRml1
     @Iri(R2rmlTerms.subject)
     @IriType
     @Override String getSubjectIri();
-    @Override  TriplesMapRml1 setSubjectIri(String subjectIri);
+    @Override TriplesMapRml1 setSubjectIri(String subjectIri);
 
     @Iri(R2rmlTerms.subjectMap)
-    @Override  SubjectMap getSubjectMap();
-    @Override  TriplesMapRml1 setSubjectMap(ISubjectMap subjectMap);
+    @Override SubjectMap getSubjectMap();
+    @Override TriplesMapRml1 setSubjectMap(ISubjectMap subjectMap);
 
     @Iri(R2rmlTerms.predicateObjectMap)
     @Override Set<PredicateObjectMapRml1> getPredicateObjectMaps();

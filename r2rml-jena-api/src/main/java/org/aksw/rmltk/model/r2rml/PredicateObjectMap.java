@@ -35,7 +35,7 @@ public interface PredicateObjectMap
     @Iri(R2rmlTerms.objectMap)
     @Override Set<ObjectMapType> getObjectMaps();
 
-
+    @Override
     default ObjectMapType getObjectMap() {
         Set<ObjectMapType> oms = getObjectMaps();
         Preconditions.checkState(oms.size() <= 1);
@@ -77,6 +77,7 @@ public interface PredicateObjectMap
      *
      * @return
      */
+    @Override
     default PredicateMap addNewPredicateMap() {
         PredicateMap result = getModel().createResource().as(PredicateMap.class);
         getPredicateMaps().add(result);
@@ -89,6 +90,7 @@ public interface PredicateObjectMap
      *
      * @return
      */
+    @Override
     default ObjectMap addNewObjectMap() {
         ObjectMap result = getModel().createResource().as(ObjectMap.class);
         getObjectMaps().add(result);
@@ -100,6 +102,7 @@ public interface PredicateObjectMap
      *
      * @return
      */
+    @Override
     default RefObjectMap addNewRefObjectMap() {
         RefObjectMap result = getModel().createResource().as(RefObjectMap.class);
         getObjectMaps().add(result);
@@ -117,40 +120,49 @@ public interface PredicateObjectMap
 //	}
 
 
+    @Override
     default PredicateObjectMap addPredicate(String iri) {
         return addPredicate(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMap addPredicate(Node node) {
         return addPredicate(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMap addPredicate(Resource resource) {
         getPredicates().add(resource);
         return this;
     }
 
+    @Override
     default PredicateObjectMap addObject(String iri) {
         return addObject(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMap addObject(Node node) {
         return addObject(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMap addObject(Resource resource) {
         getObjects().add(resource);
         return this;
     }
 
+    @Override
     default PredicateObjectMap addGraph(String iri) {
         return addGraph(NodeFactory.createURI(iri));
     }
 
+    @Override
     default PredicateObjectMap addGraph(Node node) {
         return addGraph(getModel().wrapAsResource(node));
     }
 
+    @Override
     default PredicateObjectMap addGraph(Resource resource) {
         getGraphs().add(resource);
         return this;

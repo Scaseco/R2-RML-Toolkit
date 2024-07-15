@@ -37,7 +37,7 @@ import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
 import org.aksw.rmltk.model.backbone.common.ITermSpec;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
-import org.aksw.rmlx.model.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -216,7 +216,7 @@ public class RmlLib {
 //    }
 
     public static boolean isRmlServiceNode(Node node) {
-        boolean result = node != null && node.isURI() && NorseRmlTerms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
+        boolean result = node != null && node.isURI() && RmlXTerms.RML_SOURCE_SERVICE_IRI.equals(node.getURI());
         return result;
     }
 

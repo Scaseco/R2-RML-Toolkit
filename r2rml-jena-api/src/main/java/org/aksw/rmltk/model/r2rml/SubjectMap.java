@@ -19,5 +19,5 @@ public interface SubjectMap
      * @return
      */
     @Iri(R2rmlTerms.xclass)
-    Set<Resource> getClasses();
+    @Override Set<Resource> getClasses();
 }

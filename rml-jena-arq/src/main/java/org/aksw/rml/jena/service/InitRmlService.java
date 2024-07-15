@@ -23,7 +23,7 @@ import org.aksw.rml.rso.model.SourceOutput;
 import org.aksw.rml.v2.common.vocab.RmlIoTerms;
 import org.aksw.rml.v2.io.RelativePathSource;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
-import org.aksw.rmlx.model.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -60,7 +60,7 @@ public class InitRmlService {
         registry.addSingleLink((opExecute, opOriginal, binding, execCxt, chain) -> {
             QueryIterator r;
             Node serviceNode = opExecute.getService();
-            if (serviceNode.isURI() && serviceNode.getURI().equals(NorseRmlTerms.RML_SOURCE_SERVICE_IRI)) {
+            if (serviceNode.isURI() && serviceNode.getURI().equals(RmlXTerms.RML_SOURCE_SERVICE_IRI)) {
                 Op subOp = opExecute.getSubOp();
                 Query query = OpAsQuery.asQuery(subOp);
                 Element elt = query.getQueryPattern();

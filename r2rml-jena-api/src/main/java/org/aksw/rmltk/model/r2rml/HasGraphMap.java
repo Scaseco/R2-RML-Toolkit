@@ -19,12 +19,13 @@ public interface HasGraphMap
     extends IHasGraphMap //, IGraphMap
 {
     @Iri(R2rmlTerms.graphMap)
-    Set<GraphMap> getGraphMaps();
+    @Override Set<GraphMap> getGraphMaps();
 
 
     @Iri(R2rmlTerms.graph)
-    Set<Resource> getGraphs();
+    @Override Set<Resource> getGraphs();
 
+    @Override
     default GraphMap addNewGraphMap() {
         GraphMap result = getModel().createResource().as(GraphMap.class);
         getGraphMaps().add(result);

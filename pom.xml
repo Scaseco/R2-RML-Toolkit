@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.aksw.rmltk</groupId>
 		<artifactId>rmltk-bom</artifactId>
-		<version>5.1.0-1-SNAPSHOT</version>
+		<version>5.2.0-1-SNAPSHOT</version>
 		<relativePath>rmltk-bom</relativePath>
 	</parent>
 	<artifactId>rmltk-parent</artifactId>
@@ -25,6 +25,8 @@
 		<module>r2rml-jena-sql-transforms</module>
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
+		
+		<module>rml1-resource-testsuite</module>
 
 		<module>rml-resource-testsuite-kgcw2024</module>
 		<module>rml-testsuite-processor-core</module>

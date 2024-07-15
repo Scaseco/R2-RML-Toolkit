@@ -4,7 +4,7 @@ import org.aksw.fno.model.Fno;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.aksw.rml.jena.impl.ReferenceFormulation;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
-import org.aksw.rmlx.model.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -28,7 +28,7 @@ public class ReferenceFormulationTarql
 
         // Replace the logical source with a constant in order to make
         // equality checks easier
-        Node s = NodeFactory.createURI(NorseRmlTerms.RML_SOURCE_SERVICE_IRI);
+        Node s = NodeFactory.createURI(RmlXTerms.RML_SOURCE_SERVICE_IRI);
 
         // Only add the immediate triples
         logicalSource.listProperties()
@@ -37,7 +37,7 @@ public class ReferenceFormulationTarql
             .forEach(bgp::add);
         // GraphUtil.findAll(logicalSource.getModel().getGraph()).forEach(bgp::add);
         bgp.add(Triple.create(s, Fno.returns.asNode(), sourceVar));
-        ElementService result = new ElementService(NorseRmlTerms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
+        ElementService result = new ElementService(RmlXTerms.RML_SOURCE_SERVICE_IRI, new ElementTriplesBlock(bgp));
         return result;
     }
 

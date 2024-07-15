@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.aksw.jenax.annotation.reprogen.Iri;
-import org.aksw.rmlx.model.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
@@ -29,7 +29,7 @@ import org.apache.jena.sparql.core.Var;
 public interface SourceOutput
     extends Resource
 {
-    @Iri(NorseRmlTerms.output)
+    @Iri(RmlXTerms.output)
     SourceOutput setOutput(Resource output);
     Resource getOutput();
 
@@ -43,7 +43,7 @@ public interface SourceOutput
         return result;
     }
 
-    @Iri(NorseRmlTerms.output)
+    @Iri(RmlXTerms.output)
     List<Node> getOutputs();
 
     default List<Var> getOutputVars() {

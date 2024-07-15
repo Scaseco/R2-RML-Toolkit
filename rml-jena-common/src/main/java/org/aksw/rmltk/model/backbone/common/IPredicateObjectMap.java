@@ -8,6 +8,9 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+
 @ResourceView
 public interface IPredicateObjectMap
     extends IMappingComponent, IHasGraphMap
@@ -24,8 +27,12 @@ public interface IPredicateObjectMap
      */
     Set<? extends IObjectMapType> getObjectMaps();
 
-
-    IObjectMapType getObjectMap();
+    default IObjectMapType getObjectMap() {
+        Set<? extends IObjectMapType> oms = getObjectMaps();
+        Preconditions.checkState(oms.size() <= 1);
+        IObjectMapType result = oms.isEmpty() ? null : oms.iterator().next();
+        return result;
+    }
 
     /** Shorthands for constant objects */
     Set<RDFNode> getObjects();
@@ -39,7 +46,10 @@ public interface IPredicateObjectMap
     /** Shorthands for constant predicates as strings */
     Set<String> getPredicateIris();
 
-    String getPredicateIri();
+    default String getPredicateIri() {
+        return Iterables.getOnlyElement(getPredicateIris(), null);
+    }
+
 
     /** Shorthands for constant graphs as strings */
     Set<Resource> getGraphIris();
