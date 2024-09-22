@@ -16,10 +16,6 @@ import org.aksw.rml.model.RefObjectMapRml1;
 import org.aksw.rml.model.TermMapRml1;
 import org.aksw.rml.model.TermSpecRml1;
 import org.aksw.rml.model.TriplesMapRml1;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
@@ -79,9 +75,6 @@ public class JenaPluginRml1
 //            RefObjectMap.class,
 //            JoinCondition.class
         );
-
-//        Resource x = ModelFactory.createDefaultModel().createResource().as(ObjectMapTypeRml1.class).asTermMap().setColumn("test");
-//        RDFDataMgr.write(System.out, x.getModel(), RDFFormat.TURTLE);
 
         InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
     }

@@ -70,7 +70,9 @@ public class RmlSourceProcessorCsv
         String[] nullValues = null;
         if (source.isLiteral()) {
             sourceDoc = logicalSource.getSourceAsString();
-        } else {
+        } else { // source is a resource
+            // First try to interpret the source as a CSVW model
+            // If that fails then try to interpret as RML2
             Table csvwtSource = source.as(Table.class);
 
             Dialect dialect = csvwtSource.getDialect();
@@ -84,25 +86,29 @@ public class RmlSourceProcessorCsv
             sourceDoc = csvwtSource.getUrl();
 
             // Try RML 2
-            if (sourceDoc != null) {
-                byteSource = new ByteSource() {
-                    @Override
-                    public InputStream openStream() throws IOException {
-                        try {
-                            return JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                };
-            } else {
+            if (sourceDoc == null) {
                 RelativePathSource rps = csvwtSource.as(RelativePathSource.class);
                 if (rps.getPath() != null) {
                     byteSource = InitRmlService.asByteSource(rps, execCxt);
                 }
-                //LogicalTable logicalTable = toLogicalTable(logicalSource);
             }
         }
+
+        if (sourceDoc != null && byteSource == null) {
+            //LogicalTable logicalTable = toLogicalTable(logicalSource);
+            byteSource = new ByteSource() {
+                @Override
+                public InputStream openStream() throws IOException {
+                    try {
+                        return JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        }
+
+
         Objects.requireNonNull(byteSource, "Could not create a byte source from the model");
         // Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
