@@ -17,5 +17,6 @@ public interface IObjectMapType
      *
      * @return
      */
+    @Override
     IObjectMap asTermMap();
 }

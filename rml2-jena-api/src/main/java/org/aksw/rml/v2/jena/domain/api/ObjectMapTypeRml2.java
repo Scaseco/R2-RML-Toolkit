@@ -1,7 +1,7 @@
 package org.aksw.rml.v2.jena.domain.api;
 
 import org.aksw.jenax.annotation.reprogen.ResourceView;
-import org.aksw.rmltk.model.backbone.common.IObjectMapType;
+import org.aksw.rmltk.model.backbone.rml.IObjectMapTypeRml;
 
 
 /**
@@ -14,7 +14,8 @@ import org.aksw.rmltk.model.backbone.common.IObjectMapType;
  */
 @ResourceView
 public interface ObjectMapTypeRml2
-    extends IObjectMapType, TermSpecRml2
+    extends IObjectMapTypeRml, TermSpecRml2
+    // extends IObjectMapType, TermSpecRml2
 {
     /**
      * Obtain an ObjectMap view of this resource.

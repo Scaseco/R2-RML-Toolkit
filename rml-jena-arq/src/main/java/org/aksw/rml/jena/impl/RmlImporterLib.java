@@ -1,5 +1,6 @@
 package org.aksw.rml.jena.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -118,7 +119,8 @@ public class RmlImporterLib {
     }
 
     public static TriplesMapToSparqlMapping read(ITriplesMapRml tm, Model fnmlModel, ReferenceFormulationService registry) {
-        TriplesMapToSparqlMapping result = new TriplesMapProcessorRml(tm, null, fnmlModel, registry).call();
+        TriplesMapProcessorRml processor = new TriplesMapProcessorRml(tm, null, fnmlModel, registry);
+        TriplesMapToSparqlMapping result = processor.call();
         return result;
     }
 
@@ -169,15 +171,15 @@ public class RmlImporterLib {
 //		}
 
 
-        List<TriplesMapToSparqlMapping> result = triplesMaps.stream()
-                .map(tm -> read(tm, fnmlModel, registry))
-                .collect(Collectors.toList());
+//        List<TriplesMapToSparqlMapping> result = triplesMaps.stream()
+//                .map(tm -> read(tm, fnmlModel, registry))
+//                .collect(Collectors.toList());
 
-//        List<TriplesMapToSparqlMapping> result = new ArrayList<>(triplesMaps.size());
-//        for (ITriplesMapRml triplesMap : triplesMaps) {
-//            TriplesMapToSparqlMapping contrib = read(triplesMap, fnmlModel);
-//            result.add(contrib);
-//        }
+        List<TriplesMapToSparqlMapping> result = new ArrayList<>(triplesMaps.size());
+        for (ITriplesMapRml triplesMap : triplesMaps) {
+            TriplesMapToSparqlMapping contrib = read(triplesMap, fnmlModel, registry);
+            result.add(contrib);
+        }
 
         return result;
     }

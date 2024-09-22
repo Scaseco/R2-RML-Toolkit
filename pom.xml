@@ -29,6 +29,7 @@
 		<module>rml1-resource-testsuite</module>
 
 		<module>rml-resource-testsuite-kgcw2024</module>
+		<module>rml-resource-gtfs-madrid-bench-1</module>
 		<module>rml-testsuite-processor-core</module>
 		<module>rml-jena-common</module>
 

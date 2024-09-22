@@ -56,8 +56,7 @@ public class TestRunnerRmlKgcw2024 {
     {
         JenaSystem.init();
 //        InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
-
-        Path basePath = RmlTestCaseLister.toPath(resourceMgr, TestRunnerRmlKgcw2024.class.getResource("/kgcw/2024/track1").toURI());
+        Path basePath = ResourceMgr.toPath(resourceMgr, TestRunnerRmlKgcw2024.class, "/kgcw/2024/track1");
 
         ReferenceFormulationRegistry rfRegistry = new ReferenceFormulationRegistry();
         ReferenceFormulationRegistry.registryDefaults(rfRegistry);

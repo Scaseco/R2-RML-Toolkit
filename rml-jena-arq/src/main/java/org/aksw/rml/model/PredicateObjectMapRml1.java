@@ -5,10 +5,8 @@ import java.util.Set;
 import org.aksw.jenax.annotation.reprogen.Iri;
 import org.aksw.jenax.annotation.reprogen.IriType;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
-import org.aksw.rmltk.model.backbone.common.IObjectMapType;
 import org.aksw.rmltk.model.backbone.common.IPredicateObjectMap;
 import org.aksw.rmltk.model.r2rml.HasGraphMap;
-import org.aksw.rmltk.model.r2rml.ObjectMap;
 import org.aksw.rmltk.model.r2rml.PredicateMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -34,7 +32,7 @@ public interface PredicateObjectMapRml1
      * @return A mutable set view of the object map types. Never null.
      */
     @Iri(R2rmlTerms.objectMap)
-    @Override Set<IObjectMapType> getObjectMaps();
+    @Override Set<ObjectMapTypeRml1> getObjectMaps();
 
     /** Shorthands for constant objects */
     @Iri(R2rmlTerms.object)
@@ -79,8 +77,8 @@ public interface PredicateObjectMapRml1
      * @return
      */
     @Override
-    default ObjectMap addNewObjectMap() {
-        ObjectMap result = getModel().createResource().as(ObjectMap.class);
+    default ObjectMapRml1 addNewObjectMap() {
+        ObjectMapRml1 result = getModel().createResource().as(ObjectMapRml1.class);
         getObjectMaps().add(result);
         return result;
     }

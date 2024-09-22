@@ -9,9 +9,17 @@ import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.aksw.r2rml.jena.plugin.JenaPluginR2rml;
 import org.aksw.rml.jena.service.InitRmlService;
 import org.aksw.rml.model.LogicalSourceRml1;
+import org.aksw.rml.model.ObjectMapRml1;
+import org.aksw.rml.model.ObjectMapTypeRml1;
 import org.aksw.rml.model.PredicateObjectMapRml1;
+import org.aksw.rml.model.RefObjectMapRml1;
 import org.aksw.rml.model.TermMapRml1;
+import org.aksw.rml.model.TermSpecRml1;
 import org.aksw.rml.model.TriplesMapRml1;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
@@ -53,22 +61,27 @@ public class JenaPluginRml1
             TriplesMapRml1.class,
             LogicalSourceRml1.class,
             PredicateObjectMapRml1.class,
+            TermSpecRml1.class,
             TermMapRml1.class,
 //            GraphMapRml1.class,
 //            SubjectMapRml1.class,
 //            PredicateMapRml1.class,
 //            ObjectMapRml1.class,
-            LogicalSourceRml1.class
+            LogicalSourceRml1.class,
 
             // BaseTableOrView.class,
             // R2rmlView.class,
 //            SubjectMap.class,
 //            PredicateMap.class,
-//            ObjectMapType.class,
-//            ObjectMap.class,
+            ObjectMapTypeRml1.class,
+            ObjectMapRml1.class,
+            RefObjectMapRml1.class
 //            RefObjectMap.class,
 //            JoinCondition.class
         );
+
+//        Resource x = ModelFactory.createDefaultModel().createResource().as(ObjectMapTypeRml1.class).asTermMap().setColumn("test");
+//        RDFDataMgr.write(System.out, x.getModel(), RDFFormat.TURTLE);
 
         InitRmlService.registerServiceRmlSource(ServiceExecutorRegistry.get());
     }
