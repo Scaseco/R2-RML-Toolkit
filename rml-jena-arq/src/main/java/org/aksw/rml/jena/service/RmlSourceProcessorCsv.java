@@ -2,6 +2,7 @@ package org.aksw.rml.jena.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -94,13 +95,15 @@ public class RmlSourceProcessorCsv
             }
         }
 
+        // TODO Consolidate the byte sources based on RelativePathSource and sourceDoc
         if (sourceDoc != null && byteSource == null) {
             //LogicalTable logicalTable = toLogicalTable(logicalSource);
+            Path basePath = InitRmlService.getBasePath(execCxt.getContext());
             byteSource = new ByteSource() {
                 @Override
                 public InputStream openStream() throws IOException {
                     try {
-                        return JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
+                        return JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt, basePath);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

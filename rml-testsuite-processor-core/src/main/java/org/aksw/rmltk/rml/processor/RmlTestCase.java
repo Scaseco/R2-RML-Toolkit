@@ -7,37 +7,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-import org.aksw.commons.util.lifecycle.ResourceMgr;
-import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.rml.jena.impl.RmlExec;
 import org.aksw.rml.jena.impl.RmlModelImporter;
 import org.aksw.rml.jena.impl.RmlModelImporter.RmlInput;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
-import org.aksw.rml.jena.service.RmlSymbols;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
 import org.apache.curator.shaded.com.google.common.io.MoreFiles;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionDatasetBuilder;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFWriter;
-import org.apache.jena.sparql.core.Quad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -155,47 +144,13 @@ public class RmlTestCase
     }
 
     public Dataset execute(List<Entry<Query, String>> labeledQueries) {
-        Dataset result = execute(labeledQueries, rmlMappingDirectory, d2rqResolver);
+        RmlExec rmlExec = RmlExec.newBuilder()
+                .setLabeledQueries(labeledQueries)
+                .setRmlMappingDirectory(rmlMappingDirectory)
+                .setD2rqResolver(d2rqResolver)
+                .build();
+        Dataset result = rmlExec.toDataset();
         return result;
-//    	Dataset result = DatasetFactory.create();
-//    	new SinkQuadsToDataset(true, ds);
-//    	execute(labele)
-    }
-
-    // FIXME Migrate to StringRDF rather than returning a Dataset directly
-    public static Dataset execute(List<Entry<Query, String>> labeledQueries, Path rmlMappingDirectory, Consumer<D2rqDatabase> d2rqResolver) {
-        Model emptyModel = ModelFactory.createDefaultModel();
-        Dataset actualDs = DatasetFactory.create();
-
-        for (Entry<Query, String> e : labeledQueries) {
-            Query query = e.getKey();
-            logger.info("Executing SPARQL Query: " + query);
-            try (ResourceMgr qExecResMgr = new ResourceMgr();
-                 QueryExecution qe = QueryExecutionDatasetBuilder.create()
-                     .model(emptyModel)
-                     .query(query)
-                     .set(RmlSymbols.symMappingDirectory, rmlMappingDirectory)
-                     .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
-                     .set(JenaXSymbols.symResourceMgr, qExecResMgr)
-                     .build()) {
-
-                logger.info("Begin of RDF data Contribution:");
-                StreamRDF sink = StreamRDFWriter.getWriterStream(System.err, RDFFormat.TRIG_BLOCKS);
-                sink.start();
-
-                Iterator<Quad> it = qe.execConstructQuads();
-                while (it.hasNext()) {
-                    Quad quad = it.next();
-                    sink.quad(quad);
-                    actualDs.asDatasetGraph().add(quad);
-                }
-
-                sink.finish();
-                logger.info("End of RDF data contribution");
-            }
-        }
-
-        return actualDs;
     }
 
     public String getSuiteName() {

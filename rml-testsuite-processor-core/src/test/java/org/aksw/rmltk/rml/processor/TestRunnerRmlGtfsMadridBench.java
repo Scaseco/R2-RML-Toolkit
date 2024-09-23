@@ -1,19 +1,22 @@
 package org.aksw.rmltk.rml.processor;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.aksw.commons.util.lifecycle.ResourceMgr;
+import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
+import org.aksw.rml.jena.impl.RmlExec;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
+import org.aksw.rml.jena.impl.RmlWorkloadOptimizer;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
-import org.aksw.rml.model.TriplesMapRml1;
-import org.aksw.rmltk.gtfs.GtfsMadridBench;
+import org.aksw.rmltk.gtfs.GtfsMadridBenchResources;
 import org.apache.jena.query.Query;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sys.JenaSystem;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -61,36 +64,29 @@ public class TestRunnerRmlGtfsMadridBench {
     }
 
     @Test
-    public void run() throws IOException, URISyntaxException {
-        ResourceMgr resourceMgr = new ResourceMgr();
-        Path basePath = ResourceMgr.toPath(resourceMgr, GtfsMadridBench.class, name);
+    public void run() throws IOException {
+        // ResourceMgr closes the FileSystem for the class path resource
+        try (ResourceMgr resourceMgr = new ResourceMgr()) {
+            Path basePath = ResourceMgr.toPath(resourceMgr, GtfsMadridBenchResources.class, name);
+            Path mappingFile = basePath.resolve("mapping.csv.rml.ttl");
 
-//        try (Stream<Path> stream = Files.list(basePath)) {
-//            System.out.println(stream.toList());
-//        }
+            RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                .addRmlFile(null, mappingFile)
+                .setDenormalize(false)
+                .setDistinct(true)
+                ;
 
-        Path mappingFile = basePath.resolve("mapping.csv.rml.ttl");
-        // System.out.println(Files.lines(mappingFile).toList());
-//        resourceMgr.register(RmlTestCaseLister.toPath(resourceMgr, null));
-//
-        RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
-            //.setRegistry(referenceFormulationRegistry)
-            // .setCache(cache)
-            // .addFnmlFiles(fnmlFiles)
-            .addRmlFile(TriplesMapRml1.class, mappingFile)
-            // .addRmlFile(null, null)
-            // .addRmlModel(TriplesMapRml2.class, rmlMapping)
-            .setDenormalize(false)
-            .setDistinct(true)
-            // .setMerge(true)
-            ;
+            List<Entry<Query, String>> labeledQueries = builder.generate();
+            Assert.assertEquals(86, labeledQueries.size());
 
+            List<Query> queries = RmlWorkloadOptimizer.newInstance()
+                .addSparql(labeledQueries.stream().map(Entry::getKey).toList())
+                .process();
 
-//
-        List<Entry<Query, String>> labeledQueries = builder.generate();
-        System.out.println(labeledQueries);
-//
-//
-//        RmlTestCase.execute(labeledQueries, mappingDirectory, null);
+            RmlExec rmlExec = RmlExec.newBuilder().addQueries(queries).setRmlMappingDirectory(basePath).build();
+            DatasetGraph datasetGraph = rmlExec.toDatasetGraph();
+            long tupleCount = DatasetGraphUtils.tupleCount(datasetGraph);
+            Assert.assertEquals(395953, tupleCount);
+        }
     }
 }

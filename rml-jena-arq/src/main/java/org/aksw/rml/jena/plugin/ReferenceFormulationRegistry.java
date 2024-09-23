@@ -24,9 +24,16 @@ public class ReferenceFormulationRegistry
         cxt.set(symRegistry, registry);
     }
 
+    public static ReferenceFormulationRegistry chooseRegistry(Context cxt) {
+        ReferenceFormulationRegistry result = get(cxt);
+        if (cxt == null) {
+            result = get();
+        }
+        return result;
+    }
+
     public static ReferenceFormulationRegistry get(Context cxt) {
-        return cxt.get(symRegistry);
-        // FunctionRegistry.get()
+        return cxt == null ? null : cxt.get(symRegistry);
     }
 
     public static ReferenceFormulationRegistry get() {
@@ -54,12 +61,7 @@ public class ReferenceFormulationRegistry
         registry.put(RmlIoTerms.CSV, new ReferenceFormulationCsvViaService());
     }
 
-//    public static ReferenceFormulationRegistry getOrDefault(Context cxt) {
-//    	ReferenceFormulationRegistry result =
-//    }
-
     protected Map<String, ReferenceFormulation> registry = new LinkedHashMap<>();
-
 
     public void put(String key, ReferenceFormulation ref) {
         registry.put(key, ref);

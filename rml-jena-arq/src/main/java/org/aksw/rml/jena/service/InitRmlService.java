@@ -120,9 +120,23 @@ public class InitRmlService {
     }
 
     public static ByteSource asByteSource(RelativePathSource source, ExecutionContext execCxt) {
+        String pathStr = source.getPath();
+        if (pathStr == null) {
+            throw new NullPointerException("No path provided");
+        }
+        return asByteSource(pathStr, execCxt);
+    }
+
+    public static ByteSource asByteSource(String pathStr, ExecutionContext execCxt) {
+        Path basePath = getBasePath(execCxt.getContext());
+        Path finalPath = basePath.resolve(pathStr);
+        ByteSource result = MoreFiles.asByteSource(finalPath);
+        return result;
+    }
+
+    public static Path getBasePath(Context cxt) {
         // TODO Get some resolver from the context
         Path basePath = null;
-        Context cxt = execCxt.getContext();
         Object obj = cxt.get(RmlSymbols.symMappingDirectory);
         if (obj == null) {
             // Resolve to the current directory
@@ -137,16 +151,8 @@ public class InitRmlService {
             throw new IllegalArgumentException("Don't know how to handle: " + obj);
         }
 
-        String pathStr = source.getPath();
-        if (pathStr == null) {
-            throw new NullPointerException("No path provided");
-        }
-
-        Path finalPath = basePath.resolve(pathStr);
-        ByteSource result = MoreFiles.asByteSource(finalPath);
-        return result;
+        return basePath;
     }
-
 
     // TODO Resolve to an inputstream supplier?
     public static ByteSource newByteSource(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
