@@ -155,7 +155,7 @@ public class RmlSourceProcessorCsv
         for(int i = 0; i < row.length; ++i) {
             String value = row[i];
             if (value != null) {
-                Node node = NodeFactory.createLiteral(value);
+                Node node = NodeFactory.createLiteralString(value);
                 Var var = vars != null && i < vars.length ? vars[i] : null;
                 if (var == null) {
                     var = Var.alloc("col" + i);

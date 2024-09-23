@@ -3,8 +3,10 @@ package org.aksw.rml.jena.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,11 +24,13 @@ import org.aksw.rml2.vocab.jena.RML2;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.ValidationReport;
 import org.apache.jena.shacl.lib.ShLib;
+import org.apache.jena.util.iterator.ExtendedIterator;
 
 public class RmlImporterLib {
 
@@ -45,6 +49,30 @@ public class RmlImporterLib {
     static {
         register(TriplesMapRml1.class, RDFNodeMatchers.matchSubjectsWithProperty(TriplesMapRml1.class, Rml.logicalSource));
         register(TriplesMapRml2.class, RDFNodeMatchers.matchSubjectsWithProperty(TriplesMapRml2.class, RML2.logicalSource));
+    }
+
+    public static Map<Class<? extends ITriplesMapRml>, RDFNodeMatcher<? extends ITriplesMapRml>> getRegistry() {
+        return classToMatcher;
+    }
+
+    /** Return the RML models for which there is at least one match in the given model. */
+    public static Set<Class<? extends ITriplesMapRml>> detectRml(Model model) {
+        Set<Class<? extends ITriplesMapRml>> result = classToMatcher.entrySet().stream()
+            .filter(e -> {
+                ExtendedIterator<? extends RDFNode> it = e.getValue().match(model);
+                try {
+                    boolean r = it.hasNext();
+                    if (r) {
+                        RDFNode debugMatch = it.next();
+                    }
+                    return r;
+                } finally {
+                    it.close();
+                }
+            })
+            .map(Entry::getKey)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        return result;
     }
 
     public static void validateRml2Language(Model model) {

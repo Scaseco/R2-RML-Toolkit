@@ -1,20 +1,14 @@
 package org.aksw.rml.jena.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven.ExprTransformBNodeToBNodeAsGiven;
 import org.aksw.jena_sparql_api.sparql.ext.url.F_RmlIri.ExprTransformIriToRmlIri;
@@ -22,25 +16,21 @@ import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.r2rml.jena.arq.impl.JoinDeclaration;
 import org.aksw.r2rml.jena.arq.impl.TriplesMapToSparqlMapping;
+import org.aksw.rml.jena.impl.RmlModelImporter.RmlInput;
 import org.aksw.rml.jena.plugin.ReferenceFormulationRegistry;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rmltk.model.backbone.common.ITriplesMap;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.backbone.rml.ITriplesMapRml;
-import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.out.NodeFmtLib;
-import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.EltStreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
@@ -48,10 +38,10 @@ import org.apache.jena.sparql.syntax.ElementSubQuery;
 /**
  * A class to rewrite RML inputs to SPARQL.
  */
-public class RmlToSparqlRewriteBuilder {
-
-    public static record Input(String file, Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model model, String baseIri) {}
-
+// TODO Build upon RmlImporter!
+public class RmlToSparqlRewriteBuilder
+    implements RmlModelImporterMixin<RmlToSparqlRewriteBuilder>
+{
     // protected List<String> fnmlFiles = new ArrayList<>();
     protected ReferenceFormulationService registry = null;
     protected boolean denormalize = false;
@@ -65,10 +55,10 @@ public class RmlToSparqlRewriteBuilder {
 
     protected boolean isValidationRml2Enabled = false;
 
-
     protected List<String> triplesMapIds = new ArrayList<>();
     // protected List<String> inputFiles = new ArrayList<>();
-    protected List<RmlToSparqlRewriteBuilder.Input> modelAndBaseIriList = new ArrayList<>();
+    // protected List<RmlToSparqlRewriteBuilder.Input> modelAndBaseIriList = new ArrayList<>();
+    protected RmlModelImporter rmlModelImporter;
 
     protected Model fnmlModel;
 
@@ -78,6 +68,7 @@ public class RmlToSparqlRewriteBuilder {
 
     public RmlToSparqlRewriteBuilder() {
         this.fnmlModel = ModelFactory.createDefaultModel();
+        this.rmlModelImporter = new RmlModelImporter();
     }
 
     public static RmlToSparqlRewriteBuilder newInstance() {
@@ -192,85 +183,19 @@ public class RmlToSparqlRewriteBuilder {
         return this;
     }
 
-    public RmlToSparqlRewriteBuilder addRmlString(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String str) {
-        Input input = processInput(rmlTriplesMapClass, "inline string",
-                () -> AsyncParser.of(new ByteArrayInputStream(str.getBytes()), Lang.TURTLE, null).streamElements());
-        modelAndBaseIriList.add(input);
-        return this;
-    }
-
-    public RmlToSparqlRewriteBuilder addRmlFiles(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Collection<String> rmlFiles) {
-        for (String rmlFile : rmlFiles) {
-            addRmlFile(rmlTriplesMapClass, rmlFile);
-        }
-        return this;
-    }
-
-    public RmlToSparqlRewriteBuilder addRmlPaths(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Collection<Path> rmlFiles) {
-        for (Path rmlFile : rmlFiles) {
-            addRmlFile(rmlTriplesMapClass, rmlFile);
-        }
-        return this;
-    }
-
-    public RmlToSparqlRewriteBuilder addRmlFile(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String rmlFile) {
-        // Model model = RDFDataMgr.loadModel(rmlFile);
-        Input input = processInput(rmlTriplesMapClass, rmlFile, () -> AsyncParser.of(rmlFile).streamElements());
-        modelAndBaseIriList.add(input);
-        return this;
+    @Override
+    public RmlModelImporter getRmlModelImporter() {
+        return rmlModelImporter;
     }
 
     public RmlToSparqlRewriteBuilder addRmlFile(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Path rmlFile) {
-        // Model model = RDFDataMgr.loadModel(rmlFile);
-        try (InputStream in = Files.newInputStream(rmlFile)) {
-            Lang lang = RDFDataMgr.determineLang(rmlFile.toString(), null, null);
-            Input input = processInput(rmlTriplesMapClass, rmlFile.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
-            modelAndBaseIriList.add(input);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        getRmlModelImporter().addRmlFile(rmlTriplesMapClass, rmlFile);
         return this;
     }
 
     public RmlToSparqlRewriteBuilder addRmlModel(Class<? extends ITriplesMapRml> rmlTriplesMapClass, Model contrib) {
-        modelAndBaseIriList.add(new Input(null, rmlTriplesMapClass, contrib, null));
+        getRmlModelImporter().addRmlModel(rmlTriplesMapClass, contrib);
         return this;
-    }
-
-    public Input processInput(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
-        Input result = processInputCore(rmlTriplesMapClass, inputLabel, streamSupplier);
-
-        if (isValidationRml2Enabled) {
-            Model model = result.model();
-            RmlImporterLib.validateRml2(model);
-        }
-
-        return result;
-    }
-
-    public static Input processInputCore(Class<? extends ITriplesMapRml> rmlTriplesMapClass, String inputLabel, Supplier<Stream<EltStreamRDF>> streamSupplier) {
-
-        // Extract the base IRI needed to succeed on test cases such as RMLTC0020a-CSV and RMLTC0020b-CSV
-        String base = null;
-        Graph graph = GraphFactory.createDefaultGraph();
-        try (Stream<EltStreamRDF> stream = streamSupplier.get()) {
-            Iterator<EltStreamRDF> it = stream.iterator();
-            while (it.hasNext()) {
-                EltStreamRDF elt = it.next();
-                if (elt.isBase()) {
-                    base = elt.iri();
-                } else if (elt.isTriple()) {
-                    graph.add(elt.triple());
-                } else if (elt.isException()) {
-                    throw new RuntimeException("Failed to process input " + inputLabel, elt.exception());
-                }
-            }
-        }
-
-        Model model = ModelFactory.createModelForGraph(graph);
-
-        // modelAndBaseIriList.add(new Input(inputFile, model, base));
-        return new Input(inputLabel, rmlTriplesMapClass, model, base);
     }
 
     public List<Entry<Query, String>> generate() {
@@ -303,57 +228,60 @@ public class RmlToSparqlRewriteBuilder {
 
         boolean pushDistinct = false;
 
-        for (RmlToSparqlRewriteBuilder.Input input : modelAndBaseIriList) {
+        for (RmlInput input : getRmlModelImporter().getInputs()) {
             Model model = input.model();
             String base = input.baseIri();
-            Class<? extends ITriplesMapRml> rmlTriplesMapClass = input.rmlTriplesMapClass();
+            Set<Class<? extends ITriplesMapRml>> rmlTriplesMapClasses = input.rmlTriplesMapClasses();
 
-            // Model model = RDFDataMgr.loadModel(inputFile);
-            Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(rmlTriplesMapClass, model, fnmlModel, triplesMapIds, finalRegistry);
+            for (Class<? extends ITriplesMapRml> rmlTriplesMapClass : rmlTriplesMapClasses) {
 
-            // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
-            for (TriplesMapToSparqlMapping item : maps) {
-                ITriplesMap triplesMap = item.getTriplesMap();
-                Node triplesMapNode = triplesMap.asNode();
+                // Model model = RDFDataMgr.loadModel(inputFile);
+                Collection<TriplesMapToSparqlMapping> maps = RmlImporterLib.readSpecificOrAll(rmlTriplesMapClass, model, fnmlModel, triplesMapIds, finalRegistry);
 
-                String tmId = NodeFmtLib.strNT(triplesMapNode);
-                List<Query> queries;
-                if (denormalize) {
-                    queries = List.of(RmlQueryGenerator.createQuery(item, finalRegistry));
-                } else {
-                    queries = RmlQueryGenerator.createCanonicalQueries(item, pushDistinct, finalRegistry);
-                }
+                // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+                for (TriplesMapToSparqlMapping item : maps) {
+                    ITriplesMap triplesMap = item.getTriplesMap();
+                    Node triplesMapNode = triplesMap.asNode();
 
-                // Query query = RmlQueryGenerator.createQuery(item, null);
-                int queryIdInTriplesMap = 1;
-                for (Query query : queries) {
-
-                    if (!useSparqlBnode) {
-                        query = QueryUtils.applyElementTransform(query, ExprTransformBNodeToBNodeAsGiven::transformElt);
+                    String tmId = NodeFmtLib.strNT(triplesMapNode);
+                    List<Query> queries;
+                    if (denormalize) {
+                        queries = List.of(RmlQueryGenerator.createQuery(item, finalRegistry));
+                    } else {
+                        queries = RmlQueryGenerator.createCanonicalQueries(item, pushDistinct, finalRegistry);
                     }
 
-                    if (!useSparqlIri) {
-                        query = QueryUtils.applyElementTransform(query, ExprTransformIriToRmlIri::transformElt);
-                    }
+                    // Query query = RmlQueryGenerator.createQuery(item, null);
+                    int queryIdInTriplesMap = 1;
+                    for (Query query : queries) {
 
-                    if (base != null) {
-                        query.setBaseURI(base);
-                    }
+                        if (!useSparqlBnode) {
+                            query = QueryUtils.applyElementTransform(query, ExprTransformBNodeToBNodeAsGiven::transformElt);
+                        }
 
-                    if (triplesMapNode.isURI()) {
-                        query.setBaseURI(triplesMapNode.getURI());
-                    }
+                        if (!useSparqlIri) {
+                            query = QueryUtils.applyElementTransform(query, ExprTransformIriToRmlIri::transformElt);
+                        }
 
-                    // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)
-                    if (!query.getConstructTemplate().getQuads().isEmpty()) {
-                        QueryUtils.optimizePrefixes(query);
-                        labeledQueries.add(Map.entry(query, "# " + (globalQueryId++) + ": " + tmId + " (" + (queryIdInTriplesMap++) + "/" + queries.size() + ")"));
+                        if (base != null) {
+                            query.setBaseURI(base);
+                        }
+
+                        if (triplesMapNode.isURI()) {
+                            query.setBaseURI(triplesMapNode.getURI());
+                        }
+
+                        // Do not emit queries that do not produce anything (e.g. if there are only RefObjectMaps)
+                        if (!query.getConstructTemplate().getQuads().isEmpty()) {
+                            QueryUtils.optimizePrefixes(query);
+                            labeledQueries.add(Map.entry(query, "# " + (globalQueryId++) + ": " + tmId + " (" + (queryIdInTriplesMap++) + "/" + queries.size() + ")"));
+                        }
                     }
-                }
-                for (JoinDeclaration join : item.getJoins()) {
-                    Query joinQuery = RmlQueryGenerator.createQuery(join, preDistinct, finalRegistry);
-                    QueryUtils.optimizePrefixes(joinQuery);
-                    labeledQueries.add(Map.entry(joinQuery, "# " + (globalQueryId++) + ": " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode())));
+                    for (JoinDeclaration join : item.getJoins()) {
+                        Query joinQuery = RmlQueryGenerator.createQuery(join, preDistinct, finalRegistry);
+                        QueryUtils.optimizePrefixes(joinQuery);
+                        labeledQueries.add(Map.entry(joinQuery, "# " + (globalQueryId++) + ": " + tmId + " -> " + NodeFmtLib.strNT(join.getParentTriplesMap().asNode())));
+                    }
                 }
             }
         }
