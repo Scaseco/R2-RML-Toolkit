@@ -17,8 +17,9 @@ import java.util.function.Consumer;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.rml.jena.impl.RmlModelImporter;
+import org.aksw.rml.jena.impl.RmlModelImporter.RmlInput;
 import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder;
-import org.aksw.rml.jena.impl.RmlToSparqlRewriteBuilder.Input;
 import org.aksw.rml.jena.plugin.ReferenceFormulationService;
 import org.aksw.rml.jena.service.RmlSymbols;
 import org.aksw.rml.v2.jena.domain.api.TriplesMapRml2;
@@ -92,7 +93,7 @@ public class RmlTestCase
         Model result;
         try (InputStream in = Files.newInputStream(rmlMapping)) {
             Lang lang = RDFDataMgr.determineLang(rmlMapping.toString(), null, null);
-            Input input = RmlToSparqlRewriteBuilder.processInputCore(TriplesMapRml2.class, rmlMapping.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
+            RmlInput input = RmlModelImporter.processInputCore(TriplesMapRml2.class, rmlMapping.toAbsolutePath().toString(), () -> AsyncParser.of(in, lang, null).streamElements());
             result = input.model();
         } catch (IOException e) {
             throw new RuntimeException(e);
