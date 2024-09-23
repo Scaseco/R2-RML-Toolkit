@@ -121,9 +121,12 @@ _:prefixes
     .
 ```
 
-## RML to SPARQL Conversion
+## Programmatic API
 
-Since version 5.0.0 there is now the `RmlToSparqlRewriteBuilder` for translating RML to SPARQL.
+Since version 5.2.0 the relevant classes are:
+* `RmlToSparqlRewriteBuilder` for translating RML to SPARQL that leverages RML extensions.
+* `RmlWorkloadOptimizer` to optimize across the set of SPARQL queries generated in the previous step.
+* `RmlExec` to execute a set of SPARQL construct queries that leverage RML extensions.
 
 ```xml
 <dependency>
@@ -132,19 +135,38 @@ Since version 5.0.0 there is now the `RmlToSparqlRewriteBuilder` for translating
 </dependency>
 ```
 
+The following example demonstrates running an RML process on the `rml-resource-gtfs-madrid-bench-csv-1` example resource.
 
 ```java
-RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
-  .setCache(cache)
-  .addFnmlFiles(fnmlFiles)
-  .addRmlFiles(inputFiles)
-  .setDenormalize(denormalize)
-  .setMerge(merge)
-  ;
+public class TestRmlMapping {
+    @Test
+    public void run() throws IOException {
+        // ResourceMgr closes the FileSystem for the class path resource
+        try (ResourceMgr resourceMgr = new ResourceMgr()) {
+            Path basePath = ResourceMgr.toPath(resourceMgr, GtfsMadridBenchResources.class, "/gtfs-madrid-bench/csv/1");
+            Path mappingFile = basePath.resolve("mapping.csv.rml.ttl");
 
-List<Entry<Query, String>> labeledQueries = builder.generate();
+            List<Entry<Query, String>> labeledQueries = new RmlToSparqlRewriteBuilder()
+                .addRmlFile(null, mappingFile) // the null argument means auto-detect RML1 or RML2
+                .setDenormalize(false)
+                .setDistinct(true)
+                .generate();
+            Assert.assertEquals(86, labeledQueries.size());
+
+            List<Query> queries = RmlWorkloadOptimizer.newInstance()
+                .addSparql(labeledQueries.stream().map(Entry::getKey).toList())
+                .process();
+
+            RmlExec rmlExec = RmlExec.newBuilder().addQueries(queries)
+                .setRmlMappingDirectory(basePath).build();
+
+            DatasetGraph datasetGraph = rmlExec.toDatasetGraph();
+            long tupleCount = DatasetGraphUtils.tupleCount(datasetGraph);
+            Assert.assertEquals(395953, tupleCount);
+        }
+    }
+}
 ```
-
 
 ## Jena Compatibility
 
