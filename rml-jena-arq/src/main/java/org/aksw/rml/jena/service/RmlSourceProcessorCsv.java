@@ -98,7 +98,8 @@ public class RmlSourceProcessorCsv
         // TODO Consolidate the byte sources based on RelativePathSource and sourceDoc
         if (sourceDoc != null && byteSource == null) {
             //LogicalTable logicalTable = toLogicalTable(logicalSource);
-            Path basePath = InitRmlService.getBasePath(execCxt.getContext());
+            // Path basePath = InitRmlService.getCurrentWorkingDirectory(execCxt.getContext(), true);
+            Path basePath = InitRmlService.getMappingDirectory(execCxt.getContext(), true);
             byteSource = new ByteSource() {
                 @Override
                 public InputStream openStream() throws IOException {
@@ -110,7 +111,6 @@ public class RmlSourceProcessorCsv
                 }
             };
         }
-
 
         Objects.requireNonNull(byteSource, "Could not create a byte source from the model");
         // Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);

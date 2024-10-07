@@ -12,5 +12,6 @@ public class RmlIoTerms {
     public static final String path = Rml2Terms.uri + "path";
 
     public static final String MappingDirectory = Rml2Terms.uri + "MappingDirectory";
+    public static final String CurrentWorkingDirectory = Rml2Terms.uri + "CurrentWorkingDirectory";
     // public static final String
 }

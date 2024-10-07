@@ -19,6 +19,18 @@ public class RmlSymbols {
     public static final Symbol symMappingDirectory = Symbol.create(RmlIoTerms.MappingDirectory);
 
     /**
+     * Symbol to provide eventual resolution of the constant RDF term {@code rml:CurrentWorkingDirectory} to
+     * a {@link java.nio.Path} object.
+     *
+     * The following values for the symbol are valid and should be supported by implementations:
+     * <ul>
+     *   <li>A {@link java.nio.Path} object.</li>
+     *   <li>A {@link java.lang.String} object. Will be passed to {@link java.nio.Path#of(String, String...)}.</li>
+     * </ul>
+     */
+    public static final Symbol symCurrentWorkingDirectory = Symbol.create(RmlIoTerms.CurrentWorkingDirectory);
+
+    /**
      * Symbol to provide a {@link RmlSourceResolver}. The source resolver is a callback that
      * can modify the state of a {@link Resource} that describes the source.
      * For example, can be used to alter the values for port or host name of a

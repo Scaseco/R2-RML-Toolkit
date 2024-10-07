@@ -17,4 +17,18 @@ public interface RelativePathSource
     @Iri(RmlIoTerms.path)
     String getPath();
     RelativePathSource setPath(String path);
+
+    default boolean qualifiesAsRelativePathSource() {
+        boolean result = false;
+        RDFNode root = getRoot();
+        if (root != null) {
+            result = true;
+        } else {
+            String path = getPath();
+            if (path != null) {
+                result = true;
+            }
+        }
+        return result;
+    }
 }

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.xpath.XPathFactory;
 
@@ -46,6 +47,7 @@ import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.service.ServiceExecutorRegistry;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.vocabulary.XSD;
 
 import com.google.common.base.Preconditions;
@@ -78,16 +80,6 @@ public class InitRmlService {
         });
     }
 
-//    public static QueryIterator parseCsvAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-//
-//    }
-
-//    public static QueryIterator parseCsvAsJson(LogicalSource logicalSource, Var outVar, Binding parentBinding, ExecutionContext execCxt) {
-//
-//        Stream<JsonObject> stream = parseCsvAsJson(logicalSource, execCxt);
-//        return QueryExecUtils.fromStream(stream, outVar, parentBinding, execCxt, RDFDatatypeJson::jsonToNode);
-//    }
-
     public static void initRegistryRml1(Map<String, RmlSourceProcessor> registry) {
         registry.put(QlTerms.CSV, RmlSourceProcessorCsv.getInstance());
         registry.put(QlTerms.JSONPath, InitRmlService::processSourceAsJson);
@@ -102,7 +94,6 @@ public class InitRmlService {
         registry.put(RmlIoTerms.XPath, InitRmlService::processSourceAsXml);
         registry.put(RmlIoTerms.CSV, RmlSourceProcessorCsv.getInstance());
     }
-
 
     public static QueryIterator processSource(ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         Map<String, RmlSourceProcessor> registry = new HashMap<>();
@@ -119,39 +110,74 @@ public class InitRmlService {
         return result;
     }
 
-    public static ByteSource asByteSource(RelativePathSource source, ExecutionContext execCxt) {
-        String pathStr = source.getPath();
-        if (pathStr == null) {
-            throw new NullPointerException("No path provided");
-        }
-        return asByteSource(pathStr, execCxt);
-    }
+    public static Path resolve(RDFNode source, ExecutionContext execCxt) {
+        Path result = null;
+        RelativePathSource rsp = source.as(RelativePathSource.class);
+        if (rsp.qualifiesAsRelativePathSource()) {
+            RDFNode root = rsp.getRoot();
+            Path basePath = resolve(root, execCxt);
 
-    public static ByteSource asByteSource(String pathStr, ExecutionContext execCxt) {
-        Path basePath = getBasePath(execCxt.getContext());
-        Path finalPath = basePath.resolve(pathStr);
-        ByteSource result = MoreFiles.asByteSource(finalPath);
+            String path = rsp.getPath();
+            result = basePath != null
+                    ? path != null
+                        ? basePath.resolve(path)
+                        : basePath
+                    : Path.of(path);
+        } else {
+            Node node = source.asNode();
+            if (node.isURI()) {
+                String iri = node.getURI();
+                switch (iri) {
+                case RmlIoTerms.CurrentWorkingDirectory:
+                    result = getCurrentWorkingDirectory(execCxt.getContext(), true);
+                    break;
+                case RmlIoTerms.MappingDirectory:
+                    result = getMappingDirectory(execCxt.getContext(), true);
+                    break;
+                default:
+                    // FIXME Could be a virtual filesystem iri
+                    throw new RuntimeException("Unsupported root path.");
+                }
+            } else {
+                String str = source.asResource().asLiteral().getLexicalForm();
+                result = Path.of(str);
+            }
+        }
         return result;
     }
 
-    public static Path getBasePath(Context cxt) {
+    public static Path getCurrentWorkingDirectory(Context cxt, boolean fallbackToCwd) {
+        return getBasePath(cxt, RmlSymbols.symCurrentWorkingDirectory, fallbackToCwd);
+    }
+
+    public static Path getMappingDirectory(Context cxt, boolean fallbackToCwd) {
+        return getBasePath(cxt, RmlSymbols.symMappingDirectory, fallbackToCwd);
+    }
+
+    public static Path getBasePath(Context cxt, Symbol symbol, boolean fallbackToCwd) {
         // TODO Get some resolver from the context
         Path basePath = null;
-        Object obj = cxt.get(RmlSymbols.symMappingDirectory);
+        Object obj = cxt.get(symbol);
         if (obj == null) {
             // Resolve to the current directory
-            basePath = Path.of("").toAbsolutePath();
+            basePath = fallbackToCwd ? Path.of("").toAbsolutePath() : null;
             // throw new NullPointerException("MappingDirectory is null in the context");
-        } else if (obj instanceof Path) {
-            basePath = (Path)obj;
-        } else if (obj instanceof String) {
-            String str = (String)obj;
+        } else if (obj instanceof Path bp) {
+            basePath = bp;
+        } else if (obj instanceof String str) {
             basePath = Path.of(str);
         } else {
             throw new IllegalArgumentException("Don't know how to handle: " + obj);
         }
-
         return basePath;
+    }
+
+    // FIXME Need to handle source.getRoot()!
+    public static ByteSource asByteSource(RelativePathSource source, ExecutionContext execCxt) {
+        Path path = resolve(source, execCxt);
+        Objects.requireNonNull(path, "No path provided");
+        ByteSource result = MoreFiles.asByteSource(path);
+        return result;
     }
 
     // TODO Resolve to an inputstream supplier?
@@ -244,7 +270,7 @@ public class InitRmlService {
         return result;
     }
 
-
+    // XXX Turn this method into test cases
     public static void main(String[] args) {
         try (QueryExec qe = QueryExec.newBuilder()
             .graph(GraphFactory.createDefaultGraph())
