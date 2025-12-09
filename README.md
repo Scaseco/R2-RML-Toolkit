@@ -19,7 +19,9 @@ But under the hood their getters and setters actually read and write directly fr
 
 [List versions published on Maven Central](https://search.maven.org/search?q=g:org.aksw.r2rml%20AND%20a:r2rml-jena-plugin)
 
-The following Java snippet demonstrates usage of the API:
+The following Java snippet demonstrates usage of the API. Adding the dependency to the module [r2rml-jena-plugin](/r2rml-jena-plugin) to your code base makes the necessary regestratations for
+using the API with Jena.
+
 ```java
 public class R2rmlApiExample {
 	public static void main(String[] args) {
