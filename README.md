@@ -147,7 +147,7 @@ List<Entry<Query, String>> labeledQueries = builder.generate();
 
 ## RML Execution via SPARQL
 
-The RML Jena Plugin adds additional SPARQL functions and context symbols to run the SPARQL queries obtained from the RML conversion via Jena's ARQ engine.
+The module [r2rml-jena-arq](/r2rml-jena-arq) registers additional SPARQL functions and context symbols with Jena's ARQ SPARQL engine. This allows one to idiomatically run the SPARQL queries obtained from the RML conversion.
 In the code below, the `ResourceMgr` is used to deal with dynamic resources, such as database connections, that are obtained on-demand during query execution.
 Closing the `ResourceMgr` frees those dymanic resources.
 
