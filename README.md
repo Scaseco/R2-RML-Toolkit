@@ -145,6 +145,30 @@ RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
 List<Entry<Query, String>> labeledQueries = builder.generate();
 ```
 
+## RML Execution via SPARQL
+
+The RML Jena Plugin adds additional SPARQL functions and context symbols to run the SPARQL queries obtained from the RML conversion via Jena's ARQ engine.
+In the code below, the `ResourceMgr` is used to deal with dynamic resources, such as database connections, that are obtained on-demand during query execution.
+Closing the `ResourceMgr` frees those dymanic resources.
+
+```java
+try (ResourceMgr qExecResMgr = new ResourceMgr();
+	 QueryExecution qe = QueryExecutionDatasetBuilder.create()
+		 .model(emptyModel)
+		 .query(query)
+		 .set(ArqSecurity.symAllowFileAccess, true)
+		 .set(RmlSymbols.symMappingDirectory, rmlMappingDirectory)
+		 .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
+		 .set(JenaXSymbols.symResourceMgr, qExecResMgr)
+		 .build()) {
+
+	Iterator<Quad> it = qe.execConstructQuads();
+	while (it.hasNext()) {
+		Quad quad = it.next();
+		streamRDF.quad(quad);
+	}
+}
+```
 
 ## Jena Compatibility
 
