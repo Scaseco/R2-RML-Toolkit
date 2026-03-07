@@ -10,83 +10,83 @@ import org.apache.jena.sparql.function.user.UserDefinedFunctionDefinition;
 /**
  * SqlDatatype or rather a NoRDFDatatype in the sense of "Not-only RDF datatype".
  * Interface to convert non-RDF or RDF values to RDF Terms with corresponding RDFDatatype.
- * 
+ *
  * @author raven
  *
  */
 public interface SqlDatatype {
-	int getSqlType();
-	Class<?> getJavaClass(); // e.g. java.sql.Timestamp for java.sql.Types.Timstamp
-	RDFDatatype getRdfDatatype();
-	
-	
-	// Convert an SQL object to one that is compatible with the RDFDatatype
-	// Useful to avoid conversion via lexical forms
-	// May be null
-	Function<Object, Object> getCompatibilizer();
-	
-	// Convert an SQL object to a lexical form that is compatible with the RDF datatype
-	// If neither lexical formizer nor compatibilizer is specified NodeFactory.createLiteralFromValue(object, rdfDatatype) is used
-	// If both are specified then the compatibilizer is typically preferred
-	// May be null
-	Function<Object, String> getLexicalFormizer();
-	
-	// Macro SPARQL expression associated with the datatype to convert an sql value to rdf
-	UserDefinedFunctionDefinition convertSqlToRdf();
-	
-	
-	// A single-valued expression that transforms a raw natural RDF value into
-	// the effective natural value
-	// e.g. REPLACE(?x, ' ', 'T') for replacing whitespaces on sql DateTime strings so
-	// RDFDatatype.xsdDateTime can handle it.
-	// Entry<Var, Expr> getTransformExpression();
-	
-	// Preprocess an object such that it becomes suitable for use in
-	// NodeFactory.createLiteralByValue(convertedObject, this.getRdfDatatype())
-	// Object convertForRdf(Object);
-	// Node convertToNode(Object o);
-	
-	/**
-	 * Create a function that for a given compatible source object returns an {@link Node} based
-	 * on the state of this interface's implementation.
-	 * 
-	 * @return
-	 */
-	default Function<Object, Node> getNodeMapper() {
-		RDFDatatype rdfDatatype = getRdfDatatype();
-		Function<Object, Object> compatibilizer = getCompatibilizer();
-		Function<Object, String> lexicalFormizer = getLexicalFormizer();
-		
-		Function<Object, Node> result;
-		if (compatibilizer != null) {
-			result = obj -> {
-				Object compat = compatibilizer.apply(obj);
+    int getSqlType();
+    Class<?> getJavaClass(); // e.g. java.sql.Timestamp for java.sql.Types.Timstamp
+    RDFDatatype getRdfDatatype();
+
+
+    // Convert an SQL object to one that is compatible with the RDFDatatype
+    // Useful to avoid conversion via lexical forms
+    // May be null
+    Function<Object, Object> getCompatibilizer();
+
+    // Convert an SQL object to a lexical form that is compatible with the RDF datatype
+    // If neither lexical formizer nor compatibilizer is specified NodeFactory.createLiteralFromValue(object, rdfDatatype) is used
+    // If both are specified then the compatibilizer is typically preferred
+    // May be null
+    Function<Object, String> getLexicalFormizer();
+
+    // Macro SPARQL expression associated with the datatype to convert an sql value to rdf
+    UserDefinedFunctionDefinition convertSqlToRdf();
+
+
+    // A single-valued expression that transforms a raw natural RDF value into
+    // the effective natural value
+    // e.g. REPLACE(?x, ' ', 'T') for replacing whitespaces on sql DateTime strings so
+    // RDFDatatype.xsdDateTime can handle it.
+    // Entry<Var, Expr> getTransformExpression();
+
+    // Preprocess an object such that it becomes suitable for use in
+    // NodeFactory.createLiteralByValue(convertedObject, this.getRdfDatatype())
+    // Object convertForRdf(Object);
+    // Node convertToNode(Object o);
+
+    /**
+     * Create a function that for a given compatible source object returns an {@link Node} based
+     * on the state of this interface's implementation.
+     *
+     * @return
+     */
+    default Function<Object, Node> getNodeMapper() {
+        RDFDatatype rdfDatatype = getRdfDatatype();
+        Function<Object, Object> compatibilizer = getCompatibilizer();
+        Function<Object, String> lexicalFormizer = getLexicalFormizer();
+
+        Function<Object, Node> result;
+        if (compatibilizer != null) {
+            result = obj -> {
+                Object compat = compatibilizer.apply(obj);
 //				System.out.println("GOT: " + compat);
 //				System.out.println(obj.getClass());
 //				System.out.println(rdfDatatype.getURI());
 //				System.out.println(rdfDatatype.isValidValue(compat));
 
-				Node r = NodeFactory.createLiteralByValue(compat, rdfDatatype);
-				return r;
-			};
-		} else if (lexicalFormizer != null) {
-			result = obj -> {
-				String lexicalForm = lexicalFormizer.apply(obj);
-				Node r = NodeFactory.createLiteral(lexicalForm, rdfDatatype);
-				return r;
-			};			
-		} else {
-			result = obj -> {
+                Node r = NodeFactory.createLiteralByValue(compat, rdfDatatype);
+                return r;
+            };
+        } else if (lexicalFormizer != null) {
+            result = obj -> {
+                String lexicalForm = lexicalFormizer.apply(obj);
+                Node r = NodeFactory.createLiteralDT(lexicalForm, rdfDatatype);
+                return r;
+            };
+        } else {
+            result = obj -> {
 //				System.out.println("GOT: " + obj);
 //				System.out.println(obj.getClass());
 //				System.out.println(rdfDatatype.getURI());
 //				System.out.println(rdfDatatype.isValidValue(obj));
-				Node r = NodeFactory.createLiteralByValue(obj, rdfDatatype);
-				return r;
-			};
-		}
-		
-		return result;
-	}	
+                Node r = NodeFactory.createLiteralByValue(obj, rdfDatatype);
+                return r;
+            };
+        }
+
+        return result;
+    }
 
 }

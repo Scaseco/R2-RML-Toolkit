@@ -23,7 +23,7 @@ public class RmlTestCaseLister {
 
     public static List<RmlTestCase> list(Path basePath, ResourceMgr resourceMgr, ReferenceFormulationService rfRegistry) throws Exception {
         if (false) {
-            Node node = NodeFactory.createLiteral("123.456", XSDDatatype.XSDdouble);
+            Node node = NodeFactory.createLiteralDT("123.456", XSDDatatype.XSDdouble);
             System.out.println("Node: " + node);
 
             Object normalized = XSDDatatype.XSDdouble.cannonicalise(node.getLiteralValue());

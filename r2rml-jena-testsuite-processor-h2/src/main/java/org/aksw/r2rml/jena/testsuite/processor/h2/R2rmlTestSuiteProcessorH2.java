@@ -10,6 +10,10 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import com.google.common.collect.Streams;
+
+import org.junit.Assert;
+
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.r2rml.jena.arq.impl.R2rmlImporterLib;
@@ -31,13 +35,10 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.query.ResultSetRewindable;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.resultset.ResultSetCompare;
+import org.apache.jena.sparql.resultset.ResultsCompare;
 import org.apache.jena.vocabulary.XSD;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Streams;
 
 
 public class R2rmlTestSuiteProcessorH2 {
@@ -49,8 +50,8 @@ public class R2rmlTestSuiteProcessorH2 {
 
         if (false) {
             RDFDatatype dtype = TypeMapper.getInstance().getTypeByName(XSD.xdouble.getURI());
-            Node a = NodeFactory.createLiteral("80.25", dtype);
-            Node b = NodeFactory.createLiteral("8.025E1", dtype);
+            Node a = NodeFactory.createLiteralDT("80.25", dtype);
+            Node b = NodeFactory.createLiteralDT("8.025E1", dtype);
 
             NodeValue na = NodeValue.makeNode(a);
             NodeValue nb = NodeValue.makeNode(b);
@@ -190,8 +191,8 @@ public class R2rmlTestSuiteProcessorH2 {
             ResultSetRewindable rsb = ResultSetFactory.copyResults(qeb.execSelect());
 
             result = compareByValue
-                    ? ResultSetCompare.equalsByValue(rsa, rsb)
-                    : ResultSetCompare.equalsByTerm(rsa, rsb);
+                    ? ResultsCompare.equalsByValue(rsa, rsb)
+                    : ResultsCompare.equalsByTerm(rsa, rsb);
 
             if (!result) {
                 rsa.reset();

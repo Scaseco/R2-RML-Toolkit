@@ -154,7 +154,7 @@ public class R2rmlProcessorJdbc {
     public static FunctionEnv createDefaultEnv() {
         Context context = ARQ.getContext().copy() ;
         context.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime()) ;
-        FunctionEnv env = new ExecutionContext(context, null, null, null) ;
+        FunctionEnv env = ExecutionContext.create(context) ;
 
         return env;
     }

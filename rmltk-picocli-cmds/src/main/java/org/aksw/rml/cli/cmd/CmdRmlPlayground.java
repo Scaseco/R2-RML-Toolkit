@@ -15,7 +15,6 @@ import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
-import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
@@ -25,11 +24,10 @@ import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
-import org.apache.jena.sparql.lang.arq.ParseException;
 
 public class CmdRmlPlayground {
 
-    public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
+    public static void main(String[] args) throws FileNotFoundException, IOException {
         Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
         List<Query> queries = SparqlStmtMgr.loadQueries("/home/raven/Datasets/gtfsbench/grouped.rq", new PrefixMappingImpl());

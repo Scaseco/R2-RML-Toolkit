@@ -1,0 +1,1706 @@
+# 0: <http://mapping.example.com/map_frequencies_0> (1/5)
+BASE    <http://mapping.example.com/map_frequencies_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#endTime> ?v8 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time"))))) AS ?v7)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "end_time") AS ?v8)
+  }
+
+# 1: <http://mapping.example.com/map_frequencies_0> (2/5)
+BASE    <http://mapping.example.com/map_frequencies_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Frequency> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time"))))) AS ?v7)
+  }
+
+# 2: <http://mapping.example.com/map_frequencies_0> (3/5)
+BASE    <http://mapping.example.com/map_frequencies_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#startTime> ?v3 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time") AS ?v3)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(?v3)))) AS ?v7)
+  }
+
+# 3: <http://mapping.example.com/map_frequencies_0> (4/5)
+BASE    <http://mapping.example.com/map_frequencies_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#headwaySeconds> ?v11 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time"))))) AS ?v7)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "headway_secs")), <http://www.w3.org/2001/XMLSchema#integer>) AS ?v11)
+  }
+
+# 4: <http://mapping.example.com/map_frequencies_0> (5/5)
+BASE    <http://mapping.example.com/map_frequencies_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#exactTimes> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time"))))) AS ?v7)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "exact_times")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v14)
+  }
+
+# 5: <http://mapping.example.com/map_frequencies_0> -> <http://mapping.example.com/map_trips_0>
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#trip> ?s1_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v7
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "FREQUENCIES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_time") AS ?v3)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/frequency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(?v3)))) AS ?v7)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s1_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s1}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "trip_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "trip_id"))))) AS ?s1_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 6: <http://mapping.example.com/map_agency_0> (1/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/page> ?v7 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_url"))) AS ?v7)
+  }
+
+# 7: <http://mapping.example.com/map_agency_0> (2/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/language> ?v8 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_lang") AS ?v8)
+  }
+
+# 8: <http://mapping.example.com/map_agency_0> (3/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#fareUrl> ?v11 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_fare_url"))) AS ?v11)
+  }
+
+# 9: <http://mapping.example.com/map_agency_0> (4/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#timeZone> ?v12 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_timezone") AS ?v12)
+  }
+
+# 10: <http://mapping.example.com/map_agency_0> (5/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/name> ?v13 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_name") AS ?v13)
+  }
+
+# 11: <http://mapping.example.com/map_agency_0> (6/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/phone> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_phone") AS ?v14)
+  }
+
+# 12: <http://mapping.example.com/map_agency_0> (7/7)
+BASE    <http://mapping.example.com/map_agency_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Agency> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id"))))) AS ?v4)
+  }
+
+# 13: <http://mapping.example.com/map_services1_0> (1/2)
+BASE    <http://mapping.example.com/map_services1_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#serviceRule> ?v6 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))) AS ?v2)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/services/", ?v2)) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", ?v2)) AS ?v6)
+  }
+
+# 14: <http://mapping.example.com/map_services1_0> (2/2)
+BASE    <http://mapping.example.com/map_services1_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Service> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/services/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+  }
+
+# 15: <http://mapping.example.com/map_feed_0> (1/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://schema.org/endDate> ?v7 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_end_date")), <http://www.w3.org/2001/XMLSchema#date>) AS ?v7)
+  }
+
+# 16: <http://mapping.example.com/map_feed_0> (2/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/publisher> ?v0 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name") AS ?v0)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(?v0)))) AS ?v4)
+  }
+
+# 17: <http://mapping.example.com/map_feed_0> (3/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://schema.org/startDate> ?v10 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_start_date")), <http://www.w3.org/2001/XMLSchema#date>) AS ?v10)
+  }
+
+# 18: <http://mapping.example.com/map_feed_0> (4/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Feed> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+  }
+
+# 19: <http://mapping.example.com/map_feed_0> (5/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/page> ?v13 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_url"))) AS ?v13)
+  }
+
+# 20: <http://mapping.example.com/map_feed_0> (6/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://schema.org/version> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_version") AS ?v14)
+  }
+
+# 21: <http://mapping.example.com/map_feed_0> (7/7)
+BASE    <http://mapping.example.com/map_feed_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/language> ?v15 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "FEED_INFO.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/feed/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_publisher_name"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "feed_lang") AS ?v15)
+  }
+
+# 22: <http://mapping.example.com/map_services2_0> (1/2)
+BASE    <http://mapping.example.com/map_services2_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Service> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/services/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+  }
+
+# 23: <http://mapping.example.com/map_services2_0> (2/2)
+BASE    <http://mapping.example.com/map_services2_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#serviceRule> ?v9 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))) AS ?v2)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/services/", ?v2)) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_date_rule/", ?v2, "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "date"))))) AS ?v9)
+  }
+
+# 24: <http://mapping.example.com/map_shapes_0> (1/2)
+BASE    <http://mapping.example.com/map_shapes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#shapePoint> ?v9 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))) AS ?v2)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape/", ?v2)) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", ?v2, "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence"))))) AS ?v9)
+  }
+
+# 25: <http://mapping.example.com/map_shapes_0> (2/2)
+BASE    <http://mapping.example.com/map_shapes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Shape> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))))) AS ?v4)
+  }
+
+# 26: <http://mapping.example.com/map_calendar_date_rules_0> (1/3)
+BASE    <http://mapping.example.com/map_calendar_date_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://purl.org/dc/terms/date> ?v8 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "date")) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_date_rule/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))), "-", encode_for_uri(?v4))) AS ?v7)
+    BIND(strdt(?v4, <http://www.w3.org/2001/XMLSchema#date>) AS ?v8)
+  }
+
+# 27: <http://mapping.example.com/map_calendar_date_rules_0> (2/3)
+BASE    <http://mapping.example.com/map_calendar_date_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#CalendarDateRule> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_date_rule/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "date"))))) AS ?v7)
+  }
+
+# 28: <http://mapping.example.com/map_calendar_date_rules_0> (3/3)
+BASE    <http://mapping.example.com/map_calendar_date_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#dateAddition> ?v11 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_date_rule/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "date"))))) AS ?v7)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "exception_type")), <http://www.w3.org/2001/XMLSchema#integer>) AS ?v11)
+  }
+
+# 29: <http://mapping.example.com/map_shape_points_0> (1/5)
+BASE    <http://mapping.example.com/map_shape_points_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#pointSequence> ?v3 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence") AS ?v3)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))), "-", encode_for_uri(str(?v3)))) AS ?v7)
+  }
+
+# 30: <http://mapping.example.com/map_shape_points_0> (2/5)
+BASE    <http://mapping.example.com/map_shape_points_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#ShapePoint> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence"))))) AS ?v7)
+  }
+
+# 31: <http://mapping.example.com/map_shape_points_0> (3/5)
+BASE    <http://mapping.example.com/map_shape_points_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?v10 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence"))))) AS ?v7)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_lon")), <http://www.w3.org/2001/XMLSchema#double>) AS ?v10)
+  }
+
+# 32: <http://mapping.example.com/map_shape_points_0> (4/5)
+BASE    <http://mapping.example.com/map_shape_points_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://vocab.gtfs.org/terms#distanceTraveled> ?v11 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence"))))) AS ?v7)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_dist_traveled") AS ?v11)
+  }
+
+# 33: <http://mapping.example.com/map_shape_points_0> (5/5)
+BASE    <http://mapping.example.com/map_shape_points_0>
+
+CONSTRUCT 
+  { 
+    ?v7 <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/shape_point/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_sequence"))))) AS ?v7)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_pt_lat")), <http://www.w3.org/2001/XMLSchema#double>) AS ?v14)
+  }
+
+# 34: <http://mapping.example.com/map_trips_0> (1/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#shortName> ?v5 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_short_name") AS ?v5)
+  }
+
+# 35: <http://mapping.example.com/map_trips_0> (2/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#direction> ?v6 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "direction_id") AS ?v6)
+  }
+
+# 36: <http://mapping.example.com/map_trips_0> (3/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Trip> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+  }
+
+# 37: <http://mapping.example.com/map_trips_0> (4/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#block> ?v7 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "block_id") AS ?v7)
+  }
+
+# 38: <http://mapping.example.com/map_trips_0> (5/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#wheelchairAccessible> ?v12 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/WheelchairBoardingStatus/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "wheelchair_accessible"))))) AS ?v12)
+  }
+
+# 39: <http://mapping.example.com/map_trips_0> (6/6)
+BASE    <http://mapping.example.com/map_trips_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#headsign> ?v13 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_headsign") AS ?v13)
+  }
+
+# 40: <http://mapping.example.com/map_trips_0> -> <http://mapping.example.com/map_services1_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#service> ?s1_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s1_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s1}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "service_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/services/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "service_id"))))) AS ?s1_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 41: <http://mapping.example.com/map_trips_0> -> <http://mapping.example.com/map_services2_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#service> ?s2_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s2_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR_DATES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s2}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s2, "service_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/services/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s2, "service_id"))))) AS ?s2_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 42: <http://mapping.example.com/map_trips_0> -> <http://mapping.example.com/map_shapes_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#shape> ?s3_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s3_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "SHAPES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s3}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s3, "shape_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/shape/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s3, "shape_id"))))) AS ?s3_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 43: <http://mapping.example.com/map_trips_0> -> <http://mapping.example.com/map_routes_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#route> ?s4_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s4_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s4}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s4, "route_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s4, "route_id"))))) AS ?s4_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 44: <http://mapping.example.com/map_stoptimes_0> (1/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#arrivalTime> ?v11 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time")) AS ?v7)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(?v7))) AS ?v10)
+    BIND(strdt(?v7, <http://www.w3.org/2001/XMLSchema#duration>) AS ?v11)
+  }
+
+# 45: <http://mapping.example.com/map_stoptimes_0> (2/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#distanceTraveled> ?v12 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "shape_dist_traveled") AS ?v12)
+  }
+
+# 46: <http://mapping.example.com/map_stoptimes_0> (3/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#StopTime> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+  }
+
+# 47: <http://mapping.example.com/map_stoptimes_0> (4/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#stopSequence> ?v15 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_sequence")), <http://www.w3.org/2001/XMLSchema#integer>) AS ?v15)
+  }
+
+# 48: <http://mapping.example.com/map_stoptimes_0> (5/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#departureTime> ?v18 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "departure_time")), <http://www.w3.org/2001/XMLSchema#duration>) AS ?v18)
+  }
+
+# 49: <http://mapping.example.com/map_stoptimes_0> (6/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#dropOffType> ?v23 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/DropOffType/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "drop_off_type"))))) AS ?v23)
+  }
+
+# 50: <http://mapping.example.com/map_stoptimes_0> (7/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#pickupType> ?v28 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/PickupType/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "pickup_type"))))) AS ?v28)
+  }
+
+# 51: <http://mapping.example.com/map_stoptimes_0> (8/8)
+BASE    <http://mapping.example.com/map_stoptimes_0>
+
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#headsign> ?v29 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time"))))) AS ?v10)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_headsign") AS ?v29)
+  }
+
+# 52: <http://mapping.example.com/map_stoptimes_0> -> <http://mapping.example.com/map_stops_0>
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#stop> ?s1_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v10
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time")) AS ?v7)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(?v7))) AS ?v10)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s1_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s1}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "stop_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "stop_id"))))) AS ?s1_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 53: <http://mapping.example.com/map_stoptimes_0> -> <http://mapping.example.com/map_trips_0>
+CONSTRUCT 
+  { 
+    ?v10 <http://vocab.gtfs.org/terms#trip> ?s2_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v10
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "STOP_TIMES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "arrival_time")) AS ?v7)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/stoptimes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "trip_id"))), "-", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))), "-", encode_for_uri(?v7))) AS ?v10)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s2_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "TRIPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s2}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s2, "trip_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/trips/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s2, "trip_id"))))) AS ?s2_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 54: <http://mapping.example.com/map_routes_0> (1/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#color> ?v5 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_color") AS ?v5)
+  }
+
+# 55: <http://mapping.example.com/map_routes_0> (2/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#routeUrl> ?v8 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_url"))) AS ?v8)
+  }
+
+# 56: <http://mapping.example.com/map_routes_0> (3/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/description> ?v9 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_desc") AS ?v9)
+  }
+
+# 57: <http://mapping.example.com/map_routes_0> (4/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#routeType> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/RouteType/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_type"))))) AS ?v14)
+  }
+
+# 58: <http://mapping.example.com/map_routes_0> (5/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#longName> ?v15 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_long_name") AS ?v15)
+  }
+
+# 59: <http://mapping.example.com/map_routes_0> (6/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Route> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+  }
+
+# 60: <http://mapping.example.com/map_routes_0> (7/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#textColor> ?v16 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_text_color") AS ?v16)
+  }
+
+# 61: <http://mapping.example.com/map_routes_0> (8/8)
+BASE    <http://mapping.example.com/map_routes_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#shortName> ?v17 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_short_name") AS ?v17)
+  }
+
+# 62: <http://mapping.example.com/map_routes_0> -> <http://mapping.example.com/map_agency_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#agency> ?s1_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "ROUTES.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "agency_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/routes/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "route_id"))))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s1_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "AGENCY.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s1}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "agency_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/agency/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "agency_id"))))) AS ?s1_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+
+# 63: <http://mapping.example.com/map_calendar_rules_0> (1/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#friday> ?v7 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "friday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v7)
+  }
+
+# 64: <http://mapping.example.com/map_calendar_rules_0> (2/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#CalendarRule> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+  }
+
+# 65: <http://mapping.example.com/map_calendar_rules_0> (3/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://schema.org/startDate> ?v10 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "start_date")), <http://www.w3.org/2001/XMLSchema#date>) AS ?v10)
+  }
+
+# 66: <http://mapping.example.com/map_calendar_rules_0> (4/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#sunday> ?v13 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "sunday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v13)
+  }
+
+# 67: <http://mapping.example.com/map_calendar_rules_0> (5/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#thursday> ?v16 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "thursday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v16)
+  }
+
+# 68: <http://mapping.example.com/map_calendar_rules_0> (6/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#tuesday> ?v19 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "tuesday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v19)
+  }
+
+# 69: <http://mapping.example.com/map_calendar_rules_0> (7/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#saturday> ?v22 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "saturday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v22)
+  }
+
+# 70: <http://mapping.example.com/map_calendar_rules_0> (8/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#wednesday> ?v25 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "wednesday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v25)
+  }
+
+# 71: <http://mapping.example.com/map_calendar_rules_0> (9/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#monday> ?v28 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "monday")), <http://www.w3.org/2001/XMLSchema#boolean>) AS ?v28)
+  }
+
+# 72: <http://mapping.example.com/map_calendar_rules_0> (10/10)
+BASE    <http://mapping.example.com/map_calendar_rules_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://schema.org/endDate> ?v31 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "CALENDAR.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/calendar_rules/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "service_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "end_date")), <http://www.w3.org/2001/XMLSchema#date>) AS ?v31)
+  }
+
+# 73: <http://mapping.example.com/map_stops_0> (1/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/page> ?v7 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_url"))) AS ?v7)
+  }
+
+# 74: <http://mapping.example.com/map_stops_0> (2/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vocab.gtfs.org/terms#Stop> .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+  }
+
+# 75: <http://mapping.example.com/map_stops_0> (3/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#zone> ?v8 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "zone_id") AS ?v8)
+  }
+
+# 76: <http://mapping.example.com/map_stops_0> (4/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#timeZone> ?v9 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_timezone") AS ?v9)
+  }
+
+# 77: <http://mapping.example.com/map_stops_0> (5/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#wheelchairAccessible> ?v14 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/WheelchairBoardingStatus/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "wheelchair_boarding"))))) AS ?v14)
+  }
+
+# 78: <http://mapping.example.com/map_stops_0> (6/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?v17 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_lon")), <http://www.w3.org/2001/XMLSchema#double>) AS ?v17)
+  }
+
+# 79: <http://mapping.example.com/map_stops_0> (7/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://xmlns.com/foaf/0.1/name> ?v18 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_name") AS ?v18)
+  }
+
+# 80: <http://mapping.example.com/map_stops_0> (8/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?v21 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(strdt(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_lat")), <http://www.w3.org/2001/XMLSchema#double>) AS ?v21)
+  }
+
+# 81: <http://mapping.example.com/map_stops_0> (9/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/description> ?v22 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_desc") AS ?v22)
+  }
+
+# 82: <http://mapping.example.com/map_stops_0> (10/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#code> ?v23 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_code") AS ?v23)
+  }
+
+# 83: <http://mapping.example.com/map_stops_0> (11/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#locationType> ?v28 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id"))))) AS ?v4)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/resource/LocationType/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "location_type"))))) AS ?v28)
+  }
+
+# 84: <http://mapping.example.com/map_stops_0> (12/12)
+BASE    <http://mapping.example.com/map_stops_0>
+
+CONSTRUCT 
+  { 
+    ?v4 <http://purl.org/dc/terms/identifier> ?v0 .
+  }
+WHERE
+  { SERVICE <https://w3id.org/aksw/norse#rml.source>
+      { <https://w3id.org/aksw/norse#rml.source>
+                  a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                  <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                  <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                  <https://w3id.org/aksw/norse#rml.output>  ?s0}
+    BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id") AS ?v0)
+    BIND(<https://w3id.org/aksw/norse#rml.iri>(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(?v0)))) AS ?v4)
+  }
+
+# 85: <http://mapping.example.com/map_stops_0> -> <http://mapping.example.com/map_stops_0>
+CONSTRUCT 
+  { 
+    ?v4 <http://vocab.gtfs.org/terms#parentStation> ?s1_v4 .
+  }
+WHERE
+  { { SELECT  ?jc0 ?v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s0}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "parent_station") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s0, "stop_id") AS ?v0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(?v0)))) AS ?v4)
+        }
+      LIMIT   9223372036854775807
+    }
+    { SELECT  ?jc0 ?s1_v4
+      WHERE
+        { SERVICE <https://w3id.org/aksw/norse#rml.source>
+            { <https://w3id.org/aksw/norse#rml.source>
+                        a                     <http://semweb.mmlab.be/ns/rml#LogicalSource> ;
+                        <http://semweb.mmlab.be/ns/rml#referenceFormulation>  <http://semweb.mmlab.be/ns/ql#CSV> ;
+                        <http://semweb.mmlab.be/ns/rml#source>  "STOPS.csv" ;
+                        <https://w3id.org/aksw/norse#rml.output>  ?s1}
+          BIND(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "stop_id") AS ?jc0)
+          FILTER bound(?jc0)
+          BIND(IRI(concat("http://transport.linkeddata.es/madrid/metro/stops/", encode_for_uri(str(<https://w3id.org/aksw/norse#json.getStrict>(?s1, "stop_id"))))) AS ?s1_v4)
+        }
+      LIMIT   9223372036854775807
+    }
+  }
+

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-bom</artifactId>
-	<version>5.2.0-1-SNAPSHOT</version>
+	<version>6.1.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - BOM</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -42,11 +42,11 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>5.2.0-SNAPSHOT</jena.version>
-		<jenax.version>5.2.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.9-SNAPSHOT</aksw-commons.version>
+		<jena.version>6.1.0-SNAPSHOT</jena.version>
+		<jenax.version>6.1.0-1-SNAPSHOT</jenax.version>
+		<aksw-commons.version>0.9.11-SNAPSHOT</aksw-commons.version>
 		<hikaricp.version>5.0.1</hikaricp.version>
-		<testcontainers.version>1.19.7</testcontainers.version>
+		<testcontainers.version>2.0.3</testcontainers.version>
 
 		<!--
 		<slf4j.version>2.0.9</slf4j.version>
@@ -56,7 +56,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<!-- Project Settings -->
-		<maven.compiler.release>17</maven.compiler.release>
+		<maven.compiler.release>21</maven.compiler.release>
 		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
 		<file.encoding>UTF-8</file.encoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -277,13 +277,13 @@
 
 			<dependency>
 				<groupId>org.testcontainers</groupId>
-				<artifactId>postgresql</artifactId>
+				<artifactId>testcontainers-postgresql</artifactId>
 				<version>${testcontainers.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.testcontainers</groupId>
-				<artifactId>mysql</artifactId>
+				<artifactId>testcontainers-mysql</artifactId>
 				<version>${testcontainers.version}</version>
 			</dependency>
 

@@ -240,7 +240,7 @@ public class RmlQueryGenerator {
             Var jcVar = Var.alloc("jc" + i);
             Expr cond = getConditions.apply(eq);
             pattern.addElement(new ElementBind(jcVar, cond));
-            pattern.addElementFilter(new ElementFilter(new E_Bound(new ExprVar(jcVar))));
+            pattern.addElement(new ElementFilter(new E_Bound(new ExprVar(jcVar))));
 
             joinVars.add(jcVar);
         }

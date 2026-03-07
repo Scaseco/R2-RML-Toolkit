@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.google.common.base.Preconditions;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBase;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 
@@ -55,5 +56,16 @@ public class BindingOverJdbcResultSet extends BindingBase {
     protected Node get1(Var var) {
         validate();
         return state.getNode(var);
+    }
+
+    @Override
+    public Binding detach() {
+        // XXX Can we do better?
+        return BindingFactory.copy(this);
+    }
+
+    @Override
+    protected Binding detachWithNewParent(Binding newParent) {
+        throw new UnsupportedOperationException("Should never be called.");
     }
 }
