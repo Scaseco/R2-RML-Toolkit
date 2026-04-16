@@ -70,7 +70,8 @@ public class CmdRmlTkRmlXmlToJson
                     // stax exception mit hadoop:
                     /// Null InputStream is not a valid argument
                     //	at org.apache.hadoop.shaded.com.ctc.wstx.stax.WstxInputFactory.createSR(WstxInputFactory.java:643)
-                    new Converter(spec.file, spec.xpath, spec.newFile, false).convert();
+                    // stax flag was removed ~ Claus 2026-04-16
+                    new Converter(spec.file, spec.xpath, spec.newFile).convert();
                 }
             }
 

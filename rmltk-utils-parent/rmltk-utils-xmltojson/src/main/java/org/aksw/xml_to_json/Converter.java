@@ -1,47 +1,70 @@
 package org.aksw.xml_to_json;
 
-import jlibs.xml.DefaultNamespaceContext;
-import jlibs.xml.sax.dog.XMLDog;
-import jlibs.xml.sax.dog.sniff.DOMBuilder;
-import jlibs.xml.sax.dog.sniff.Event;
-import org.jaxen.saxpath.SAXPathException;
-import org.xml.sax.InputSource;
-
-import javax.xml.xpath.XPathException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.ximpleware.AutoPilot;
+import com.ximpleware.VTDException;
+import com.ximpleware.VTDGen;
+import com.ximpleware.VTDNav;
+
 public class Converter {
-    protected final String output_file;
-    protected final String input_file;
-    protected final boolean use_stax;
-    protected final XMLDog dog;
-    protected final Event event;
+    protected final String outputFile;
+    protected final String inputFile;
+    protected final String xpathExpr;
 
-    public Converter(String input_file, String xpath_expr, String output_file, boolean use_stax) throws SAXPathException, IOException, XPathException {
-        this.input_file = input_file;
-        this.output_file = output_file;
-        this.use_stax = use_stax;
-
-        DefaultNamespaceContext nsContext = new DefaultNamespaceContext();
-        this.dog = new XMLDog(nsContext);
-
-        dog.addXPath(xpath_expr);
-        this.event = dog.createEvent();
+    // Add this to your Converter.java class
+    public Converter(String xmlContent, String xpathExpr, String outputFile) {
+        this.outputFile = outputFile;
+        this.inputFile = null; // not reading from file
+        this.xpathExpr = xpathExpr;
     }
 
-    public void convert() throws IOException, XPathException {
-        event.setXMLBuilder(new DOMBuilder());
+    // Overload your convert() method to support the direct byte approach
+    public void convertFromMemory(String xmlContent) throws IOException, VTDException {
+        VTDGen vg = new VTDGen();
+        vg.setDoc(xmlContent.getBytes("UTF-8")); // Emulates reading a file
+        vg.parse(true);
 
-        try (FileWriter fw = new FileWriter(this.output_file);
-             BufferedWriter bw = new BufferedWriter(fw)) {
-            event.setListener(new InstantConverter(bw));
+        VTDNav vn = vg.getNav();
+        com.ximpleware.AutoPilot ap = new com.ximpleware.AutoPilot(vn);
+        ap.selectXPath(xpathExpr);
 
-            InputSource inputSource = new InputSource(input_file);
-            dog.sniff(event,
-                    inputSource,
-                    use_stax);
+        try (FileWriter fw = new FileWriter(this.outputFile); BufferedWriter bw = new BufferedWriter(fw)) {
+
+            InstantConverter instantConverter = new InstantConverter(bw, vn);
+
+            int result;
+            while ((result = ap.evalXPath()) != -1) {
+                instantConverter.onNodeHit();
+                bw.write('\n');
+            }
+        }
+    }
+
+    public void convert() throws IOException, VTDException {
+        VTDGen vg = new VTDGen();
+
+        // Use parseFile for memory efficiency with large files
+        if (!vg.parseFile(inputFile, true)) {
+            throw new IOException("Failed to parse XML file: " + inputFile);
+        }
+
+        VTDNav vn = vg.getNav();
+        AutoPilot ap = new AutoPilot(vn);
+        ap.selectXPath(xpathExpr);
+
+        try (FileWriter fw = new FileWriter(this.outputFile); BufferedWriter bw = new BufferedWriter(fw)) {
+
+            InstantConverter instantConverter = new InstantConverter(bw, vn);
+
+            // Loop through every XPath hit
+            int result;
+            while ((result = ap.evalXPath()) != -1) {
+                instantConverter.onNodeHit();
+                bw.write('\n');
+            }
         }
     }
 }

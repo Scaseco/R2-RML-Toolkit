@@ -11,7 +11,7 @@
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
 	<url>https://github.com/SmartDataAnalytics/r2rml-jena</url>
 	<modules>
-	    <module>rmltk-bom</module>
+		<module>rmltk-bom</module>
 		<module>r2rml-resource-ontology</module>
 		<module>r2rml-resource-w3c-testsuite</module>
 		<module>r2rml-resource-shacl</module>
@@ -25,7 +25,7 @@
 		<module>r2rml-jena-sql-transforms</module>
 		<module>r2rmlx-jena-api</module>
 		<module>r2rml-jena-plugin</module>
-		
+
 		<module>rml1-resource-testsuite</module>
 
 		<module>rml-resource-testsuite-kgcw2024</module>
@@ -77,9 +77,13 @@
 	<properties>
 		<jena.version>6.1.0-SNAPSHOT</jena.version>
 		<jenax.version>6.1.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.12-SNAPSHOT</aksw-commons.version>
-		<hikaricp.version>5.0.1</hikaricp.version>
-		<testcontainers.version>2.0.3</testcontainers.version>
+		<aksw-commons.version>0.9.12</aksw-commons.version>
+		<hikaricp.version>5.1.0</hikaricp.version>
+		<testcontainers.version>2.0.4</testcontainers.version>
+
+		<mysql-connector-java.version>8.0.33</mysql-connector-java.version>
+		<postgresql.version>42.7.10</postgresql.version>
+		<vdt-xml.version>2.13.4</vdt-xml.version>
 
 		<!--
 		<slf4j.version>2.0.9</slf4j.version>
@@ -95,26 +99,22 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<gpg.keyname>AKSW</gpg.keyname>
-		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
+		<gitflow-maven-plugin.version>1.21.0</gitflow-maven-plugin.version>
+		<maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+		<maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
+		<jdeb.version>1.14</jdeb.version>
+		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
+		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+		<maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
+		<junit.version>6.1.0-M1</junit.version>
+		<jsqlparser.version>4.9</jsqlparser.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
-			<!--
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-bom</artifactId>
-				<version>${slf4j.version}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-slf4j2-impl</artifactId>
-				<version>${log4j.version}</version>
-			</dependency>
-			-->
-
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-bom</artifactId>
@@ -122,6 +122,15 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+
 			<dependency>
 				<groupId>org.aksw.commons</groupId>
 				<artifactId>aksw-commons-entity-codecs-sql</artifactId>
@@ -287,11 +296,6 @@
 				<version>${jenax.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.12</version>
-			</dependency>
 			<!-- <dependency> <groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-core-rdfterm</artifactId> 
 				<version>${jenax.version}</version> </dependency> -->
@@ -299,7 +303,7 @@
 			<dependency>
 				<groupId>com.github.jsqlparser</groupId>
 				<artifactId>jsqlparser</artifactId>
-				<version>4.3</version>
+				<version>${jsqlparser.version}</version>
 			</dependency>
 
 			<dependency>
@@ -323,14 +327,22 @@
 			<dependency>
 				<groupId>mysql</groupId>
 				<artifactId>mysql-connector-java</artifactId>
-				<version>8.0.33</version>
+				<version>${mysql-connector-java.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.7.3</version>
+				<version>${postgresql.version}</version>
 			</dependency>
+
+			<!-- vtd-xml is only used for xml-to-json conversion -->
+			<dependency>
+				<groupId>com.ximpleware</groupId>
+				<artifactId>vtd-xml</artifactId>
+				<version>${vdt-xml.version}</version>
+			</dependency>
+
 			<!--			<dependency>-->
 			<!--				<groupId>mysql</groupId>-->
 			<!--				<artifactId>mysql-connector-java</artifactId>-->
@@ -380,7 +392,7 @@
 				<plugin>
 					<groupId>com.amashchenko.maven.plugin</groupId>
 					<artifactId>gitflow-maven-plugin</artifactId>
-					<version>1.19.0</version>
+					<version>${gitflow-maven-plugin.version}</version>
 					<configuration>
 						<gitFlowConfig>
 							<versionTagPrefix>v</versionTagPrefix>
@@ -390,7 +402,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
 						<release>${maven.compiler.release}</release>
 						<encoding>${project.build.sourceEncoding}</encoding>
@@ -399,7 +411,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>${maven-source-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -413,7 +425,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>${maven-javadoc-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>attach-javadocs</id>
@@ -432,7 +444,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>${maven-surefire-plugin.version}</version>
 					<configuration>
 						<!-- <forkCount>1C</forkCount> -->
 						<!-- <reuseForks>true</reuseForks> -->
@@ -447,12 +459,12 @@
 				<plugin>
 					<artifactId>jdeb</artifactId>
 					<groupId>org.vafer</groupId>
-					<version>1.8</version>
+					<version>${jdeb.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-					<version>2.4.3</version>
+					<version>${maven-shade-plugin.version}</version>
 					<executions>
 						<!-- Run shade goal on package phase -->
 						<execution>
@@ -499,7 +511,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
-					<version>1.6</version>
+					<version>${maven-gpg-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>sign-artifacts</id>
@@ -528,12 +540,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>2.8.2</version>
+					<version>${maven-deploy-plugin.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>${maven-dependency-plugin.version}</version>
 					<executions>
 						<execution>
 							<phase>prepare-package</phase>

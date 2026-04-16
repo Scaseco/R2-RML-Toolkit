@@ -1,157 +1,170 @@
 package org.aksw.xml_to_json;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.StreamWriteFeature;
 
-import jlibs.xml.sax.dog.NodeItem;
-import jlibs.xml.sax.dog.expr.Expression;
-import jlibs.xml.sax.dog.expr.InstantEvaluationListener;
+import com.ximpleware.NavException;
+import com.ximpleware.VTDNav;
 
-public class InstantConverter extends InstantEvaluationListener {
+public class InstantConverter {
     protected final Writer writer;
     protected final JsonFactory jsonFactory;
-    //protected final JsonGenerator jsonGenerator;
+    protected final VTDNav vn;
 
-    public InstantConverter(BufferedWriter bw) throws IOException {
+    public InstantConverter(Writer bw, VTDNav vn) {
         this.writer = bw;
-        jsonFactory = JsonFactory.builder()
-                .disable(StreamWriteFeature.AUTO_CLOSE_TARGET)
-                .disable(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)
-                .build();
+        this.vn = vn;
+        this.jsonFactory = JsonFactory.builder().disable(StreamWriteFeature.AUTO_CLOSE_TARGET)
+                .disable(StreamWriteFeature.FLUSH_PASSED_TO_STREAM).build();
     }
 
-    @Override
-    public void onNodeHit(Expression expression, NodeItem nodeItem) {
+    public void onNodeHit() {
         try {
-            Node node = (Node) nodeItem.xml;
             JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
-            toJson(node, jsonGenerator, true);
+            toJson(jsonGenerator, true);
             jsonGenerator.flush();
-            writer.write('\n');
-        } catch (IOException e) {
+        } catch (IOException | NavException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected static void toJson(Node node, JsonGenerator jsonGenerator) throws IOException {
-        toJson(node, jsonGenerator, false);
+    protected void toJson(JsonGenerator jsonGenerator) throws IOException, NavException {
+        toJson(jsonGenerator, false);
     }
 
-    protected static void toJson(Node node, JsonGenerator jsonGenerator, boolean root) throws IOException {
-        switch (node.getNodeType()) {
-            case Node.TEXT_NODE:
-                jsonGenerator.writeString(node.getNodeValue());
-                break;
-            case Node.ATTRIBUTE_NODE:
-                if (!"xmlns:xml".equals(node.getNodeName())) {
-                    jsonGenerator.writeFieldName("@" + node.getNodeName());
-                    jsonGenerator.writeString(node.getNodeValue());
-                }
-                break;
-            case Node.ELEMENT_NODE:
-                if (!root) {
-                    jsonGenerator.writeFieldName(node.getNodeName());
-                }
-                Node firstElement = getFirstChildElement(node);
-                if (firstElement != null) {
-                    jsonGenerator.writeStartObject(firstElement);
-                    if (node.hasAttributes()) {
-                        NamedNodeMap attributes = node.getAttributes();
-                        for (int i = 0; i < attributes.getLength(); i++) {
-                            Node item = attributes.item(i);
-                            toJson(item, jsonGenerator);
-                        }
+    protected void toJson(JsonGenerator jsonGenerator, boolean root) throws IOException, NavException {
+        // VTD doesn't create text nodes as separate objects in standard traversal
+        // unless asked.
+        // We find out if this is an element.
+        int tokenType = vn.getTokenType(vn.getCurrentIndex());
+
+        if (tokenType == VTDNav.TOKEN_ATTR_NAME) {
+            String attrName = vn.toNormalizedString(vn.getCurrentIndex());
+            if (!"xmlns:xml".equals(attrName)) {
+                jsonGenerator.writeFieldName("@" + attrName);
+                // Move to the attribute value
+                jsonGenerator.writeString(vn.toNormalizedString(vn.getCurrentIndex() + 1));
+            }
+            return;
+        }
+
+        // Handle Element Node
+        String nodeName = vn.toNormalizedString(vn.getCurrentIndex());
+        if (!root) {
+            jsonGenerator.writeFieldName(nodeName);
+        }
+
+        // Check for attributes
+        boolean hasAttributes = false;
+        int attrCount = vn.getAttrCount();
+        if (attrCount > 0) {
+            hasAttributes = true;
+        }
+
+        // Try to move to the first child element
+        vn.push(); // Save state before diving
+        boolean hasChildElement = vn.toElement(VTDNav.FIRST_CHILD);
+
+        if (hasChildElement) {
+            jsonGenerator.writeStartObject();
+
+            // Write attributes if any
+            if (hasAttributes) {
+                writeAttributes(jsonGenerator);
+            }
+
+            boolean array = false;
+
+            do {
+                // Peek ahead for arrays
+                vn.push();
+                boolean hasNext = vn.toElement(VTDNav.NEXT_SIBLING);
+                String nextName = hasNext ? vn.toNormalizedString(vn.getCurrentIndex()) : null;
+                vn.pop();
+
+                String currentName = vn.toNormalizedString(vn.getCurrentIndex());
+
+                if (currentName.equals(nextName)) {
+                    if (!array) {
+                        array = true;
+                        jsonGenerator.writeFieldName(currentName);
+                        jsonGenerator.writeStartArray();
                     }
-                    boolean array = false;
-                    for (Node child = firstElement, peek = getNextSiblingElement(child);
-                         child != null;
-                         child = peek, peek = getNextSiblingElement(peek)) {
+                    toJson(jsonGenerator, true);
+                    continue;
+                }
 
-                        if (peek != null && child.getNodeName().equals(peek.getNodeName())) {
-                            if (!array) {
-                                array = true;
-                                jsonGenerator.writeFieldName(child.getNodeName());
-                                jsonGenerator.writeStartArray(child);
-                            }
+                if (array) {
+                    toJson(jsonGenerator, true);
+                    array = false;
+                    jsonGenerator.writeEndArray();
+                    continue;
+                }
 
-                            toJson(child, jsonGenerator, true);
+                toJson(jsonGenerator);
 
-                            continue;
-                        }
+            } while (vn.toElement(VTDNav.NEXT_SIBLING));
 
-                        if (array) {
-                            toJson(child, jsonGenerator, true);
+            if (array) {
+                jsonGenerator.writeEndArray();
+            }
 
-                            array = false;
-                            jsonGenerator.writeEndArray();
+            jsonGenerator.writeEndObject();
+            vn.pop(); // Restore cursor state
 
-                            continue;
-                        }
+        } else {
+            vn.pop(); // Restore from first-child check
 
-                        toJson(child, jsonGenerator);
+            // Check if it has attributes or text
+            int textIndex = vn.getText(); // returns index of text if present
+
+            if (hasAttributes) {
+                jsonGenerator.writeStartObject();
+                writeAttributes(jsonGenerator);
+
+                if (textIndex != -1) {
+                    String textValue = vn.toNormalizedString(textIndex);
+                    // Handle empty string same as missing text
+                    if (textValue != null && !textValue.isEmpty()) {
+                        jsonGenerator.writeFieldName("#text");
+                        jsonGenerator.writeString(textValue);
                     }
-                    jsonGenerator.writeEndObject();
-                } else if (node.hasAttributes()) {
-                    jsonGenerator.writeStartObject(node);
-                        NamedNodeMap attributes = node.getAttributes();
-                        for (int i = 0; i < attributes.getLength(); i++) {
-                            Node item = attributes.item(i);
-                            toJson(item, jsonGenerator);
-                        }
-                        if (node.getFirstChild() != null) {
-                            jsonGenerator.writeFieldName("#text");
-                            toJson(node.getFirstChild(), jsonGenerator);
-                        }
-                        jsonGenerator.writeEndObject();
-                } else if (node.getFirstChild() != null) {
-                    toJson(node.getFirstChild(), jsonGenerator);
-                } else {
+                }
+                jsonGenerator.writeEndObject();
+            } else if (textIndex != -1) {
+                String textValue = vn.toNormalizedString(textIndex);
+
+                // If the text is present but completely empty,
+                // return JSON null instead of an empty JSON string.
+                // XXX Perhaps this behavior should be configurable
+                if (textValue == null || textValue.isEmpty()) {
                     jsonGenerator.writeNull();
+                } else {
+                    jsonGenerator.writeString(textValue);
                 }
-                break;
-            default:
-                node.getNodeType();
-        }
-    }
-
-    protected static Node getFirstChildElement(Node node) {
-        if (node == null) {
-            return null;
-        }
-        for (node = node.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                return node;
+            } else {
+                jsonGenerator.writeNull();
             }
         }
-        return null;
     }
 
-    protected static Node getNextSiblingElement(Node node) {
-        if (node == null) {
-            return null;
-        }
-        for (node = node.getNextSibling(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                return node;
+    private void writeAttributes(JsonGenerator jsonGenerator) throws IOException, NavException {
+        int attrCount = vn.getAttrCount();
+        for (int i = 0; i < attrCount * 2; i += 2) {
+            // Attributes are in pairs: Name (i) and Value (i+1) relative to the first
+            // attribute index
+            int attrIndex = vn.getCurrentIndex() + 1 + i;
+            String attrName = vn.toNormalizedString(attrIndex);
+            String attrValue = vn.toNormalizedString(attrIndex + 1);
+
+            if (!"xmlns:xml".equals(attrName)) {
+                jsonGenerator.writeFieldName("@" + attrName);
+                jsonGenerator.writeString(attrValue);
             }
         }
-        return null;
-    }
-
-    @Override
-    public void finishedNodeSet(Expression expression) {
-    }
-
-    @Override
-    public void onResult(Expression expression, Object o) {
-
     }
 }
