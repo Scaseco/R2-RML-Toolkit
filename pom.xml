@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aksw.rmltk</groupId>
 	<artifactId>rmltk-parent</artifactId>
-	<version>6.1.0-1-SNAPSHOT</version>
+	<version>6.2.0-1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>RML API - Jena - Parent</name>
 	<description>(R2)RML Toolkit based on Jena's Polymorphism System</description>
@@ -75,14 +75,14 @@
 		</developer>
 	</developers>
 	<properties>
-		<jena.version>6.1.0-SNAPSHOT</jena.version>
-		<jenax.version>6.1.0-1-SNAPSHOT</jenax.version>
-		<aksw-commons.version>0.9.12</aksw-commons.version>
+		<jena.version>6.2.0</jena.version>
+		<jenax.version>6.2.0-1-SNAPSHOT</jenax.version>
+		<aksw-commons.version>0.9.13</aksw-commons.version>
 		<hikaricp.version>5.1.0</hikaricp.version>
-		<testcontainers.version>2.0.4</testcontainers.version>
+		<testcontainers.version>2.0.5</testcontainers.version>
 
 		<mysql-connector-java.version>8.0.33</mysql-connector-java.version>
-		<postgresql.version>42.7.10</postgresql.version>
+		<postgresql.version>42.7.14</postgresql.version>
 		<vdt-xml.version>2.13.4</vdt-xml.version>
 
 		<!--
@@ -101,16 +101,16 @@
 		<gpg.keyname>AKSW</gpg.keyname>
 		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
 		<gitflow-maven-plugin.version>1.21.0</gitflow-maven-plugin.version>
-		<maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
-		<maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
-		<jdeb.version>1.14</jdeb.version>
+		<maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+		<jdeb.version>1.15</jdeb.version>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-		<maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
-		<junit.version>6.1.0-M1</junit.version>
+		<maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
+		<junit.version>6.1.3</junit.version>
 		<jsqlparser.version>4.9</jsqlparser.version>
 	</properties>
 	<dependencyManagement>
