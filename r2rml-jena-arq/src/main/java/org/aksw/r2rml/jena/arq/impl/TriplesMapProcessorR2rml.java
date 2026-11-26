@@ -13,6 +13,8 @@ import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.vocab.RR;
+import org.aksw.rml.v2.common.vocab.Rml2Terms;
+import org.aksw.rml.v2.jena.domain.api.TermMapRml2;
 import org.aksw.rmltk.model.backbone.common.IDatatypeMap;
 import org.aksw.rmltk.model.backbone.common.IGraphMap;
 import org.aksw.rmltk.model.backbone.common.IJoinCondition;
@@ -34,6 +36,7 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.expr.E_Equals;
+import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -53,6 +56,9 @@ public class TriplesMapProcessorR2rml {
      *  This constant is not part of the standard R2RML terms but it is supported by this processor.
      *  A property for this will become part of the new RML spec ~ 2023-06-07 */
     public static final Property languageColumn = ResourceFactory.createProperty(R2rmlTerms.uri + "languageColumn");
+
+    /** rml:languageMap of RML-Core: a term map that generates the language tag of a literal. */
+    public static final Property languageMap = ResourceFactory.createProperty(Rml2Terms.uri + "languageMap");
 
     protected ITriplesMap triplesMap;
     protected String baseIri;
@@ -203,6 +209,14 @@ public class TriplesMapProcessorR2rml {
         return Optional.ofNullable(tm.getProperty(languageColumn)).map(Statement::getString).orElse(null);
     }
 
+    /** The expression of the rml:languageMap of a term map, or null. */
+    protected Expr getLanguageMapExpr(MappingCxt cxt, ITermMap tm) {
+        Resource languageMapResource = tm.getPropertyResourceValue(languageMap);
+        return languageMapResource == null
+                ? null
+                : new E_Str(termMapToExpr(cxt, languageMapResource.as(TermMapRml2.class), RR.Literal));
+    }
+
     protected Expr getDatatypeExpr(MappingCxt cxt, ITermMap tm) {
         Expr result = null;
 
@@ -246,6 +260,7 @@ public class TriplesMapProcessorR2rml {
 
         // This is an extension of R2RML for a language column - it doesn't seem worth the effort of having this separate
         String langColumn = getLanguageColumn(tm);
+        Expr langMapExpr = getLanguageMapExpr(cxt, tm);
 
         // Infer the effective term type
 
@@ -257,7 +272,7 @@ public class TriplesMapProcessorR2rml {
             effectiveTermType = ObjectUtils.requireNullOrEqual(effectiveTermType, R2rmlImporterLib.classifyTermType(constant.asNode()).asNode());
         }
 
-        if (langValue != null || langColumn != null) {
+        if (langValue != null || langColumn != null || langMapExpr != null) {
             effectiveTermType = ObjectUtils.requireNullOrEqual(effectiveTermType, RR.Literal.asNode());
         }
 
@@ -276,7 +291,9 @@ public class TriplesMapProcessorR2rml {
             // to resolve all variable names (=references) against the reference formulation.
             Expr arg = resolveColumnReferences(cxt, rawArg);
 
-            result = R2rmlImporterLib.applyTermType(arg, effectiveTermType, NodeValue.makeNode(XSD.xstring.asNode()));
+            result = langMapExpr != null
+                    ? new E_StrLang(arg, langMapExpr)
+                    : R2rmlImporterLib.applyTermType(arg, effectiveTermType, NodeValue.makeNode(XSD.xstring.asNode()));
         } else if((constant = tm.getConstant()) != null) {
             result = NodeValue.makeNode(constant.asNode());
         } else {
@@ -284,6 +301,8 @@ public class TriplesMapProcessorR2rml {
             if(columnLikeExpr != null) {
                 if (langValue != null) {
                     result = new E_StrLang(columnLikeExpr, NodeValue.makeString(langValue));
+                } else if (langMapExpr != null) {
+                    result = new E_StrLang(columnLikeExpr, langMapExpr);
                 } else if (langColumn != null) {
                     ExprVar langColumnExprVar = new ExprVar(langColumn);
                     Expr langColumnExpr = resolveColumnReferences(cxt, langColumnExprVar);
