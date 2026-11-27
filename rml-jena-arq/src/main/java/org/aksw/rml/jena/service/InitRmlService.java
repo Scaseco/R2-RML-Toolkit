@@ -28,6 +28,7 @@ import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
@@ -69,6 +70,7 @@ public class InitRmlService {
                 // GraphVar treats variables as constants - so we can navigate the triples of variables
                 Graph graph = new GraphVarImpl();
                 ElementUtils.toGraph(elt, graph);
+                graph = blankNodeVarsToBlankNodes(graph);
                 Model model = ModelFactory.createModelForGraph(graph);
                 // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
                 ILogicalSource logicalSource = RmlLib.getOnlyLogicalSource(model);
@@ -78,6 +80,35 @@ public class InitRmlService {
             }
             return r;
         });
+    }
+
+    /**
+     * The blank nodes of a source description, such as the rml:RelativePathSource of
+     * RML-IO, become blank node variables when the generated query is parsed from
+     * its text (in SPARQL, a blank node of a pattern is a variable), renamed apart
+     * inside a sub-select (a join of two triples maps). Turn them back
+     * into blank nodes, so that the description reads the same whether the query
+     * was built in memory or parsed from its serialization.
+     */
+    public static Graph blankNodeVarsToBlankNodes(Graph graph) {
+        Graph result = new GraphVarImpl();
+        graph.find().forEach(t -> result.add(Triple.create(
+                blankNodeVarToBlankNode(t.getSubject()),
+                blankNodeVarToBlankNode(t.getPredicate()),
+                blankNodeVarToBlankNode(t.getObject()))));
+        return result;
+    }
+
+    static Node blankNodeVarToBlankNode(Node node) {
+        if (!node.isVariable()) {
+            return node;
+        }
+        // in a sub-select, the variable is also renamed apart ("?/?0")
+        String name = node.getName();
+        while (name.startsWith("/")) {
+            name = name.substring(1);
+        }
+        return Var.isBlankNodeVarName(name) ? NodeFactory.createBlankNode(name) : node;
     }
 
     public static void initRegistryRml1(Map<String, RmlSourceProcessor> registry) {
