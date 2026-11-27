@@ -478,7 +478,8 @@ public class R2rmlImporterLib {
         String termTypeIri = termType.getURI();
 
         Expr result;
-        result = termTypeIri.equals(Rml2Terms.IRI)
+        // rml:URI is a synonym of rml:IRI in RML-Core
+        result = termTypeIri.equals(Rml2Terms.IRI) || termTypeIri.equals(Rml2Terms.uri + "URI")
                 // ? applyIriType(applyDatatype(column, XSD.xstring.asNode(), knownDatatype), baseIri)
                 ? new E_IRI(applyDatatype(column, XSD.xstring.asNode(), knownDatatypeExpr))
                 : termTypeIri.equals(Rml2Terms.BlankNode)
