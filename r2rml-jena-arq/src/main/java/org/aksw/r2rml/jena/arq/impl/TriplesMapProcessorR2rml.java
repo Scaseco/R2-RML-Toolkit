@@ -13,6 +13,8 @@ import org.aksw.jenax.arq.util.expr.ExprUtils;
 import org.aksw.r2rml.common.vocab.R2rmlTerms;
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib;
 import org.aksw.r2rml.jena.vocab.RR;
+import org.aksw.rml.v2.common.vocab.Rml2Terms;
+import org.aksw.rml.v2.jena.domain.api.TermMapRml2;
 import org.aksw.rmltk.model.backbone.common.IDatatypeMap;
 import org.aksw.rmltk.model.backbone.common.IGraphMap;
 import org.aksw.rmltk.model.backbone.common.IJoinCondition;
@@ -34,6 +36,7 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.expr.E_Equals;
+import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.E_StrLang;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -333,6 +336,26 @@ public class TriplesMapProcessorR2rml {
         return result;
     }
 
+    /** rml:childMap and rml:parentMap of RML-Core: the expression maps of a join condition. */
+    public static final Property childMap = ResourceFactory.createProperty(Rml2Terms.uri + "childMap");
+    public static final Property parentMap = ResourceFactory.createProperty(Rml2Terms.uri + "parentMap");
+
+    /**
+     * One side of a join condition: its reference (rml:child, rml:parent), or the expression
+     * map that RML-Core allows in its place (rml:childMap, rml:parentMap: a reference, a
+     * template or a constant), evaluated against the logical source of that side.
+     */
+    protected Expr joinSideToExpr(MappingCxt cxt, IJoinCondition jc, String reference, Property expressionMap) {
+        if (reference != null) {
+            return referenceToExpr(cxt, reference);
+        }
+        Resource map = jc.getPropertyResourceValue(expressionMap);
+        if (map == null) {
+            throw new RuntimeException("Join condition without " + expressionMap.getLocalName() + ": " + jc);
+        }
+        return new E_Str(termMapToExpr(cxt, map.as(TermMapRml2.class), RR.Literal));
+    }
+
     protected void processRefObjectMap(Node g, Node s, Node p, IRefObjectMap rom) {
         ITriplesMap parentTm = rom.getParentTriplesMap();
         ISubjectMap parentSm = parentTm.getSubjectMap();
@@ -347,10 +370,8 @@ public class TriplesMapProcessorR2rml {
         ExprList constraints = new ExprList();
 
         for (IJoinCondition jc : joinConditions) {
-            String parentStr = jc.getParent();
-            String childStr = jc.getChild();
-            Expr parentExpr = referenceToExpr(parentCxt, parentStr);
-            Expr childExpr = referenceToExpr(childCxt, childStr);
+            Expr parentExpr = joinSideToExpr(parentCxt, jc, jc.getParent(), parentMap);
+            Expr childExpr = joinSideToExpr(childCxt, jc, jc.getChild(), childMap);
             E_Equals constraint = new E_Equals(parentExpr, childExpr);
             constraints.add(constraint);
         }
